@@ -1,0 +1,49 @@
+iqbal 2019
+
+A predição de defeitos tem sido altamente utilizada dentro das fases iniciais do ciclo de vida do software
+e é crucial para a garantia da qualidade do software.
+Essa predição ajuda os times a utilizar os recursos mais acertivamente e etregar software de qualidade em um menor tempo
+Muitos pesquisadores tem desenvolvido essa predição utilizando tecnicas de aprendizado de maquina
+
+Machine Learning é um modo efetivo de detectar padroes dentro do software que podem 
+definir um possivel defeito
+
+Neste estudo eles usam várias tecnicas de machine learning em um dataset publico da NASA
+Naïve Bayes (NB), MultiLayer Perceptron (MLP). Radial Basis Function (RBF), Support
+Vector Machine (SVM), K Nearest Neighbor (KNN), kStar (K*),
+One Rule (OneR), PART, Decision Tree (DT), and Random
+Forest (RF).
+
+Avaliando com 
+Precision, Recall,
+F-Measure, Accuracy, MCC, and ROC Area
+
+Os resultados podem ser usados como base em outras pesquisas e comparações
+
+INTRO
+a identificação de defeitos no inicio do ciclo de vida do software é crucial para a diminuição dos custos.
+Isso ocorre pois no desenvolvimento, bug-fix e testes são tarefas caras pois requerem muitos recursos
+
+Uma eficiente detectção de defeitos depende de muitos fatores, um dos mais importantes 
+é a extração de métricas do histórico do repositório do projeto. 
+
+O proposito deste artigo é analisar a performance de aprendizado de maquina supervisionado na 
+predição de defeitos usando o dataset ponto da NASA.
+
+70:30 proportion of training and test data
+
+
+MATERIAIS E METODOS
+NASA tem varios datasets e cada um deles tem varias features e a classe de saida (variavel dependente)
+que é predita pelos outros atributos.
+Os datasets tem como valores dessa variavel dependente Y ou N. Sendo que Y significa que a instancia tem tendencia
+a defeitos e N que não tem. 12 desses datasets são usados, cada um representando um software da NASA
+
+https://github.com/klainfo/NASADefectDataset
+
+Os experimentos foram feitos no weka 
+
+RESULTADOS E DISCUSSAO
+foi gerada a matriz de confusao de falsos e verdadeiros positivos e negativos. Também foram calculadas 
+as metricas citadas anteriormente para avaliaçao, mas todas essas medidas sao dadas pelo weka
+

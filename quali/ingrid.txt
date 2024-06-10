@@ -1,0 +1,8 @@
+ - o software nao tem objetivo de ser sem defeitos. Na verdade isso é impossivel.
+o objetivo é que seja sem defeitos em pontos criticos que afetem a usabilidade do usuário.
+Dessa forma, com um bom teste unitário isso é mitigado.
+Mas como saber os pontos que precisam de testes para poder depreender mais tempo nesses pontos
+
+- não é necessário corrigir todos os erros, apenas os mais criticos
+
+- para revisão bibliográfica, considerar snow bolling (para nao deixar pontas soltas)

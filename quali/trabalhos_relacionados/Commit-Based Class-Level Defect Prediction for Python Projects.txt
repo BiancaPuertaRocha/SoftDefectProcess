@@ -1,0 +1,25 @@
+
+A predição de defeitos contrubui sifnificativamente oara o constrole de qualidade de software
+assim como a revisao de codigo e testes unitarios 
+
+JIT é usado para detectar no momento do commit se o commit tem propensao a inserção de erros
+
+Porem, commits defeituosos podem ter arquivos defeituosos e nao defeituosos e por isso commit-level
+prediction nao é o suficiente. Entaõ é proposta a class-level prediction.
+O modelo em questao é desenvolvido para projetos python.
+
+Duas confugurações: setting with product metrics only and setting with product
+metrics plus commit information
+
+tres classificadores e duas estrategias de validação
+
+melhor classificador foi random forest e as informações de commits contribuiram significativamente
+
+Intro: 
+Os softwares estao constantemente passando por modificações e grande parte dad vezes essas modificações
+resultam em defeitos que afetam na qualidade de software
+
+A detecção automatica de commits que possam conter defeitos ajuda na alocação mais acertiva de esforços
+dos times de controle de qualidade (quality assurance efforts) e revisao de codigo
+
+

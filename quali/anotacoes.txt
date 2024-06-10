@@ -1,0 +1,72 @@
+- usar mais de um dataset e escolher as melhores features de cada um - feature selection (testar mais de uma tecnica)
+- desenvolver classifier também com mais de uma tecnica e utilizando mais de um dataset para treinamento?
+- usar datasets de defect prediction de repositorio python (pois a predicao pode variar de acordo com a linguagem)
+
+
+Modelos para usa^:
+KNN
+Randon Forest 
+
+avaliar com: 
+Precision
+Recall
+Acuracy
+...
+
+PASSO A PASSO
+
+PREDIÇÃO DE BUGS USANDO MINERACAO DE REPOSITORIO DE SOFTWARE EM REPOSITÓRIOS PYTHON - 
+Code defect prediction using Mining Software Repositories (MSR) in Python repositories
+
+RQ - research question
+
+pegar artigo por artigo
+a partir dos trabalhos relacionados, pegar o que eles usam e mesclar ou melhorar comparando resultados 
+
+1 - levantar artigos
+	RQ de cada
+	Qual dataset
+	O que teve de resultados
+	O que é comparavel (dataset diferente nao é comparavel)
+	Desenvolver tabela para comparar
+
+
+Usar:
+
+graph neural networks (GNNs) - Xu 2020, performou melhor em Defect Prediction With Semantics and Context Features of Codes Based on Graph Representation Learning
+K Nearest Neighbor (KNN) - He 2007,  Fault Detection Using the k-Nearest Neighbor Rule for Semiconductor Manufacturing Processes
+Naïve Bayes (NB) - rahim2021, Software Defect Prediction with Naïve Bayes Classifier
+Random Forest (RF) - zheng2022, Interpretability application of the Just-in-Time software defect prediction model
+Deep Learning (DL) Multilayer Perceptron (MLP)- abozeed2020, performou melhor em Software Bug Prediction Employing Feature Selection and Deep Learning
+Support Vector Machine (SVM)  - singh2017 performou melhor em Software Defect Prediction Analysis Using Machine learning techniques
+
+
+
+
+****************** Ferramenra JIT ***********************
+biblioteca python 
+la vc pode usar comando da propria biblioteca para commitar 
+ele commita e analisa o ultimo commit, caso tenha algum alerta ele reverte 
+vc tem um comando para forçar commitar se quiser
+
+da pra uma biblioteca python usar os comandos git no cmd?
+faz diferença linux e windowa
+
+
+
+******************TRABALHO DO ROGÉRIO******************
+olhar anotações do trabalho do rogério com a ingrid, tem POTENCIAIS AMEAÇAS e achei isso muito interessante
+
+
+****************CONVERSA DIA 27/05/2024 SOBRE A INTRODUÇÃO***************
+critico -> é um termo de SO que nao deve ser usado aqui
+
+erro X defeito X falha são coisas diferentes, nao queremos achar erros, mas sim defeitos
+
+Nem todo problma é uma falha, apenas aquilo que atrapalha a usabilidade
+
+Para comparar com trabalhos - pegar as etapas, o que cada um usou nelas, qual a minha combinação (o que usei a mais) que vai ficar melhor?
+
+Mostrar problemas do JIT (e se incorporarmos nele a predição de defeitos?)
+
+Tirar a especificidade de repositorios git pois nao se minera apenas em GIT

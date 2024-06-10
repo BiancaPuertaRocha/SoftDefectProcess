@@ -1,0 +1,83 @@
+
+Feature - implementação/nova feature/funcionalidade
+
+Erros de software podem gerar perdas financeiras para as empresas. 
+
+1 - algumas features tem mais tendencia a erros do que outras
+2 - as caracteristicas de features defeituosoas são uteis para a descobertas de features que
+são propensas a erros
+3 - codigos especificos de features podem ser especialmente propensos a erros 
+
+avaliando 7 classifiers com 3 diferentes conjuntos de atributos 
+
+Intro
+neste trabalho é apresetada uma investigação sobre predição orientada a feature. Predizendo erros
+baseando-se na granularidade das features. As features sao importantes unidades de abstração e 
+também são iportantes para o desenvolvimento agil no momento do planejamento de sprints e organização 
+de processos pois são planejados baseados nas requisições de features. 
+
+Predição de defeitos a nivel de feature se torna promissor por cona de que algumas features podem 
+ser mais propensas a erros, avaliando o historico dos projetos e de outros projetos parecidos.
+Algumas features podem ser mais ou menos propensas a erros dadas algumas caracteristicas que podem 
+ser aproveitadas na predição. 
+Por fim, features que possuem códigos muito especificos podem ter maior propensao a erros do que as demais.
+
+Este artigo tem as contribuições:
+
+- um dataset orientado a feature contendo 122 projetos que ja foram usados para pesquisas orientadas a feature
+
+- introdução de duas metricas para o treinamento de classificadores para a predição orientada a feature. Uma
+delas sendo um conjunto de metricas em oito processos baseados em feature e o segundo conjunto tem seis metricas de estrutura
+
+- avaliação da predição de defeitos orientada a features baseada no dataset em 3 conjuntos de metricas,
+um existente e dois adicionados e sete classificadores.
+
+https://www.dropbox.com/sh/cz3xqchy9538e08/AACD_-kFjC-yO0FqGfEW_bHQa?dl=0
+
+Metodologia
+1 - criar o dataset de features com rolutos ao longo do historico de desenvolvimento dos projetos
+Cada instancia do dataset é uma feature. Para isso utilizaram projetos que tem historias de revisao
+e usaram macros (#ifdef) para fazer anotação de codigos com features. Por meio de diff de commits eles
+coletaram com preprocesssor  #ifdef and #ifndef.
+para identificar commits de bug fix, eles usaram heuristica de keywords, refinando para minimizar falsos positivos
+Assim, foi possivel usar os commits de correção para identificar os commits introdutores dos bugs 
+usando SZZ algoritmo que usa as linhas modificadas para detectar o que foi ajustado e em qual 
+commit foi introduzida
+
+Jacek Śliwerski, Thomas Zimmermann, and Andreas Zeller. 2005. When do
+changes induce fixes? ACM SIGSOFT Software Engineering Notes 30, 4 (July 2005),
+1
+Davide Spadini, Maurício Aniche, and Alberto Bacchelli. 2018. PyDriller: Python
+framework for mining software repositories. In ESEC/FSE. ACM Press, 908–911
+
+2 - crias os dois novos conjuntos de metricas (feature engineering) sendo que as metricas
+sao atributos
+
+3 - selecionar e treinar com 7 tipos de classificadores 
+Foram selecionados utilizando estudos anteriores -  J48 (Decision Tree),
+LR (Regression), NB (Bayesian),  k-Nearest Neighbor (KNN)
+
+Para testar e treinar as redes foi utilizado o weka (arquivo .arff) (que ja tem os algoritmos e ferramentas
+de pre processamento)
+
+No artigo descreve como treinou no weka e quais recursos usou (pc e memoria)
+
+Depois fala como dividiu o conjunto de treino e teste
+A classe ficou desbalanceada, mas sendo assim poderia haver erros para a classe minoritaria
+para mitigar esse problema, foram gerados outros exemplos da classe minoritaria usando o o algoritmo SMOTE
+N. V. Chawla, K. W. Bowyer, L. O. Hall, and W. P. Kegelmeyer. 2002. SMOTE:
+Synthetic Minority Over-sampling Technique. Journal of Artificial Intelligence
+Research 16 (June 2002), 321–357.
+
+------------------------
+
+RQ1 What is the effect of using different types of feature metrics
+(structural and process) on prediction quality?
+
+RQ2: Which particular feature metrics contribute most strongly
+to prediction quality?
+
+RQ3: What is the effect of using different classifiers on prediction
+quality?
+
+Para a avaliação, usou precision, recall e F-score

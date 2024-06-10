@@ -1,0 +1,170 @@
+A ausência de bugs pode ser um bom indicador da qualidade do software.
+
+A predição de bugs tem como objeitivo encontrar areas do código que tem mais tendencia a ter bugs 
+
+Apesar de ser util, a predição de bugs pode requerer uma análise complexa de padrões de software e por conta dessa complexidade
+a utilização de IA para esta tarefa tem crescido
+
+
+
+Muitos modelos de aprendizado de mquina foram propostos, incluindo modelos single e modelos compostos (ensemble)
+
+Modelos single são aqueles que usam um algoritmo em particular para realizar predições e analisar dados
+
+Modleos compostos (ensemble) combinam vários algoritmos de aprendizado de maquina para melhorar o desempenho e resultados 
+
+Não existe um modelo melhor ou pior no geral, mas é preciso analisar o dominio sobre o qual ele esta sendo utilizado.
+Modelos single podem ser muito uteis e versateis quando utilizados para processamento de linguagem natural, mas a aplicação
+deles na predição de bugs pode nao ter o mesmo desempenho. Além disso, o campo da predição de defeitos mostra ampla quantidade de estudos 
+de modelos de ensemble para a tarefa
+
+Usaram projetos do Apache commons para responder as perguntas. Basicamente o objetivo pe comparar o desempenho de modelos single e modelos ensemble
+
+Como resultados eles obtiveram que os modelos de ensemble performam levemente melhor do que os single (independente do conjunto de dados estudado)
+
+TRABALHOS RELACIONADOS ************************
+Os primeiros trabalhos na área de predição de defeitos tinham objetivo de 
+encontrar o melhor algorítmo para a cnstrução do modelo e melhorar sua efetividade.
+No entanto, nenhum modelo se mostra melhor do que outro, porque sua performance
+depende do conjunto de dados que está sendo utilizado
+
+Ensemble tem sido usado para melhorar a performance
+aqui ela aponta uma pesquisa que usou a tecnica de ensemble de votos majoritários
+
+entao propoe comparar 7 modelos single e 2 ensemble (voting e random forest)
+
+METODOLOGIA ************
+
+Seção que mostra o que foi utilizado para realizar a comparação entre modelos single e ensemble
+
+ - seleção dos sistemas alvo
+	escolher sistemas que se alinhem com o objetivo da pesquisa
+
+ - coleta de dados
+ - seleção do modelo
+ - treinamento
+ - construção do modelo ensemble
+ - avaliação por métricas
+
+
+Sistemas alvo ************
+
+
+Selecionaram 2 sistemas do Apache Commons pq são softwares bem estabelecidos e são 
+amplamente adotados na comunidade open source
+
+
+Coleta de dados *********
+
+Desenvolver e coletar seu proprio conjunto de dados garante que os dados vao
+estar precisos, atualizados, bem colocados e concisos com a necessidade da pesquisa
+
+extrairam métricas para cada ARQUIVO
+
+usaram szz para verificar se o arquivo contem bug ou nao
+Borg M, Svensson O, Berg K, et al (2019) Szz unleashed: An open implementation of
+the szz algorithm - featuring example usage in a study of just-in-time bug prediction
+for the jenkins project. Association for Computing Machinery, New York, NY, USA,
+MaLTeSQuE 2019, pp 7–12, https://doi.org/10.1145/3340482.3342742, URL https:
+//doi.org/10.1145/3340482.3342742
+
+Seleção do modelo **************
+
+A escolha do modelo influencia diretamente na eficácia da predição
+
+Fase de treinamento ***********
+Pré processamento
+	- valores faltantes
+	- normalização
+	- escalonamento
+	- encoding de features categóricas
+usou o SMOTE para resolver problema de classe desbalanceada
+
+
+
+RESULTS ********************
+
+Compara os reultados de single e ensemble com objetivo de mostrar que os 
+ensemble ppodem melhorar o resultado
+
+Apresenta tabelas, 2 para cada projeto estudado (conjunto de dados)
+
+RQ1: How does the performance of single and ensemble
+models compare for specific contexts?
+
+Para cada um dos modelos ele analisa o resultado da metrica e o que aquela metrica aponta 
+tendo aquele resultado nesse modelo.
+
+Fala das metricas melhores, das iguais e por fim das que sao mais baixas do que 
+os demais modelos (justificando assim pq ela nao é "a melhor") 
+
+
+SONG 2018 - defect prediction datasets are imbalanced 
+
+
+O Random forest ainda ficou atras do NB, mas em geral é um bom cadidato considerando todas as metricas
+
+entao seria NB, RF e Voting classifier os melhores
+o EVC (voting) juntou um classificador de cada modelo
+
+O RF mitiga o problema de overfitting
+
+No geral os modelos de ensemble nao performam melhor considerando accuracy e recall (pois foram muito proximos dos single)
+EVC ficou proximo do NB em precisão, mas todos os outros modelos de single foram menores em precisao
+
+Em F1, ensemble performou melhor tbm. EM recall, o ensemble foi superado por um single, porém o RF teve tambem um recall alto
+
+Ou seja, nao performa melhor em TODAS as metricas estudadas, mas ele performa melhor na metrica AUC, que é uma metrica critica 
+dentro de classificadores, especiamente para dados desbalanceados em predição de defeitos
+
+
+RESULTS *******************************
+A performance do modelo ensemble estudado também é dependente de dataset, dessa forma o tratamento dos dados é imprescindível
+
+A esolha dos modelos para compor os ensembles e até mesmo de modelos single deve ser também dependente das características do dataset
+a ser utilizado.
+
+Os autores ressaltam que seria de grande valia trabalhos futuros que explorem tecnicas para melhorar a acurácia da predição
+Investigando o impacto da feature engeneering
+
+Ameaças:
+
+Feature selection ** sera abordado no meu trabalho
+Model selection
+Dados desbalanceados ** será abordado no meu trabalho
+Overfitting e generalização
+Tamanho do dataset
+
+
+
+
+
+
+
+
+
+
+
+
+
+Anotações posteriores
+
+Arrumar introdução falando o que é a predição de defeitos
+Falar o que esta sendo usado (ensemble)
+Falar da importancia de considerar outros tratamentos de dados (dados desbalanceados e feature selection)
+
+Arrumar trabalhos relacionados. Ja falei de trabalhos que comparam, agora explicar
+que eles nao consideram dados desbalanceados e nem feature selection
+(achar algum que considera) 
+apontar trabalho do professor que prova que o ensemble se sobressai na predição
+
+Verificar em quais lugares estou falando o objetivo do trabalho, pq nao é mais comparar modelos
+e sim apontar importantes processamentos para a obtenção de melhores resultados
+
+Escolhemos aqueles projetos pq são projetos java (java tem uma boa bibliografia, bem utilizado 
+em estudos de predição de defeito) Apache por ser bem estabelecido e 
+utilizado na comunidade
+
+
+
+verificar anotacoes do prof no pdf

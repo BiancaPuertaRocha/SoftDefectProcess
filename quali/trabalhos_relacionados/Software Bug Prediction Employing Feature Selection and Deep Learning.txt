@@ -1,0 +1,37 @@
+abozeed 2020
+
+identificar as classes com bugs assim que sao commitadas tem impacto significativo na 
+diminuição de custo.
+A Mineração de Repositório de Software é umaárea em crescimento em que ferramentas inovadoras são 
+construidas para analisar os dados de repositórios e descobrir informações importantes que podem
+ajudar na predição de defeitos. 
+
+Neste artigo, sao feitos experimentos sobre o efeito da feature selection na performance dos 
+modelos de predição de erro e para ver se os melhores resultados podems er ser obtifos por tecnicas de 
+aprendizado profundo
+
+Os resultados mostram que a feature selecion usando filtro simples (melhores 9 e 5 features)
+de 17 features nao aumentam a performance na maioria dos casos. Porem mostram que 
+os modelos de Deep learning tem melhor medidas de performance so que outras classificadores 
+para conjuntos de dados menores
+
+
+INTRO
+A maioria das empresas de software tem recursos limitados e prazos curtos, desta forma a garantia 
+da qualidade de software se torna um ponto desafiador.
+
+Ajustes de erros e testes são fatores utilizados para manter a qualidade do produto. 
+Sem duvidas a detecção do erro assim que ele chega no sistema de controle de versao
+teria um impacto significativo na resução de custo de ajuste e assim na redução de custo
+do software.
+
+Com relação aos modelos de deep learning, o modelo utilizado foi o multilayer perceptron .
+
+The data produced from the data retrieval step, with and 
+without feature selection, forms the input to four base 
+classifiers (NB, LR, C4.5 and SVM), one ensemble classifier 
+(Random Forest (RF)), two Weighted Majority Voting 
+techniques (CRWM3, CRWM5) and a Deep Learning model 
+(DL). CRWM3 is an ensemble of three classifiers namely 
+(NB, LR, C4.5), and CRWM5 is an ensemble of five 
+classifiers namely (NB, LR, C4.5, SVM and RF). 

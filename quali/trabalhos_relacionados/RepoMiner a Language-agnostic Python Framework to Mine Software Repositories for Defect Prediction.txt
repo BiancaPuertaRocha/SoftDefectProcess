@@ -1,0 +1,99 @@
+Palma2021
+
+Entendendo que a tarefa de coletar dados, calcular metricas e sintetizar os resultados
+é uma tarefa que requer grande esforço e está também muito propensa a erros e requer
+grande conhecimento tanto de programação quanto da fonte estudada, este trabalho apresenta
+o RepoMiner que é uma ferramenta que da suporte a pesquisas de software gerando
+datasets que podem dar suporte a qualquer estudo de predição.
+
+Ele coleta automaticamente dados de defeito e categoriza como indutor de erro ou neutro.
+Também calcula as metricas a serem usadas em modelos de predição de defeitos.
+Aqui é apresentada a implementacao e exemplos de aplicação
+
+
+***********Motivation and Significance
+
+A mineração do repositorio de software é uma pratica comum para investigar dados importantes 
+disponiveis em repositorios de sofware para descobrir informações valiosas sobre os softwares e projetos. 
+Essas informações são uteis para a engenharia de software para identificar melhores praticas e
+melhorar a qualidade do softwares, alocação de recursos, predição de bugs, dentre outros.
+
+A predição de classes que são propensas a defeitos usando modelos de predição
+baseados em machine learning é uma área de estudo madura, bem estudada. 
+Construir um modelo de predição de defeitos consiste em mineração de arquivos 
+de software, sistemas de constrole de verssão e sistemas de gerenciamento de issues
+para assim gerar instancias de componentes de software tais como classes e methodos.
+
+METRICAS
+As instancias sao caracterizadas (construidas) usando metricas. Por exemplo, metricas de processos 
+medem aspectos de desenvolvimento de processo, como o numero de arquivos commitados junto. Metricas 
+de código donte são relacionadas a caracteristicas estruturais de código conte e numero de linhas de codigo. 
+
+Por fim, as instancias são rotuladas como tendenciosas ao erro ou neuro e usado como entrada para classificadores
+de usando machine learning para aprender com os atrubutos (metricas). O processo de rotulação 
+é o que mais demanda tempo e esforço
+
+Para mitigar esse problema, criou-se o RepoMinier. Uma ferramenta que combina dados de bugs e metricas de extração para
+facilitar pesquisas e mineração de repositorios de software, criando datasets para estudos em predição de defeito
+
+Essa ferramenta nao reinventa a roda, ele utiliza o PyDriller para analisar o historico do repositorio e prove interfaces para
+ - identificar commits que corrigem defeitos - commits que realizam alguma açõa para corrigir o defeito
+ - identificar componentes que são propensos a geração de falhas no historico do projeto, rotulando como "failure-prone” or “neutral”
+ - extrair processos e metricas de código de linguagens especificas dos componentes e gerar o dataset de treinamento de modelos de predição de defeitos
+
+Os pesquisadores podem exportar podem exportar json e csv para manipulacao
+
+Neste artigo são apresentadas a rotulação e extração de metricas implementadas
+pelo RepoMiner e exemplos de aplicação.
+
+*** RepoMiner: Characteristics and Outline - (perfil, esboço)
+
+RepoMiner está disponível no gitHub e como pacote python
+pip install repository-miner
+https://radon-h2020.github.io/radon-repository-miner/
+https://github.com/radon-h2020/radon-repository-miner
+https://pypi.org/project/repository-miner/1.0/
+
+Consiste em dois modulos: mining e metrics 
+
+BaseMiner
+Classe abstrata que deve ser utilizada (extendida) para minerar uma linguagem especifica
+(LanguageMiner). É obrigatorio apontar um repositorio (url)
+e é opcional selecionar a branch (default é main ou master) e o path para
+clonar o repositorio no disco. 
+
+A mineração consiste em 3 metodos executados em sequencia
+
+get fixing commits() 
+identifica commits de fix. Dado o commit e a categoria do defeito, ele identifica
+com base na mensagem e arquivos modificados se é um fiz baseado em algumas regras
+definidas por Rahman. Retorna um dicionário de commits que fazem fix
+
+get fixed files()
+identifica os arquivos relevantes que são modificados pelos commits de fix 
+de defeitos
+os commits são analisados do mis recente ao mais antigo commit de fix de defeitos
+Usa o algoritmo SZZ para identificar o commit mais antigo que introduziu o defeito
+que foi corrigido pelo commit de fix, conhecido como commit bug-introducing (bic)
+Dai os commits de fix são usados junto com o nome do arquivo para criar um FixedFile
+que entra para uma lista
+
+label().
+Usando a lista de fixed files, essa função categoriza todos os snapshots
+de entre o commit bug-introducing e o fix-commit como arquivo propenso a erro
+e para cada FixedFile ele cria um objeto FailureProneFileque tem o caminho do arquivo, o hash 
+do commit no momento e o hash do commit de fix
+
+
+*********** FixingCommitClassifier
+
+tem metodos para classificar os commits de fix de acordo com o que foi definido
+por Rahman.
+
+***********BaseMetricsExtractor
+
+
+
+
+
+

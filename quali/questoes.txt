@@ -1,0 +1,29 @@
+- adicionar nome dos repositorios (done)
+- adicionar nome das linguagens (done)
+- disponibilizar dataset  (done)
+- justificar a escolha do bag-of-word acima do word embbedings (mais popular) (done)
+Relevância de Palavras-Chave:
+
+O TF-IDF destaca palavras que são mais distintivas em uma mensagem de commit, ou seja, palavras que aparecem com frequência em uma mensagem específica, mas raramente em outras mensagens. Isso pode ajudar a identificar palavras-chave que são altamente relevantes para cada mensagem.
+Redução de Ruído:
+
+Ao atribuir pesos às palavras com base na frequência em relação ao documento e ao corpus, o TF-IDF ajuda a reduzir o peso de palavras comuns que podem não fornecer muita informação sobre o conteúdo da mensagem. Isso ajuda a reduzir o ruído nos agrupamentos, permitindo que os agrupamentos se concentrem em palavras mais significativas.
+Capacidade de Generalização:
+
+O TF-IDF é uma técnica amplamente utilizada e comprovada em tarefas de processamento de linguagem natural. Sua aplicação em mensagens de commit permite que você se beneficie da experiência acumulada na comunidade de PLN para análise de texto.
+Interpretabilidade:
+
+Os pesos atribuídos pelo TF-IDF a cada palavra em uma mensagem de commit fornecem uma medida direta da importância relativa das palavras dentro da mensagem. Isso torna a interpretação dos resultados mais fácil, permitindo que você entenda quais termos são mais relevantes em cada mensagem.
+Facilidade de Implementação:
+
+O cálculo do TF-IDF pode ser facilmente implementado usando bibliotecas de processamento de texto disponíveis em várias linguagens de programação, como Python (com bibliotecas como scikit-learn ou NLTK). Isso facilita a incorporação do TF-IDF em pipelines de análise de texto.
+
+
+- dados anomalos foram desconsiderados. por que? qual o impacto na pesquisa?
+- partitioning, hierarchical, and density-based. Por que somente esses? é um estudo inicial, a pesquisa ainda (done)
+esta inicial, apliquei esse e tem alguns dados interessantes (por na conclusao - trabalhos futuros)
+- querem as respostas para as questoes na seção 5 e não na 6 (done)
+- what is the original contribution of this paper from a 'research perspective'? 
+The paper merely uses other methods that have already been proposed in the literature and used for similar purposes
+
+https://ieeexplore.ieee.org/document/9934635

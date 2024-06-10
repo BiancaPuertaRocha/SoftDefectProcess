@@ -1,0 +1,5 @@
+GHPR Dataset: A Dataset for Software Defect Prediction
+https://github.com/feiwww/GHPR_dataset
+
+Defect Analysis using pandas - issues created and resolved
+https://www.innoq.com/en/blog/2021/02/defect-analysis-using-pandas/

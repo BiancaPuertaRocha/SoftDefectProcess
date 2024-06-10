@@ -1,0 +1,85 @@
+XU2021
+As  tentativas de predição de bugs de software tem como objetivo otimizar o controle de qualidade e testes de software
+
+Neste artigo o foco é detectar os defeitos usando combinação semantica e informações de contexto 
+collect 6052 defects from 307 projects
+
+INTRO
+A quantidade de dados faz diferença ja que treinar com mais dados faz com que o modelo possa generalzar mais
+Alguns datasets como o NASA e o PROMISE são essenciais para serem utilizados com diferentes
+tecnicas para compareções 
+As pesquisas existentes muitas vezes ignoram a grande quantidade de dados disponiveis publicamente OSS (open source software) 
+focando nos datasets prontos.
+Recentes estudos neste campo leval a um aumento da disponibilidade de dados por conta dos programas
+de código livre
+
+Um defeito nao é so relacionado a sintatica e semantica mas tambem a requisitos de software
+funções e dependencias
+
+Neste artigo em vez de usar metricas tradicionais, a abordagem identifica parões de defeitos em diferentes ambientes e é
+caracterizado por subarvores de abstract syntax trees que integra informações de modificações indutoras de ajustes. Estas arvores
+são inspiradas em  graph neural networks (GNNs), estrutura de grafos aciclicos. 
+Entao usam essa classificação por grfos para construir o software de predição de defeitos
+
+Para coletar dados do de projetos de codigo aberto no github foram pesquisados em repositorios pull requests relacioados a defeitos
+assim, foi obtida a amostra a nivel de classe do fluxo de modificações.
+
+\
+Se um defeito fosse corrigido, a classe antes de ser arrumada é tratada como defeito (amostra) e a classe depois de ser consertada
+como uma amostra nao defeituosa. O numero de amostras assim fica sendo o mesmo numero para defeituosas e nao defeituosas no dataset de pull requests.
+
+Para a avaliação foi usada a metrica F1, acurácia e area under curve (AUC)
+
+Foram conduzidos experimentos para comparar esta tecnica com técnicas de aprendizado de maquina, mostrando que o desempenho 
+é melhor no presente metodo
+
+METODOLOGIA 
+
+1 - dados de defeitos sao coletados dos pull requests no github
+um pull request é aberto para uma revisao, o pull pode ser rotulado “bug”, “enhancement,” “feature,” etc
+Quando a revisao é feita, o codigo relacionado deve ser mesclado a branch principal
+	- primeiro é feita a seleção do projeto que tem pelo menos 1000 foks, pois o numero de forks tem relacao com o Pull request pq os usuarios
+	  geralmente fazem um fork antes do PR. E foram selecionados apenas projetos java e que os PRs são descritos em ingles (esses criterios para facilitar a construção das expressoes regulares)
+
+	- para identificar os defeitos, foram usadas as keywords que tendem a estar em descrição de pull requests de ajustes. Assim, o PR selecionado tem que 
+	  estar fechado e ja mesclado na branche principal, mostrando assim que a solucao foi revisada pelo time de desenvolvimento.
+	  Depois, as duas versoes do codigo sao analisadas e o commit que faz a modificacao é coletado, a modificacao mais recente é o commit de fix e a anterior é o de insersao de bug
+
+	- cada commit de bug insert tem dados de projeto, ensagem de commit, linhas modificadas entre outros. O código fonte foi extraido baseado no commit de defeito e correção.
+	  
+2 - para cada instancia defeituosa, o codigo é parseado em estrutura semantica e informações redundantes sao descartadas
+É necessário criar uma representação para o defeito. A semantica, apesar de muitas vezes ignorada, é uma das ferramentas para a construção desta representação
+foi usado ASTs para extrair a semantica na modelagem do codigo fonte. 
+
+
+ASTs é um tipo de arvore baseada em estrutura para representar sintatica e semantica do codigo.Para reduzir o ruido, foi feita a poda da arvore
+
+
+3 - conceitos extraidos para a construção de uma compreensao de alto nivel dos trechos com defeito
+Apos a constr~ção, foi obtida a arvore da estrutura do codigo. Os defeitos de codigo estao nao so relacionados a sintaxe mas tambem ao contexto, semantica. Mesmo
+duas instancias identicas de codigo podem se diferenciar pelo contexto de aplicação.
+
+O conceito das features \(colunas) de modulos defeituosos corresponde ao modelo de bag of words (incluindo semantica e contexto
+a semantica sendo a informação extraida da sintaxe, nome de variavel, de metodo e código.
+o consexto se refere a informações significativas extraidas do projeto e das modificações que induzem erros
+
+para gerar o conjunto de topicos é usado o  latent Dirichlet allocation (LDA) que identifica tópicos nos
+documentos.
+
+Os topicos foram convertidos em um vetor de numeros (word embeddings) baseado na distribuição hipotetica
+com o word2vec.
+
+
+4 - graph neural networks sao adaptadas para aprender a representação de semantica e conceitos dos defeitos
+Com a representação do defeito, um grafo supervisionado baseado em GNN pôde ser desenvolvido
+
+
+
+
+
+
+
+
+
+
+

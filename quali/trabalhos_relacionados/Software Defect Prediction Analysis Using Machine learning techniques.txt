@@ -1,0 +1,135 @@
+khalid2023
+
+existe um ansio para obter softwares livres de defeitos, para poupar gastos até mesmo com testes. 
+Dessemodo, foram examinadas varias técnicas de machine learning em datasets públicos com o proposito de 
+melhorar em vista das pesquisas ja existentes
+
+Aplicação do kmeans para a categorização das classes e depois aplicação de modelo de classificação.
+Para avaliação foram usados precision, recall, f-measure e matriz de confusao
+
+The results indicate that all the ML and
+optimized ML models achieve the maximum results; however, the SVM and optimized SVM models
+outperformed with the highest achieved accuracy, 99% and 99.80%, respectively. The accuracy of
+NB, Optimized NB, RF, Optimized RF and ensemble approaches are 93.90%, 93.80%, 98.70%, 99.50%,
+98.80% and 97.60, respectively. In this way, we achieve maximum accuracy compared to previous
+studies, which was our goal
+
+INTRO
+Software defect prediction (SDP) é feita para melhorar a qualidade de software e reduzir o custo dos testes usando 
+categorização ou classificação usando tecnicas de machine learning 
+
+SDP é parte do ciclo de vida do software. Ajuda a criar softwares de mais baixo custo e tempo de desenvolvimento, atendendo
+melhor a demanda do cliente. As organizações querem fazer a predição dos erros para manter a qualidade do software e satisfação do 
+consumidor
+
+Algumas das tecnicas de aprendizado de maquina que podem ser utilizadas são:  Decision
+tree, Naïve Bayes (NB), Radial basis function, Support Vector Machine (SVM), K-nearest
+neighbor, Multi-layer perceptron and Random Forest (RF)
+
+Iqbal, A.; Aftab, S.; Ali, U.; Nawaz, Z.; Sana, L.; Ahmad, M.; Husen, A. Performance analysis of machine learning techniques on
+software defect prediction using NASA datasets. Int. J. Adv. Comput. Sci. Appl. 2019, 10, 300–308. [CrossRef]
+
+Este artigo usa um conjunto de dados quejá existe (NASA 2005) para ter foco na melhoria 
+
+
+MOTIVATION
+
+CONTRIBUTION
+
+RELATED WORK
+apontam que o objetivo do trabalho em relação aos outros é melhorar a acurácia
+
+MATERIAIS E METODOS
+**Construção do modelo
+
+primeiro usa o k-means para a categorização, depois aplica a classificação nas features selecionadas e avalia a performance
+por meio  precision,
+accuracy, recall, f-measure, performance error metrics and a confusion matrix
+
+Analisando as soluções de machine learning, o objetivo çe melhorar a performance ou acurácia nesses modelos
+
+**Tecnicas
+****pré processamento de dados 
+498 tuplas e 22 features
+aplicação da normalização
+
+****Feature selection
+reduzir o numero de features, a complexidade e processamento necessário, além de prevenir o overfitting do modelo treinado
+eles selecionaram os top 10 atriburos que sao negativamente associados (aumento de uma causa a diminuição de outra)
+
+****Classification
+Aprendizado de maquina supervisionado é aplicado no conjunto de dados
+junto aos rotulos. O conjunto é dividido em teste (1/3) e treinamento (2/3)
+Primeiro é usado o conjunto de treino junto aos rotulos e depois 
+usado o conjunto de teste (que ainda nao foi visto pelo modelo) sem os rotulos
+Ao utilizar o Random Forest, foi usado 1000 como numero de arvores
+e randon state para os classificadores como 42. assim, foram aplicadas as metricas de avaliação para os classificadores
+
+
+****SVM - Support Vector Machine
+Ao contrário da regressão linear, o SVM é mais capaz de trabalhar com dados não separáveis linearmente, então é a melhor escolha para datasets mais complexos.
+É um modelo supervisionado de machine learning na maioria das vezes aplicado com apenas duas classes de saida
+Performa melhor se o conjunto de dados tem dados limitados
+Ele desenha uma delimitaçãi entre os dois conjuntos de dados de categorias diferentes
+Neste trabalho é aplicado usando random state como 42
+
+****NB - naive bayes
+Naive Bayes é um algoritmo que gera uma tabela de probabilidades a partir de uma técnica de classificação de dados.
+Calcula as probabilidades em todas as possibilidades. Funciona melhor quando nao há associação entre as features do dataset
+Tambem usa Random State 42 e um NB Gaussiano
+
+**** RF - Random Forest 
+No nível mais alto, uma random forest é uma coleção de árvores de decisão que são construídas de forma ligeiramente diferente
+ no mesmo conjunto de dados que "votam" juntos para produzir um modelo melhor que uma árvore individual
+Combina varios classificadorss (ensembled) para melhorar a saida
+O numero de arvores te  um impacto significativo na acurária, porem ela começa a ser constante
+em um determinado numero
+Neste caso foram aplicadas 100 arvores e random state 42. 
+
+****Ensemble
+Mistura varios modelos preditores para prover resultados superiores
+Nesse modelo, um dos modelos serve de base e o outro como membro (?)
+Nesta classificacao, é usado NB como base e SVM e RF como membros (Random state 42)
+
+Ensembles são combinações de diferentes modelos chamados de “modelos fracos” ou “modelos base” para a criação de um modelos mais forte. E existem 3 principais tipos de ensemble.
+
+Quando se cria um modelo de machine learning devemos buscar por um equilíbrio entre variância e viés. Alguns modelos por suas peculiaridades matemáticas possuem maior variância ou maior potencial de overfitting e obter um viés. O ensemble é uma tentativa de achar esse equilíbrio.
+
+Existem 3 principais formas de se agruparem modelos:
+
+Bagging
+Boosting
+Stacking
+Bagging:
+Parte do pressuposto de reunir diferentes “modelos base”, cada um treinado em bootstrap samples — pequenas amostras do seu dataset, sendo que essas amostras devem ser semelhantes entre si — e obter a média dos resultados entregue por cada modelo e assim reduzir a variância.
+
+Para regressão pode se obter a média dos resultados preditos. Para classificação pode ser hard-voting(a classe mais dada vence) ou soft-voting pela média das probabilidades entregue.
+
+Random forest é um ensemble que utiliza um bagging de decision trees.
+
+Boosting
+O seu foco principal, diferente de bagging, é reduzir o viés e não a variância. Os modelos não são treinado em paralelo, mas sim em sequência, utilizando os erros dos primeiros modelos treinados para fazer ajustes nos pesos matemáticos dos próximos modelos.
+
+Existem algumas formas diferente de se realizar o “boosting”, que envolvem conceitos matemáticos mais profundos e não serão abordadas nesse texto.
+
+Stacking
+Funciona a partir da criação de um meta-modelo. Utilizam-se “modelos fracos” em uma parte do dataset de treino e a outra parte do dataset de treino utilizará um modelo mais robusto, como redes neurais. No entanto, as predições dos modelos fracos também entrarão com “input” do modelo robusto.
+
+Conclusões
+As diferentes formas de ensemble podem ser aplicadas e implementadas e variantes delas podem ser criadas para melhorar uma análise preditiva, no entanto, quanto mais sofisticado aumentará os custos computacionais e demandará maiores bancos de dados.
+
+Existem diversos modelos já obtidos em bibliotecas como Sklearn que já implementam esses tipos de ensemble, como random forest, gradient boosting, Xgboost, adaboost.
+
+(https://medium.com/dados-e-saude/machine-learning-e-ensembles-780f3a8aa36d#:~:text=Ensembles%20s%C3%A3o%20combina%C3%A7%C3%B5es%20de%20diferentes%20modelos%20chamados%20de%20%E2%80%9Cmodelos%20fracos,equil%C3%ADbrio%20entre%20vari%C3%A2ncia%20e%20vi%C3%A9s.)
+
+
+
+
+Nos resultados, eles falam que usaram python para a manipulação de dados
+
+
+Grafico de barras para as metricas de cada algoritmo
+Também usam um otimizador PSO
+Depois usam metrica de performance de erro
+Mean Absolute Percentage Error (MAPE), Root Mean Square Error (RMSE) and
+Mean Absolute Error (MAE)

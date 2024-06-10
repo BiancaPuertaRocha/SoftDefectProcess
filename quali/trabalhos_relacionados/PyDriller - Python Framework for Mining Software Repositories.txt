@@ -1,0 +1,75 @@
+Spadini2018
+
+Repositorios de software tem registros historicos e valiosos do desenvolvimento de sistemas de software
+A mineração de repositorio de software é considerada uma das mais interessantes e crescentes areas na engenharia de software
+MRS foca em extrair e analisar dados disponiveis 
+
+Mesmo assim, poucas ferramentas publicas tem sido desenvolvidas para a MRS
+
+PyDriller é uma framework python que facilita o processo de mineração git
+
+Nesse trabalho eles comparam o Pydriller com o GitPython que é a ferramenta anterior
+e provam que o Pydriller alcança melhores resultados com menos complexidade
+
+INTRO
+
+As tecnicas de ineracao de repo de software permitem quem os pesquisadores
+analizem a informacao gerada por meio de processos de desenvolvimento de software
+como codigo, controle de versao, metadados e reports de issues
+
+com essa analise é possivel obter informações e descobrir padrçoes 
+
+entre as diferentes fontes de informacao, o git é a mais utilizada. Sistemas de controle de
+versao podem procer informacoes precisas sobre o codigo fonte e sua evolução,
+alem dos desenvolvedores e mensagens de commit (que explicam a razao do commit - modificacao)
+
+Exitem algumas ferramentas (frameworks) que interagem com o git dependendo da linguagem de programacao
+utilizada. O GitPython~é o mais usado pata python. Porem essas ferramentas acabam sendo 
+dificeis de utilizar, pois encapsulam todas as features do git, fazendo com que mesmo 
+para uma coleta simples, o codigo seja grande e complexo. 
+
+Aqui é apresentado o PyDriller que é uma famework que ajuda a minerar os repositorios.
+Prove uma interface simples para extrair informacoes de repositórios git, como diffs, codigo fonte,
+commit, entre outras.
+
+Além da coleta, os dados podem ser facilmente exportados em um csv 
+
+PYDRILLER
+O pydriller é construido em cima do gitPython e facilita a extracao de repositorios git. A diferença 
+mais significativa entre as duas é que no gitPython é oferecido quase todas as features do git 
+enquanto o pydriller so lida com as mais importantes para performar tarefas de MRS
+escondendo a complexidade presente no gitPython
+
+
+
+*************Domain Object
+Commit - contem toda a informacao a respeito do commit (hash, commiter nome e email), mensagem datas, lista de 
+commits pais (hashes) e arquivos modificados.
+Esses objetos sao carregados apenas quando utilizados, pois sao pesados,
+
+Modification - objeto que contem informacao do arquivo modificado em um commir com os campos
+
+Old path: old path of the file (can be None if the file is added).
+New path: new path of the file (can be None if the file is deleted).
+Change type: type: ‘Added’, ‘Deleted’, ‘Modified’, or ‘Renamed’.
+Diff: diff of the file as Git presents it (starting with @@ xx,xx @@).
+Source code: source of the file (can be None if the file is deleted).
+Added: number of lines added.
+Removed: number of lines removed.
+Filename: The name of the file.
+
+
+********Architecture
+RepositoryMining - é
+
+
+
+
+
+
+
+
+
+
+
+

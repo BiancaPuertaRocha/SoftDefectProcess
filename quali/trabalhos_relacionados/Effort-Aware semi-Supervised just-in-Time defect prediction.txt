@@ -1,0 +1,70 @@
+Li2020
+
+*******INTRO
+os desenvolvedores gastam um tempo significativo para testar e debugar os softwares. A predição
+de defeitos pode economizar tempo e reduzir o custo. 
+
+Ao contrario de predições de defeitos baseadas em arquivos, modulos ou pacotes, o JIT 
+tenta idenficar modificações no código que estão propensas a erros. 
+Esses dados de modificações podem ser extraídos de bases de dados que utilizam controle de 
+versionamento, como Git, e seus reports de bugs.
+
+Esse tipo de predição tem muitas vantagens em relação aos demais
+1) as predições em nível de modificação de código requerem menos esforço o que as 
+predições a nível de arquivo, modulo ou pacotes (presentes na literatura) 
+(2) é muito mais simples identificar o desenvolvedor responsável e assim delegar a 
+correção para o mesmo 
+(3) o desenvolvedor ainda tem a lógica do código em memória e 
+não precisará re-lembrar, minimizando o tempo gasto na correção
+
+a aquisição de dados rotulados é uma tarefa que depreende um grande esforço humano 
+e com habilidades especificas 
+
+Metodos semi supervisionados podem aumenra a acuracia com poucos dados rotulados e um 
+grande conjunto de dados nao rotulados
+
+*****Just-in-Time defect prediction
+
+Mockus2000 foram os primeiros a estudar a predição de defeitos a nivel de modificacão. 
+Eles utilizaram algumas metricas como numero de arquivos modificados e numero de linhas acidionadas
+para fazer a predição de defeitos de acordo com as informações de modificação coletadas. Assim, na literatura,
+foi crescendo o interesse dos pesquisadores por predição de defeitos a nivel de modificação de código.
+
+kondo2019 ------------------------------------
+
+Muito se utiliza as modificações em linhas de código para a predição de erros, mas existem
+metadados dessas linhas (metricas de contexto) que também podem contribuir nessa predição. 
+Essas metricas sao por exemplo numero de palavras e palavras-chave dentro das linhas modificadas
+
+INTRO
+Os desenvolvedores tem recursos limitados para validação e teste de software. A predição de defeitos
+pode ajudar a reduzir esses custos e dar suporte a esses trabalhos.
+
+Os trabalhor de predição de defeitos a nivel de modificação também podem ser chamados de predição
+de defeitos just-in-time.  
+A predição just-in-time fornece o beneficio de poder identificar commits propensos a erros no momento
+em que ele está sendo enviado, fazendo com que o tempo de resposta e correção seja menor.
+
+As linhas em volta das modificadas sao as linhas de contexto e por isso nesse trabalho elas sao consideradas
+pois podem ajudar na predição dos defeitos.
+
+O objetivo do projeto é estudar se essas linhas melhoram a performance da predição de defeitos
+
+
+--------------------------------------------------------------
+**** Semi-Supervised learning in traditional defect prediction
+tipo de aprendizado de maqiona que utiliza poucos dados rotulados e muitos dados nao rotulados.
+apesar de ja ter sido utilizado para a predição de erros tradicional, tem poucos estudos sobre seu
+uso na predição JIT e ainda existem estudos que dizem que modelos semi supervionados se sobressaem aos demais
+
+
+
+METODOLOGIA
+***pré-processamento
+JIT em 4 passos
+1 - extração de dados commitados em cada modificacao
+2 - extração de metricas
+3 - treinamento de precição do modelo baseado nos atributos e categorias do conjunto de treinamento
+4 - para novas modificações, usar o modelo treinado para predizer
+se as novas modificações induzem ou nao erros depois de aplicar a mesma engenharia de atributos
+

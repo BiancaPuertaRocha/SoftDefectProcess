@@ -1,0 +1,66 @@
+mahbub2023
+
+Intro
+Um defeito é um passo, processo ou definição de dado incorreto que impossibilita o software
+de funcionar corretamente. Informalmente chamados de Bugs. Vustam bilhoes de dolares para a economia todo ano.
+
+Mesmo adotando várias politicas de controle de qualidade, os defeitos ainda permanecem nas versões de lançamento
+O time de controle de qualidade tende a focar am áreas de código de maior risco, que é essencial para 
+a garantia da qualidade de software.
+
+A predição de defeitos, alem de identificar os defeitos antes do lançamento para o usuário final, também ajuda
+o time de controle de qualidade de software a priorizar o esforço.
+
+
+just-in-time (JIT) defect prediction tem ganhado muita visibilidade pois ajuda a identificar os possiveis bugs em tempo de commit
+de modificacoes de codigo. Esse mecanismo pode promover um refinamento de localização do defeito, combinado a identificacao do defeito em linha de codigo
+
+deep learning tem sido usado tanto para a predição a nivel de linha de codigo quanto para o JIT, mas o desempenho no JIT é sub-otimo.
+Isso porque os conjuntos de classe sao desbalanceados (muito menos instancias defeituosas) e muitas vezes o dataset foi construido
+considerando um menor numero de projetos ou projetos de uma unica organização, o que impacta na capacidade
+de generalização do problema.
+
+Para mitigar esses desafios com os datasets existentes, foi criado o defectors. é um dataset grande e por isso tem grande representatividade. Possui as classes balanceadas de
+instancias que possuem defeito e instancias que nao possuem 
+Tem diversidade de aplicações, projetos e organizações coletadas
+
+DATASET DESCRIPTION AND USAGE
+o dataset de treinamento mantem a distribuição de 1:1 em instancias defeituosas e nao defeituosas
+mas o de teste mantem a proporção normal
+
+
+Construção do dataset
+24 projetos, 18 dominios e 24 organizações (python)
+- selecionaram os repositorios baseando-se na popularidade e outros aspects como um consistente rotulo de issues
+- identificaram as modificacoes de bug fix
+- delas, identificaram as modificacoes indutoras de bugs 
+- minimizaram o numero de falso positivo e falso negativo aplicando 5 niveis de filtro de ruido (?)
+- assim tiraram uma amostra de modificacoes livres de defeitos com 95% de confiança e 5% margem de erro
+- por fim, armazenaram esse dataset como treinamento, validacao e teste.
+
+Eles diversificaram pois a maioria dos datasets sao construidos utilizando repositorios java e esse usa python
+
+- ordenaram os projetos python do github em ordem decrescente de estrelas
+- depois investigaram manualmente a lista de repositórios para achar projetos mais maduros
+- em cada repositorios identificando pull request de bug-fix 
+depois eles usaram uma serie de critérios para selecionar os repositorios que estao descritos no artigo
+para garantir que realmente o numero de commits com bugs seria significativos
+
+Eles selecionaram commits de bug fix e depois de bug inducing a partir destes.
+Depois aplicaram um filtro pois o SZZ algoritmo usado para achar os bug inducing a partir do bug fix
+deixa falsos positivos e falsos positivos.
+Usaram varios filtros inspirados pela literatura
+- filtragem usando o numero de de bug inducing ligados com um unico bug-fix
+- filtragem usando o numero de bug fix commits ligados em um bug inducing 
+- filtragem usando o numero de linhas modificasas 
+- filtragem usando o tipo de arquivo
+- filytragem usando a natureza 
+- filtragem por natureza da modigicacao, por exemplo erro de digitacao por ser um erro trivial
+
+por fim foram descartados os commits de projetos que tem apenas um commit de bug-fix
+
+por fim separaram em dois:
+dataset para JIT prediction e para predição por meio de arquivos fonte. 
+para o JIT o input é o git diff e para o baseado em arquivo fonte é o conteudo do arquico depois do commit. 
+Para ambos existe o train, test e validation
+

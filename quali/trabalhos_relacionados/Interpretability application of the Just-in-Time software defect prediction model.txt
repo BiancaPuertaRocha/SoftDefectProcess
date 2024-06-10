@@ -1,0 +1,43 @@
+Zheng 2022
+
+INTRO
+Os erros de software sao potemciais fontes de erros de sistemas que podem afetar a área
+militar, economica, policita e até social.
+
+Dito isso, os reparos se tornam uma atividade critica na manutenção de de software, mas também 
+é um ponto que consome muito tempo e recursos.
+
+as despesas de ajustes de defeitos podem chegar até a 3/4 do custo total do desenvolvimento.
+
+Revisões e testes de software podem diminuir a incidencia de erros, porem quanto maior a 
+complexidade do softare também maior é a dos testes e revisões, tornando-os ineficiente 
+pois fica cada vez mais dificil encontrar os problemas em tempo de lançamento de versao. 
+
+para mitigar esses problemas, existe a predição de defeitos Just-in-time. É a predição de defeitos 
+feita assim que a modificação é publicada (e a cada modificacao). 
+É a análise do codigo e a probabilidade da insersão de algum defeito por meio da modificação feita
+
+Aspectos
+
+Fine-grained: refinamento - a predição a nivel de código foca no refinamento das entidades 
+mais do que em modulo ou arquivo. COmo resultado, os desenvolvedores podem passar menos tempo
+e esforço revisando o código 
+
+Just-in-time - a predição em tempo real pode ser usada para predizer os defeitos quando um 
+código é enviado. Nesse ponto, os desenvolvedores ainda tem em memória o código que 
+desenvolveram e nao precisam depreender tempo para entender novamente ou relembrar o que foi feito
+fazendo com que o defeito seja corrigido mais rapidamente
+
+Easy to trace: rastreavel - a informação do desenvolvedor está salva nas modificações, 
+assim, é facil rastrear quem foi o desenvolvedor que introduziu o defeito e facilita na hora da analise
+além de ajudar o alocação da correção para determinado desenvolvedor
+
+BACKGROUND
+JIT DEFECT PREDICTION 
+
+Durante o desenvolvimento de software, são necessarias modificacoes no codigo para remover
+os defeitos, melhorar funções, reconstruir codigo ou ate melhorar a performance. 
+Algumas dessas modificações podem introduzir erros. 
+Os desenvolvedores acabam necessitando uma predição de defeitos que possa de forma rapida e assertiva
+determinar se uma mudança commitada contem algum "bug" (defeito) nou é um código limpo (livre
+de defeito).

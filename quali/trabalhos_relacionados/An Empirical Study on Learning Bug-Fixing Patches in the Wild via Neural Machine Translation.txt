@@ -1,0 +1,3 @@
+Localizar e concertar bugs é a tarefa que mais consome tempo e esforço dos desenvolvedores de software
+
+ESSE ARTIGO FOI DESCARTADO PQ FALA DE CORREÇÃO AUTOMATICA

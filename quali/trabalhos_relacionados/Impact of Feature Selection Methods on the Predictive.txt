@@ -1,0 +1,18 @@
+feature selection é uma boa ferramenta para mitigar a maldição da dimensionalidade em conjuntos de dados a serem estudados e tem se destacado no contexto de predição de defeitos.
+
+neste trabalho eles estudam vários metodos de feature selection em datasets de defeitos de software de 4 repositorios de software. 
+Mas a feature selection perfeita depende do dataset e do classifier que vai ser utilizado
+
+feature selection aumenta a eficiencia dos modelos melhorando a qualidade dos dados, selecionam features que representam bem o modelo sem perder grande quantidade de dados significativos,
+ou seja, conjunto que melhor representa o dataset
+
+Research Methods
+
+Feature Selection
+	Filter Feature Ranking (FFR) Methods - considera as propriedades latentes do dataset para ranquear as features.
+	as features recebem scores e sao selecionadas baseando-se neles e os scores sao calculados baseado na tecnica que esta sendo usada
+	
+	Filter-Feature Subset Selection (FSS) Methods - as features sao avaliadas e ranqueadas em importancia com base em um metodo de pesquisa que serve como avaliador
+	ele avalia a importancia da feature na melhor predição e performance 
+
+	Wrapper-Based Feature Selection (WFS) Methods - 

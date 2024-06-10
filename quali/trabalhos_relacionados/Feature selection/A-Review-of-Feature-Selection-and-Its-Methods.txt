@@ -1,0 +1,113 @@
+Venkatesh2019
+
+FS - Feature selection
+
+Dados estão crescendo cada vez mais com o aumento da quantidade de aplicações. Isso se torna um 
+gargalo para a análise de dados que precisa lidar com muito mais dados principalmente quanto se 
+trata de machine learning pois torna o modelo mais caro e demorado em questao de deteccao de padroes.
+usar FR não so reduz a quantidade de dados mas também evita o overfitting no modelo
+
+
+INTRO
+
+Os dados aumentam exponencialmente e enquanto isso a qualidade dos dados requeridos para Data Mining
+reconhecimento de padroes, processamento de imagem e algoritmos de machine learning diminuem.
+
+a maldição da dimensionalidade -  uma maior dimensao de dados leva a prevalencia de ruidos 
+dados irrelevantes ou redundantes, que podem causar overfitting nos modelos. Pra lidar com essa
+maldição da mensionalidade, uma das tecnicas mais utiliz\adas é o FS para a redução da dimensionalidade
+FS é usado para limpar dados redundantes e irrelevantes e assim melhora a performance dos modelos.
+
+O subconjunto de features selecionada por FS é baseado na redundancia e relevancia das features
+
+Caracteristicas das features:
+Yu, L., H. Liu. Efficient Feature Selection via Analysis of Relevance and Redundancy. – J. Mach. 
+Learn. Res., Vol. 5, 2004, No Oct, pp. 1205-1224.
+Yu and Liu [1] in 2004 
+1) Noisy & irrelevant; 
+2) Redundant & Weakly relevant; 
+3) Weakly relevant and Non-redundant; 
+4) Strongly relevant
+
+as features sao uma importante parte para determinacao de hipoteses e modelos de predição
+e quanto maior o numero de features, maior o numero de hipoteses (de acordo com a quantidade de possibilidades
+do atributo)
+Assim, ao diminuir o numero de features irrelevantes, tambem se diminui o numero de hipoteses
+
+A relevancia da feature é baseada nas caracteriscas dos dados (estatisticos) e nao nos seus valores 
+
+Features irrelevantes ou redundantes nao tem a cer com informações inuteis, mas sim 
+com features que nao tem relacao estatitica com as demais. 
+Individualmente toda feature é " irrelevante" mas se torna relevante quando associada às demais
+
+classificados em 3 tipos FS baseados em interações com o modelo de aprendizagem (filter, wrapper, embedded)
+ - filter: baseados em medidas estatisticas - independente de algoritmos de aprendizagem
+Ex: Information gain [3], chi-square test [3], Fisher score, correlation coefficient, and variance threshold a
+ - wrapper: a performance desse metodo depende do classificador. esse metodo é mais caaro computacionalmente
+por conta dos passos de cross-validation (calidacao cruzada), mas é mais eficaz do que o metodo de filtro
+Ex: Recursive feature elimination [4], Sequential feature selection algorithms [5], and Genetic algorithms
+ - embedded: usa tecnicas de ensemble learning (usa decisao coletiva, por isso é melhor que as tecnicas anteriores)
+Ex: Random Forest
+
+
+
+PROCEDIMENTO
+é comprovado pela literatura que FS ajuda na performance das predições, escalabilidade e capacidade de 
+generalização do classificador. Além de reduzir a complexidade do modelo, armazenamento e custo
+
+1 - determinar a direção: foward search (adociona as features ao ponto que vai testando e que 
+são relevantes). Backward search (features sao removidas recursivamente ao ponto que nao 
+sao mais relevantes). Random search (adicionando e removendo para construir o subconjunto)
+
+2 - determinar a estratégia: 
+busca sequencial - features adicionadas sequencialmente em um conjunto vazio ou
+removidas do conjunto completo (sequential foward/backward selection)
+As features eleminadas nao sao consideradas na proxima iteração 
+
+3 - criterio de avaliação: 
+melhores features sao selecionadas de acordo com o criterio de avaliação. 
+baseado nos metodos de avaliação, FS metodos sao classificados 
+
+Filter - Pearson’s correlation [33], Linear Discriminant 
+Analysis (LDA), ANOVA, Chi-square [34], Wilcoxon Mann Whitney test [35], and 
+Mutual Information (MI) [36-39].
+
+Wrapper
+Embedded
+Hybrid
+
+4 - criterio de parada: especifica quando FS deve parar. ou seja, quando um subconjunto 
+otimo (otimizado) foi encontrado. 
+
+5 - validação dos resultados
+para validar os resultados, varias tecnicas podem ser utilizadas
+a validação cruzada é a mais utilizada e pode ser observada na matriz de confusao
+outras sao:
+Error Rate
+Recall
+ROC curva
+Precision
+F-score/F-measure
+
+Filter method *****
+no metodo de filtro a cada feature é dada uma pontualção calculada por medida estatistica
+Assim, as features sao organizadas em  decrescente e a partir disso um subconjunto é
+selecionado usando um threshold.
+O metodo de filtro ocupa menos tempo computacional. Como a correlacao entre variaveis 
+independentes nao é consideradas, algumas features redundantes podem ser selecionadas
+
+Wrapper *****
+aqui o FS é feito como uma caixa preta (quando nao se tem conhecimento sobre o algoritmo
+utilizado previamente). 
+As features sao selecionadas por meio de algoritmos indutivos.
+Apesar de ser um bom método para acurácia, são ruins para eficiencia computacional.
+
+Embedded *******
+as melhores features sao selecionadas durante o processo de aprendizagem (e nao no pre-processamento, como
+ocorre nos anteriores)
+Evita o treinamento sempre que uma feature é adicionada
+melhora a acurácia
+melhora o custo computacional
+
+
+

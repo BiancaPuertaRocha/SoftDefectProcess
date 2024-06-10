@@ -1,0 +1,31 @@
+BEIRUT - MINERAÇÃO DE REPOSITÓRIO PARA PREDIÇÃO DE DEFEITOS
+
+Dado um repositorio de software no GitHub, ele seleciona as K melhores versões 
+baseada no rate (?) gera o training set e conjunto de teste para predição de defeitos com 
+as metricas extraidas nas versoes selecionadase por fim cria uma predição utilizando essas metricas
+
+Intro
+Os software estao presentes em áreas importantes e por isso podem causar danos significativos caso 
+hja algum erro (tanto aos negócios quanto a vida dependendo do software). Logo, tem sugido muitas pesquisas
+para a criação de ferramentas que ajudem os testers e developers a identificar os componentes que sao mais
+propensos a geração de erros. 
+
+A predição de defeitos tem o objetivo de detectar os artefatos que sao mais propensos a geração de erros
+baseando-se em metricas dos arquivos presentes nos repositorios
+
+Essas metricas vem do ~ódigo fonte e refletem as mudanças no codigo ao londo do tempo de desenvolvimento
+A escolha destas meticas tem impacto significativo na performance da predição. Além das metricas, 
+cada componente do training set deve conter a identificação se o componente é defeituoso ou nao
+
+A seleção da referencia de defeito de software é um desafio pois tem evoluido ao longo do tempo na literatura
+e também vem sendo adicionadas outras metricas ao ponto que o projeto possui outras metricas para a referencia
+além de também as mais recentes irem melhorando as que ja existem
+
+Algumas referencias acabam sendo muito especificas para um projeto em questao possuindo metricas mais especificas
+que podem nao servir para outros projetos.
+
+O BEIRUT entao foi feito para analisar o projeto e criar a referencia com as metricas necessárias 
+gerando o conjunto de teste e o conjunto de treino. Além dos dados do GitHub, também usa informações do Jira sobre as issues 
+para obter os rotulos dos defeitos pra cada componente.
+
+Para a interação com a ferramentas, eles criaram uma aplicacao web

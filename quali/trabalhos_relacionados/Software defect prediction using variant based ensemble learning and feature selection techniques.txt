@@ -1,0 +1,17 @@
+Ali, 2020
+
+O teste de software é uma atividade importante do processo de certificação de qualidade, que 
+confirma a entrega de um produto de qualidade sem defeito.
+Comparado com outras atividades do ciclo de vida do software, o teste é o mais cado e consome mais 
+recursos que os demais. É um grande problema da industria de desenvolvimento de software
+reduzir os custos sem interferir negativamente na qualidade da entrega. A predição dos defeitos
+com base no historico é uma alternativa para a resulução desse problema. Assim, em vez de 
+realizar a testagem de todos os componentes, somente aqueles que foram preditos como possiveis bugs são testados e 
+revisados
+
+
+considera que existem cinco estagios do método propostp
+
+ - seleção do conjunto de dados
+ - seleção de variante 
+ - pre processamento e feature selection 

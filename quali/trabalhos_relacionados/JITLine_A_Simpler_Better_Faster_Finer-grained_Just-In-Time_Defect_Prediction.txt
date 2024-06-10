@@ -1,0 +1,76 @@
+pornprasit2021
+
+*****************Resumo
+Uma ferramenta para analisar o comit em tempo real e classificar se ele 
+é um commit que possivelmente introduz defeitos além de detectar em quais linhas
+
+******************Intro
+ciclos de desenvolvimento de software atuais tendem a ter menor periodo de tempo que faz com que muitas vezes seja
+desafiador para o mantimento da qualidade de software (SQA - software quality assurance) e boas praticas. Por isso, algumas praticas 
+de code review tem sido amplamente utilizadas paradetectar estes erros antes do CI/CD. Porem os times de SQA nao conseguem ver TODAS as
+linhas de codigo devido aos recursos limitados. 
+Para isso, são propostas ferramnetas de predição de defeitos, para cetectar se o commit
+tem potencial de introdução de erro. Essas ferramentas ajudam a priorizar commits no momento das reviews. 
+Tem surgido abordagens de machine learning para detectar esses commits mas muitas vezes eles dependem de resursos feitos a mao para treinamento
+e tambem violam os principios de JIT (Just In Time) que deve aprender e predizer conforme as entradas. Nestes modelos eles assumem que existem 
+os dados de treinamento rotulados e dados de teste nao rotulados
+Neste trabalho eles tem o objetivo de reproduzir esse experimento, porem removendo a necessidade de um dataset de treinamento. 
+Para medir o modelo, utilizam:  F-measure, False Alarm Rate, Distance-to-Heaven, Precision, and Recall
+Modelo deles JITLine
+
+****************Background
+Commits são muitas vezes descritos como inserção de feature,  bug fix, refatoração etc. Eles possuem informações importantes sendo elas:
+mensagem de commit, mudança no código e meta dados (nome do autor, data). A mensagem de commit é usada para descrever a semantica das 
+modificações de código e a mudança de codigo mostra onde o código foi modificado (linhas adicionadas, deletadas, modificadas). 
+Geralmente existe uma fila de commits que os responsaveis pela qualidade de software precisam revisar. Mas levando em conta os recursos humanos limitados,
+visa-se utilizar ferramentas para detectar apenas os mais ariscados.
+
+EALR - usa modelo de regressao logistica com metricas de software commit-level (commitlevel software metrics) para ranquear os commits que podem introduzir defeitos 
+considerando o esforço de inspeção (probabilidade normalizada pelo tamanho do commit). Mas essa tecnica requer feature engineering manual.
+https://ieeexplore.ieee.org/document/6341763
+
+DeepJIT - deep learning framework usa CNN para gerar features automaticamente. commit message e code change como input para a CNN. Gera
+vetores para as mensagens de commit e outro para code changes. concatena os dois gerando a probabilidade de introducao de defeito
+https://ieeexplore.ieee.org/document/8816772
+
+CC2Vec - entende o commit como uma estrutura com hierarquia, construi um vetor por meio do HAN (hierarquical attential network) que represente a modificação
+https://arxiv.org/abs/2003.05620 (baixado)
+
+ja foi estudado que pode ser utilizado CC2Vec  com o DeepJIT, Usando o CC2Vec   patra gerar o vetor e depois concatenando com o vetor gerado pelo DeepJIT das mensagens
+de commit e ai sim gerar a probabilidade de defeito de commit
+
+************************
+JITLINE: A JIT DEFECT PREDICTION APPROACH AT
+THE COMMIT AND LINE LEVELS
+
+passo 1 - extrair bag of tokens features
+representar cada commit usando bag-of-tokens (a frequencia de cada token no commit).
+Primeiro faz a tokenização do codigo de cada commit para quebrar as linhas de cosigo. Removendo caracteres nao alfanumericos 
+tambem removeram numeros e strings substituindo por <STR> e <NUM> reduzindo assim o vocabulario. 
+Assim eles extrairam a frequencia de cada token no commit com Countvectorize do Scikit-Learn
+eles nao performaram lematizacao, lowercase ou stemming pq a linguagem estudada é case-sensitive e por isso faria diferença no processamento
+do codigo
+
+passo 2 - lidando com o desbalanceamento usando a tecnica Optmized SMOTE
+sabendo que o dataset tem classes desbalanceadas, pois tem muito menos defect-introducing commits, utiliza-se essa tecnica para gerar novos datasets de treinamento e validacao
+sendo que o de validacao vai ser usado para selecionar os melhores hiperparametros
+(explica como usa o SMOTE)
+usa tecnica Differential Evolution juntamente para garantir melhor performance do SMOTE, assim como os crossover de algoritmos geneticos
+
+passo 3 - construção commit-level JIT defect prediction models
+após usar o passo 1
+usou as metricas de commit-level dispiniveis nesse artigo
+https://ieeexplore.ieee.org/document/7898457
+usou as implementacoes Random Forest (RF), Logistic Regression (LR),
+Support Vector Machine (SVM), k-Nearest Neighbours (kNN),
+and AdaBoost disponiveis no Python Scikit-Learn para construir os modelos mas selecionaram apenas a implementacao com Random Forest para o estudo 
+
+passo 5 - Generating a ranking of defective lines for a given commit
+a media de tamanho de commit sao de 73 a 140 linhas de modificacao
+a media de linhas defeituosas é 51 a 53%. Ainda os esforços sao gastos desnecessariamnete para achar essas linhas dentro do commit 
+o trabalho propoe ranquear as linhas defeituosas de cada commit 
+Ai para cada commit eles usam o Local Interpretable Model-agnostic Explanations (LIME) para calcular a importancia e score das features tokenizadas
+é uma tecnica que nao necessita de modelo e tem objetivo de imitar o comportamento das predições 
+
+
+

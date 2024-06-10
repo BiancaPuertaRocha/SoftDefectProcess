@@ -1,0 +1,96 @@
+kasianenko2018
+
+Muitas empresas armazenam os dados de seus projetos em repositórios de software 
+Eles geralente possuem o código assim como dados detalhados sovre o desenvovimento do software
+o que também inclui defeitos ao longo do tempo.
+Essa disponibilidade permite que estes dados sejam analisados sem que o processo de desenvolvimento
+seja interrompido. 
+
+O problema de softwares grande e complexos e que torna-se quase impossível analisar todos os 
+pontos manualmente. Isso gera altos custos de resolução de problemas e desenvolvimento de testes, além 
+da força de trabalho dos desenvolvedores.
+
+Foram encontrados metodos de predição de defeitos que utilizam machine learning. 
+Regression Decisio Tree foi escolhido como algoritmo primeiramente por ser uma solução
+simples e confiavel. Os dados para essa arvore foram extraidos de codigo conte no repositorio
+e dividido em duas partes: metricas de software e dados defeituoso, ambos extraidos de issues.
+
+Junto aos bugs ja reportados, também foram coletados bugs nao reportados que se encontram nas discussues do 
+repositório.
+
+Aplicando o algoritmo de correlação, foram removidas as features que nao estavam associadas.
+Este estudo seguiu utilizando repositorios Java do GitHub analisando as classes java 
+
+
+INTRO
+
+foco é a predição de uma taxa de erro dado um histórico de dados.
+
+**MOTIVACAO
+A predição de defeito ajuda os desenvolvedores a dar foco de análise em alguns pontos do
+código em vez de fazer toda a revisão, que são as partes problematicas, assim reduzindo
+custos e tempo de desenvolvimento.
+
+Cada vez mais há necessidade de desenvolver software com o minimo de erros possiveis. As aplicações 
+atuais requerem que o desenvolvimento e execução nao sejam interrompidos para analises profundas. 
+O que resta é apenas o código disponivel e dados de desenvolvimento no repositório.
+
+Várias pesquisas atuais tem pego esses dados crus e comprimido em estruturas que estejam
+pré processadas e que tornem mais facil para estudos.
+
+**O PROBLEMA
+O problema de fato é detectar defeitos no software. Esses defeitos aumentam o custo do projeto e manutenção.
+Esses tipos de defeitos são detectados apenas em ambiente de produção quando já é muito tarde e pode ter um grande impacto
+negativo. Essas situações podem ser evitadas com revisões mais precisas do software. 
+
+A solução mais obvia seria testar todas as partes do software, mas nos sistemas atuais, além do custo, gera um prazo de entrega 
+irrealiztico. É por isso que uma abordagem automatica é requerida, para detectar os pontos mais propensos a inserção de bugs
+para que os esforços possam ser focados nesta parte do sistema.
+
+
+CONTRIBUIÇÕES E RESULTADOS
+
+Esta pesquisa é destinada a construir um modo de preparar dos dados e usar aprendizado de maquina
+para auxiliar os desenvolvedores a focar em pontos especificos do software para os testes
+Também tem foco na obtenção dos dados no repositório, com processamento de linguagem natural para detalhamento
+dos dados defeituosos
+
+
+MINERAÇÃO DE REPOSITÓRIO
+
+Os dados de respositorios crescem constantemente, mais rapido do que possa ser manualmente processado.
+
+Mineração de repositorio de software moderna, mineram informações para extrair padrões automaticamente
+
+O conceito de MRS não pe um, mas vários métodos combinados para alcançar o conhecimento. A escolha 
+do método depende do tipo de dado disponivel e qual a informação que se está tentando obter.
+Alguns metodos são: associação, classificação, custeização etc
+
+O conhecimento adquirido:
+ - deve ser novo: desconhecido previamente para valer a pena o esforço depreendido
+ - não pode ser trivial, deve não ser óbvio ao ponto de ser analisado sem nenhum processamento, padrões nao esperados. 
+   caso contrario o conhecimneto poderia ser adquirido de outras maneiras
+ - deve ser util na pratica, deve ser aplicavel e com um nivel significatico de confiabilidade
+   para que possa ser utilizado em aplicações reais
+ - deve ser compreensivel humanamente e explicavel de maneira lógica, caso contrario é aleatório. 
+
+Na mineração de dados, os modelos são utilizados para representar o conhecimento adquirido, tais como: arvores 
+de decisão, regras, clusters e funções matematicas
+
+PROCESSAMENTO DA LINGUAGEM NATURAL 
+para obter dados mais detalhados é necessário nao apenas coletar dados de bugs mas tambem 
+processar a linguagem humana nas discussoes presentes na plataforma do repositório de software.
+
+A clusterização tem sido aplicada em diferentes áreas e uma delas é na análise de texto
+Porém, é mais dificil fazer a avaliação de um modelo de clusterig do que dos modelos de
+classificação, já que os modelos de classificação tem metodos de classificacao e validacao que são 
+aplicaveis na maioria dos casos.
+
+processamento da linguagem natural
+
+texto (entrada) - > segmentação -> tokenização -> tagueamento do discurso -> detecção de entidade
+-> detecção de relação -> lista de tuplas com as relações (saida)
+
+Geralmente, modelos de clustering são avaliados com base na proximidade
+
+

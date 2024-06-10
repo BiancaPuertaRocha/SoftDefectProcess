@@ -1,0 +1,119 @@
+Jovic2015
+
+Feature Selection (FS) pode ser usada no pré processamento 
+para alcançar uma eficiente redução do conjunto de dados sem 
+remover a representatividade dele. 
+
+Isso é eficiente para encontrar, dentre os subconjuntos possíveis, uma combinação
+de features que seja mais ótima para o treinamento de um modelo mais preciso
+
+A busca auxaustiva por esse modelo é inviável e nao eficiente em vários casos onde o 
+conjunto de dados tem uma simensão muito grande (muitas features)
+
+As aplicações da FS são em tasks de clusterização, classificação ou regressao
+
+Esse artigo considera as tecnicas de FS para revisao, com enfase em particular nos aspectos
+da aplicacao. 
+além dos metodos filter, wrapper e embedded também aborda o mais recente, hybrid para topicos avançados
+
+
+INTRO
+a quantidade massiva de dados nos conjuntos de dados atuais demandam que sejam 
+desenvolvidos algoritmos inteligentes para descobrir informações importantes dentro destes dados.
+
+Na maior parte das vezes, na construção de modelos de clustering, regression ou classificatio, 
+o pré processamento é necessário para a redução da dimensionalidade do dataset (para melhorar a eficiencia
+da análise) e/ou para a adaptação do conjunto de dados para melhor se encaixar no método
+utilizado para a construção do modelo. 
+
+A primeira razao é a mais importante por causa do constante crescimento médio dos conjuntos 
+de dados tanto em features quanto em amostras disponíveis
+
+A redução do tamanho do conjunto pode ser por meio de remoção de features e/ou por meio da redução
+de amostras
+A redução por meio de remoção de features pode acontecer por meio de FS ou de feature extracation (FE)
+Os metodos de FE funcionam transformando as features originais em um novo conjunto baseado nas comnações,
+com objetivo de descobrir mais informações significativas no novo conjunto gerado. (Principal Component Analysis (PCA), Linear 
+Discriminant Analysis (LDA) and Multidimensional Scaling)
+A nova feature pode ser facilmente reduzida levando em consideração caracteristicas estatisticas do
+conjunto de dados
+
+FS é o processo de pegar um conjunto menor de features de um conjunto de dados e trazer para outro,
+sem tranformar as features, preservando a interpretação e respeitando o bobjetivo da análise.
+
+Dependendo do objetivo, esse processo pode gerar subsets diferentes
+
+FS é baseado em redundancia e relevancia das features 
+as features sao categorizadas em:
+1) strongly relevant, 2) weakly relevant, but not redundant, 
+3) irrelevant, and 4) redundant
+
+O processo total de gerar um subconjunto de features consiste em: 
+ 1) subset generation, 2) subset evaluation, 3) 
+a stopping criterion, and 4) validation of the results
+
+Além disso, tambem depende da estratégia de busca utilizada, depois de a 
+estrategia selecionar os candidados (etapa 1) ai sim pode ser passado para o passo 2
+
+CLASSIFICATION OF FEATURE SELECTION 
+METHODS
+As ferramentas de FS podem ser classificadas em inumeras formas,
+mas a mais comum é metodos filters, wrappers, embedded e hybrid 
+
+Filter *************
+
+seleciona features com base em medidas de performance independente do algoritmo do modelo.
+Ou seja, o algoritmo de construção do modelo so pode usar as features após elas serem selecionadas
+Esses algoritmos de filtro podem ranquar as features individualmente ou avaliar 
+os subconjuntos por inteiro
+as medidas utilizadas podem ser classificadas e^:
+informação
+distancia
+consistencia
+similariade 
+medida estatística
+
+Tem todos os métodos de filtro podem ser usados para todos os conjuntos de dados
+e para todas as tecnicas de mineração
+Porem, os filtros são classificados de acordo com a tarefa de mineração
+classificacao
+clusterização
+regressao
+
+Filtros univariados geralmente avaliam e ranqueiam uma unica feature enquanto
+filtros multivariados avaliam o conjunto inteiro
+
+para filtros multivariados a geração do subconjunto depende do ponto de partida:
+1 - forward selection: começa com um conjunto vazio de features e assim vai adicionando
+features conforme elas sao consideradas relevantes
+2 - backward elimination: começa com o conjunto completo de features e as elimina conforme 
+sao consideradas irrelevantes ou menos importantes de acordo com o padrao estipulado
+3 = bidirectional selection: começa com o conjunto completo e tambem com o vazio simultaneamente
+4 - heuristic feature subset selection: gera um subconjunto inicial de acordo com a heuristica (algoritmo genetico)
+e assim explora as demais possibilidades.
+
+também depende da estratégia de pesquisa (search strategy)
+1 - exponential algorithms - avalia um numero de subconjuntos que cresce exponencialmente
+junto com a dimensionalidade
+2 - sequential algorithms - adiciona e remove features sequencialmente
+3 - randomized algorithms - incorpora aleatoriedade com o processo de busca 
+
+
+Wrapper Method ********
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

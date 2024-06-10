@@ -1,0 +1,32 @@
+Khaire2022
+
+feature selection é uma tecnica que prove as features mais relevantes dentro de um dataset
+Atualmente cada vez mais os conjunto de dados tem uma dimensionalidade muito grande devido 
+a quantidade de dados extraidos nos sistemas. Por isso, é obrigatório que ao processar estes dados 
+ocorra a feature selection. 
+Porem, a alta correlacao de features produz vários subconjuntos possíveis ótimos, porém,
+faz com que os algoritmos nao sejam estáveis pois existem várias saídas possiveis 
+e isso atrapalha inclusive na reprodutibilidade e também na utilizacao do subconjunto para treinamento
+de modelos, pois podem ser treinados com conjuntos diferentes.
+A estabilidade é tao importante quando a acurácia de um modelo classificador
+
+Nesse artigo eles vao mostrar as tecnicas de Feature Selection (FS) e alguns modelos
+de como lidar com a instabilidade
+
+INTRO
+é ideal selecionar features que sejam mais importantes e que tambem sejam independentes das demais
+A FS ajuda também a reduzir o overfitting.
+classificadores treinados em conjuntos de dados redizidos em dimensionalidade
+sao mais robustos e reprodutiveis do que os construidos em cima do conjunto original
+
+Features que nao proveem informações importantes sao chamadas irrelevantes e as que 
+nao proveem mais informações do que as ja obtidas sao chamadas redundantes  (Kumar and Minz, 2014)
+
+
+As features que nao tem relação ou correlação com as variaveis da classe sao chamadas de ruido, 
+elas aumentam o bias (ver o que é) e reduzem a performance do classificador.
+Para melhorar a performance, os ruidos precisam ser tratados e isso pode ser possivel com redução da dimensionalidade
+usando FS ou Feature extraction FE
+
+
+

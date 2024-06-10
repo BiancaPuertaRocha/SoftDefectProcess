@@ -1,0 +1,137 @@
+
+marçal 2023
+
+A corretude de um software é vital para seu funcionamento efetivo. Sendo assim, descobrir e ajustar 
+defeitos de software se torna uma tarefa importante
+
+
+Neste trabalho, são apresetadas comparações e análises da eficácia de duas abordagens baseadas em 
+IA
+IA models e Ensemble. A Avaliação ocorre em cima de uma classe java e a cassifica como sendo
+propensa a erros ou não
+
+O Ensemble de modelos baseados em IA provou ser melhor em performance so que os singles
+
+É de grande importância pesquisas para determinar áreas do código que podem conter bugs
+
+
+Ensemble são modelos de machine learning que possuem multiplas implementações do modelo base,
+combinados para a predição final
+
+Usar ensemble para reduzir o erro de generalização,
+
+Foi usado dois open-source Apache Commons Project’s Java
+
+Foi analisado: precision, recall, AUC e F1-Score como métricas
+
+Fala que muitas pesquisas foram feitas com Naive Bayes, SVM, K-means e hierarchical clustering (organizando os dados em clutsers qye ren 
+pontos em comum, o que faz com que sejam identificadas as áreas que são mais propensas a 
+existencia de bugs
+
+Nenhum unico classificador performa melhor do que outro pois há uma grande dependência dos resultados
+com os dados que estao sendo processados
+
+[19] M. Fern´andez-Delgado, E. Cernadas, S. Barro, and D. Amorim, “Do we
+need hundreds of classifiers to solve real world classification problems?”
+J. Mach. Learn. Res., vol. 15, no. 1, p. 3133–3181, jan 2014.
+[20] R. Caruana and A. Niculescu-Mizil, “An empirical comparison
+of supervised learning algorithms,” in Proceedings of the 23rd
+International Conference on Machine Learning, ser. ICML ’06. New
+York, NY, USA: Association for Computing Machinery, 2006, p.
+161–168. [Online]. Available: https://doi.org/10.1145/1143844.1143865
+
+
+Em relação a predição de bugs, as técnicas de ensemble tem se mostrado proeminentes e juntam
+diferentes classificadores para melhorar a predição
+
+
+Analisa a comparação dos ensembles com os singles
+Tecnicas analisadas:  CART [23], KNN
+[24], LDA [25], LR [26], NB [27], RF [28], and SVM [29].
+
+Ensemble usado com votação majoritária
+
+
+METODOLOGIA************
+
+Passos:
+ - seleção de sistemas (objetos) para estudo
+ - coleta de dados
+ - seleção do modelo
+ - treinamento
+ - contrução do modelo de ensemble
+ - avaliação das métricas
+
+Foram escolhidos dois repositórios do projeto Apache Commons pois eles possuem uma base de código
+substancial e também bastante dados históricos. A variedade de projetos ajuda na posterior generalização do modelo construido.
+
+A coleta de dados envolve a coleção das metricas do histórico de desenvolvimento de cada sistema selecionado
+Construindo o proprio dataset, nos garntimos que o conteudo é bem adaptado as necessidades da pesquisa, abragente e preciso.
+Metricas foram selecionadas com informações relevantes:
+ - numero de autories
+ - idade do arquivo (tempo de vida)
+ - numero de modificações
+ - tamanho
+ - linhas
+ - linhas adicionadas
+ - linhas deletadas
+Foram selecionadas para ajudar a entender fatores que contribuem para a ocorrência de defeitos nos systemas do Apache Commons: dinamica
+do time, evolução do código, atividades de manutenção, complexidade etc
+Para a variavel target, foi usado o SZZ algoritmo para determinar se é defeituoso ou nao
+[32] M. Borg, O. Svensson, K. Berg, and D. Hansson, “Szz unleashed:
+An open implementation of the szz algorithm - featuring example
+usage in a study of just-in-time bug prediction for the jenkins
+project,” ser. MaLTeSQuE 2019. New York, NY, USA: Association
+for Computing Machinery, 2019, p. 7–12. [Online]. Available:
+https://doi.org/10.1145/3340482.334274
+Os projetos foram analisados separamente, ou seja, como datasets separados
+
+A seleção do modelo envolve identificar e selecionar o melhor modelo para os objetivos da pesquisa
+Seleção dos modelos baseados em análise da literatura
+
+O processo de treinamento envolve o processo iteratico de refinar o modelo usando dados de treinamento
+Iterando as atividades:
+ - pre processamento
+ - cross validation
+ - treinamento do modelo 
+ - avaliação do modelo
+
+A contrução do modelo de ensemble envolve a integração de multiplos modelos para melhorar a acurácia 
+e robustes das predições
+Modelo de ensemble foi construido usando tecnica de votação e os modelos individuais foram:  CART, KNN, LDA, LR, NB,
+RF, and SVM. 
+O estimador base foi selecionado (dentre os candidatos citados)
+O tipo de votação foi selecionado (hard ou soft)
+Os modelos foram treinados usando os dados ja pré processados e os passos citados na seção de treinamento
+Foram utilizadas as metricas ja citadas para a avaliação
+
+Por fim, a avaliação das métricas envolve usar as métricas correras para medir a performance dos modelos
+e validar o que foi encontrado na pesquisa
+
+
+RESULTADOS*****************
+
+São analisados os resultados de cada modelo individual e do modelo de ensemble. Essa análise ajuda a entender
+o quanto o método de ensemble pode melhorar o modelo para esses conjuntos de dados
+
+aqui ela responde as RQs ----------
+
+1 - como a performance dos modelos single são comparadas quando se trata da acurácia da predição de defeitos no Apache commons?
+Faz a comparação de cada pontuação  mas nao define um melhor especifico
+
+2 - o ensemble model performa melhor do que os modelos infividuais em todas as metricas
+analisa tambem cada uma das pontuacoes e em cada um dos protos, analisa que realmente melhora
+
+
+DISCUSSOES******************
+o RF provou ser o melhor dentre os singles
+
+O AUC de RF foi priximo ao modelo de ensemble por votação de classificadores
+
+O modelo de VotingClassifier provou também ter uma melhoria dependente do dataset. 
+Pois performou melhor em um deles, mas no outro teve uma melhoria mais significativa
+
+Ressalta a importância de modelos de ensemble em tarefas de predição de bugs
+
+
+RESSALTA A AMEAÇAS EM POTENCIAL ************************************

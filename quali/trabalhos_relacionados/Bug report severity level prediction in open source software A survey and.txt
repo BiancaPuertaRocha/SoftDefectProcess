@@ -1,0 +1,3 @@
+variavel que mede o impacto do bug no sucesso de execução do sistema e o quao rapido o bug precisa ser atribuido a um integrante do time.
+
+este trabalho estuda pesquisas recentes dobre esse assunto e os esforços que estão sendo colocados para esta medição. 

@@ -1,0 +1,99 @@
+Hammouri2018
+
+a predição de bugs é uma tarefa importante para o desenvolvimento de software
+e a manutenção dos processos. A predição de falhas nos estagios iniciais melhora a qualidade
+do software, comfiabilidade, eficiencia e reduz o cuto de software.
+
+Esse artigo apresenta um modelo de predição de bugs baseado em aprendizado de maquina
+3 algoritmos supervisionados foram usados para fazer a predição de defeitos baseado em dados
+historicos.
+Naïve Bayes (NB), 
+Decision Tree (DT) and Artificial Neural Networks (ANNs).
+
+
+INTRO
+
+E existencia dos bugs afeta diretamente o custo, confiabilidade, e qualidade do software.
+Desenvolver um modelo que faça a predição deles nas fases iniciais é um desafio da engenharia de spftware
+
+SBP (software bug prediction) é uma tarefa essencial no desenvolvimento de software
+
+varias tecnicas podem ser utilizadas para SBP, as mais conhecidas envolvem machine learning 
+baseando-se no historico de dados com erro, metricas essenciais e diferentes tecnicas de 
+computacao de software
+
+neste trabalho diferentes tecnicas de ML são estudadas e diferrentes classificadores 
+são contruidos com os algoritmos citados e aplicados em diferentes datasets.
+
+alem disso, realiza a avaliacao dos modelos com a curva ROC, F-measure, accuracy e precision
+
+
+USED MACHINE LEARNING ALGORITHMS************
+o estudo tem o objetovo de analisar esses 3 algoritmos citados e mostra a acuracia e capacidade 
+dos algoritmos de ML na predição de bugs  e prove a analise dos algoritmos
+
+O ML supervisionado tenta desenvolver uma função que infere o resultado por meio de relacionamentos
+e dependencias entre as entradas e saidas de dados rotulados. Baseando-se nessa função, ele tenta
+rotular novos dados. 
+
+Naive Bayes - é um classificador probabilistico baseado no teorema de Bayes. NB é um conjunto,
+nao apenas um algoritmo que assume a presença ou usencia de uma feature nao esta 
+relacionada a presença ou ausencia de outra
+
+ Artificial Neural Networks (ANNs) - Inspirada em redes neurais biologicas. São classificadores nao 
+lineares e podem modelar relaçoes complexas entre as entradas e saudas. 
+Consiste em uma colacao de unidades processadoras que são os neuronios, trabalham em paralelo para
+produzir a saida. Cada conexao entre eles transmite um sinal e cada um deles calcula a propria saida
+usando a função nao linear 
+
+Decision Tree (DT) - é um método cmum de ML. Se difere do hierarquico e preditivo pois é uma 
+árvores com nós de decisao
+
+DATASETS AND EVALUATION METHODOLOGY*******
+Eles usaram 3 datasets e em todos consiste em 2 medidas: numero de faltas e numero de test workers
+para cada dia em um momento da vida util so software
+
+Para avaliar o desempenho dos modelos, foram usadas medidas conhecidas baseadas na geração de
+matriz de confusao
+
+Matriz de confusao *** 
+é uma tabela espequisa usada para medir a performance dos algoritmos usados. 
+cada linha representa instancias de uma classe verdadeira e cada coluna intancias
+de classe predita. 
+A matriz de confusao resume os resultandos de tested de algorimos e prove relatorio de 
+True Positive (TP) False Positice (FP) True Negative (TN) False Negative (FN)
+
+Acurácia (ACC) ***
+ é a proporção dos resultados verdadeiros (TP e TN) no total de instancias examinadas
+a melhor acurácia é 1 e a pior 0
+formula: ACC = (TP + TN) / (TP + TN+ FP + FN)
+
+Precision (positive predictive value) ****
+é calculado como o numero de corretos positivos dividido pelo numero de predições positivas
+calculada de 0 a 1 sendo 1 a melhor 
+Precision = TP / ( TP + FP )
+
+Recall (True Positive Rate or Sensitivity) ***
+é o numero de predições positivas dividido pelo numero  total de positivos
+Recall = TP / ( TP + FN )
+
+F-measure ****
+medida harmonica ponderada de presicion e recall. é usado para combinr essas duas medidas para comparar
+os algoritmos ML.
+F- measure= (2* Recall * Precision)/(Recall + Precision)
+
+Root-Mean-Square Error (RMSE)***
+uma medida para avaliar a performance do modelo de predição. 
+A ideia é medir a diferença entre as classes reais e as preditas
+
+
+Cada uma das medidas foi aplicada em cada um dos 3 datasets, sendo que a medida do modelo
+é calculada pela media das medidas calculadas no modelo de predição usando os 3 datasets.
+
+Por fim, utilizando os datasets com as features descritas, o DT desempenhou melhor de acordo com a média de todas as medidas
+
+Os autores também concluem que o ML performa melhor do que outras tecnicas como  Auto-Regression (AR) e Known power model (POWM) usando
+Root Mean Square Error (RMSE)
+
+
+
