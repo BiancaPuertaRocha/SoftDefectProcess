@@ -10,7 +10,6 @@ SONAR_PROJECT_KEY = 'dubbo'
 SONAR_URL = 'http://localhost:9000'  # URL do servidor SonarQube
 RESULTS_DIR = 'results_sonar'
 
-# Função para executar o SonarQube Scanner
 def run_sonar_scanner(repo, commit_sha):
     os.chdir(REPO_PATH)
     

@@ -30,10 +30,10 @@ def fetch_commit_details(commit_sha):
     response = requests.get(url, headers=headers)
     if response.status_code == 200:
         return response.json()
-    elif response.status_code == 403:  # Limite de requisições atingido
+    elif response.status_code == 403:  
         print(f'Limite de requisições atingido. Esperando 60 segundos...')
         time.sleep(60)
-        return fetch_commit_details(commit_sha)  # Tentar novamente após esperar
+        return fetch_commit_details(commit_sha)  
     else:
         print(f'Erro ao acessar a API para o commit {commit_sha}: {response.status_code} - {response.text}')
         return None
@@ -45,7 +45,7 @@ def save_commit_to_csv(commit_data):
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writerow(commit_data)
 
-# Variáveis para estatísticas
+
 commits_saved = 0
 requests_made = 0
 
@@ -57,16 +57,16 @@ with open(output_csv, 'a', newline='', encoding='utf-8') as csvfile:
     writer.writeheader()
 
 while True:
-    url = f'{base_url}?page={page}&per_page=100'  # 100 commits por página
+    url = f'{base_url}?page={page}&per_page=100'  
     response = requests.get(url, headers=headers)
-    requests_made += 1  # Contador de requisições feitas
+    requests_made += 1 
     if response.status_code == 200:
         commits = response.json()
         if len(commits) == 0:
             break
         for commit in commits:
             commit_sha = commit['sha']
-            # Obter detalhes do commit
+
             commit_details = fetch_commit_details(commit_sha)
             if commit_details:
                 commit_data = {
@@ -74,36 +74,35 @@ while True:
                     'author': commit_details['commit']['author']['name'],
                     'email': commit_details['commit']['author']['email'],
                     'message': commit_details['commit']['message'],
-                    'commit_date': commit_details['commit']['author']['date'],  # Data de criação do commit
-                    'url': commit_details['html_url'],  # URL do commit no GitHub
-                    'files_changed': len(commit_details['files']) if 'files' in commit_details else 0,  # Número de arquivos alterados
-                    'modified_files': ','.join([file['filename'] for file in commit_details['files']]) if 'files' in commit_details else '',  # Lista de arquivos modificados
-                    'additions': commit_details['stats']['additions'] if 'stats' in commit_details else 0,  # Número de adições
-                    'deletions': commit_details['stats']['deletions'] if 'stats' in commit_details else 0,  # Número de deleções
-                    'total_changes': commit_details['stats']['total'] if 'stats' in commit_details else 0,  # Total de mudanças (adições + deleções)
+                    'commit_date': commit_details['commit']['author']['date'], 
+                    'url': commit_details['html_url'], 
+                    'files_changed': len(commit_details['files']) if 'files' in commit_details else 0, 
+                    'modified_files': ','.join([file['filename'] for file in commit_details['files']]) if 'files' in commit_details else '', 
+                    'additions': commit_details['stats']['additions'] if 'stats' in commit_details else 0, 
+                    'deletions': commit_details['stats']['deletions'] if 'stats' in commit_details else 0,  
+                    'total_changes': commit_details['stats']['total'] if 'stats' in commit_details else 0,  
                 }
                 save_commit_to_csv(commit_data)
-                commits_saved += 1  # Incrementar contador de commits salvos
+                commits_saved += 1  
             else:
                 print(f'Não foi possível obter detalhes para o commit {commit_sha}')
                 
-            time.sleep(0.5)  # Aguardar um curto período para evitar ultrapassar o limite de taxa
+            time.sleep(0.5) 
 
-            # Exibir estatísticas a cada 10 segundos
             if commits_saved % 10 == 0:
                 print(f'Commits salvos até agora: {commits_saved}')
                 print(f'Requisições feitas até agora: {requests_made}')
                 print('---')
 
         page += 1
-    elif response.status_code == 403:  # Limite de requisições atingido
+    elif response.status_code == 403:  
         print(f'Limite de requisições atingido. Esperando 60 segundos...')
         time.sleep(60)
     else:
         print(f'Erro ao acessar a API: {response.status_code} - {response.text}')
         break
 
-# Imprimir estatísticas finais
+
 print(f'Dados de commits salvos em {output_csv}')
 print(f'Commits salvos: {commits_saved}')
 print(f'Requisições feitas: {requests_made}')
