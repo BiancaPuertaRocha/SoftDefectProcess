@@ -6,16 +6,16 @@ REQUEST DE UMA ISSUE, PARA VERIFICAR SE ESSE COMMIT É BUG INDUCING
 import pandas as pd
 import sqlite3
 
-# Substitua pelos caminhos corretos
-csv_file_path = 'commits_data_dubbo.csv'
-db_file_path = 'SDP1 - dubbo complete.db'
-bug_introducing_commits_csv = 'bug_introducing_commits.csv'
-output_final_csv = 'final_metrics_dubbo.csv'
+repo = 'airflow'
+
+csv_file_path = f'commits_from_api/commits_data_{repo}.csv'
+db_file_path = f'issues_by_sdptool/SDP1 - {repo} complete.db'
+bug_introducing_commits_csv = f'bug_introducing_commits_{repo}.csv'
+output_final_csv = f'final/final_metrics_{repo}.csv'
 
 # Carregar o CSV inicial em um DataFrame
 df_commits = pd.read_csv(csv_file_path)
 
-# Conectar ao banco de dados SQLite
 conn = sqlite3.connect(db_file_path)
 cursor = conn.cursor()
 
@@ -97,10 +97,8 @@ JOIN
 
 df_bug_introducing_commits = pd.read_sql_query(query_bug_introducing_commits, conn)
 
-# Fechar a conexão com o banco de dados
 conn.close()
 
-# Salvar o resultado em um arquivo CSV
 df_bug_introducing_commits.to_csv(bug_introducing_commits_csv, index=False)
 
 # Carregar o CSV de commits que introduziram bugs

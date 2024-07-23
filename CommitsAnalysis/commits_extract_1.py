@@ -11,7 +11,7 @@ import time
 # Configurações
 github_token = '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'  # Substitua pelo seu token de autenticação
 repo_owner = 'apache'
-repo_name = 'iceberg'
+repo_name = 'airflow'
 output_csv = 'commits_data.csv'  # Nome do arquivo CSV de saída
 
 head = False
