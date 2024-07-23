@@ -2,3 +2,5 @@
 */data_collect
 */data_collect_flask
 dataset - * 
+*.db
+repos*
