@@ -2,16 +2,58 @@ import git
 import subprocess
 import json
 import os
+import csv
+import requests
 
 # Configurações
-
 SONAR_SCANNER_CMD = 'sonar-scanner'
 SONAR_PROJECT_KEY = 'dubbo'
 SONAR_URL = 'http://localhost:9000'  # URL do servidor SonarQube
+SONAR_TOKEN = 'squ_9ba02e2dbcd18ef76b9799b766be04369edf3caa'
 RESULTS_DIR = 'results_sonar'
 REPO_PATH = f'repos/{SONAR_PROJECT_KEY}'
 BRANCH = '3.2'
 SONAR_BINARIES_PATH = 'target/classes'  # Caminho para os binários compilados, ajustado para um projeto Maven
+CSV_FILE = 'sonarqube_metrics.csv'
+
+def get_sonar_metrics():
+    metric_keys = 'code_smells,bugs,vulnerabilities,coverage'
+    measures_url = f'{SONAR_URL}/api/measures/component'
+    params = {
+        'component': SONAR_PROJECT_KEY,
+        'metricKeys': metric_keys
+    }
+    auth = (SONAR_TOKEN, '')
+
+    response = requests.get(measures_url, params=params, auth=auth)
+    print(f"SonarQube API response status: {response.status_code}")
+    print(f"SonarQube API response: {response.text}")
+    if response.status_code == 200:
+        return response.json()
+    else:
+        print(f"Erro ao obter métricas do SonarQube: {response.text}")
+        return None
+
+def save_metrics_to_csv(metrics_data, commit_sha, initial_dir):
+    
+    result_file = os.path.join(initial_dir, RESULTS_DIR, CSV_FILE)
+    file_exists = os.path.isfile(result_file)
+    
+    print(f"CSV file exists: {file_exists}")
+    with open(result_file, 'a', newline='') as csvfile:
+        fieldnames = ['commit_sha', 'code_smells', 'bugs', 'vulnerabilities', 'coverage']
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        
+        if not file_exists:
+            writer.writeheader()
+            print(f"CSV header written: {fieldnames}")
+        
+        measures = metrics_data['component']['measures']
+        metrics = {measure['metric']: measure['value'] for measure in measures}
+        metrics['commit_sha'] = commit_sha
+        print(f"Metrics to write: {metrics}")
+        writer.writerow(metrics)
+        print(f"Metrics for commit {commit_sha} written to CSV")
 
 def run_sonar_scanner(repo, commit_sha):
     initial_dir = os.getcwd()
@@ -21,20 +63,12 @@ def run_sonar_scanner(repo, commit_sha):
         # Check out do commit
         repo.git.checkout(commit_sha)
         
-        # Compilar o projeto
-        #compile_command = 'mvn clean install -DskipTests'
-        #compile_result = subprocess.run(compile_command, capture_output=True, text=True, shell=True)
-        
-        #if compile_result.returncode != 0:
-        #    print(f"Erro ao compilar o projeto no commit {commit_sha}: {compile_result.stderr}")
-        #    return
-        
         # Configurar o SonarQube Scanner
         sonar_properties = f"""
         sonar.projectKey={SONAR_PROJECT_KEY}
         sonar.sources=.
         sonar.host.url={SONAR_URL}
-        sonar.token=squ_9ba02e2dbcd18ef76b9799b766be04369edf3caa
+        sonar.token={SONAR_TOKEN}
         sonar.sourceEncoding=UTF-8
         sonar.java.binaries={SONAR_BINARIES_PATH}
         """
@@ -50,15 +84,23 @@ def run_sonar_scanner(repo, commit_sha):
         # Executar o SonarQube Scanner
         result = subprocess.run([SONAR_SCANNER_CMD], capture_output=True, text=True, shell=True)
         
-        result_file = os.path.join(initial_dir, RESULTS_DIR, f'{commit_sha}.json')
-        with open(result_file, 'w') as file:
-            json.dump({
-                'commit_sha': commit_sha,
-                'scanner_output': result.stdout,
-                'scanner_error': result.stderr
-            }, file)
+        #print(f"SonarQube scanner output: {result.stdout}")
+        #print(f"SonarQube scanner error: {result.stderr}")
         
-        print(f"Resultados do commit {commit_sha} armazenados em {result_file}")
+        #result_file = os.path.join(initial_dir, RESULTS_DIR, f'{commit_sha}.json')
+        #with open(result_file, 'w') as file:
+        #    json.dump({
+        #        'commit_sha': commit_sha,
+        #        'scanner_output': result.stdout,
+        #        'scanner_error': result.stderr
+        #    }, file)
+        
+        #print(f"Resultados do commit {commit_sha} armazenados em {result_file}")
+        
+        # Obter métricas do SonarQube e salvar em CSV
+        metrics_data = get_sonar_metrics()
+        if metrics_data:
+            save_metrics_to_csv(metrics_data, commit_sha, initial_dir)
     
     except Exception as e:
         print(f"Erro ao processar o commit {commit_sha}: {e}")
@@ -82,13 +124,15 @@ def main():
     except Exception as e:
         print(f"Erro ao obter commits: {e}")
         return
-
+    count = 0
     for commit in commits:
         run_sonar_scanner(repo, commit.hexsha)
         # Limpeza
         repo.git.reset('--hard', 'HEAD')
         repo.git.clean('-fd')
-        break
+        count += 1
+        if count > 3:
+            break
 
 if __name__ == "__main__":
     main()
