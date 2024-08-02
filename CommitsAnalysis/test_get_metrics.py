@@ -18,7 +18,7 @@ if 'task' in task_data and 'analysisId' in task_data['task']:
 
     # Passo 3: Consultar as métricas do projeto
     component_key = 'dubbo'
-    metric_keys = 'code_smells,bugs,vulnerabilities,coverage'
+    metric_keys = 'code_smells,bugs,vulnerabilities,coverage,duplicated_lines_density,ncloc,files,functions,complexity,comment_lines,sqale_index,sqale_debt_ratio'
     measures_url = f'{sonarqube_url}/api/measures/component?component={component_key}&metricKeys={metric_keys}'
     measures_response = requests.get(measures_url, auth=auth)
     measures_data = measures_response.json()
