@@ -1,17 +1,13 @@
-'''
-APLICAÇÃO DO SZZ, VERIFICANDO OS ARQUIVOS QUE FORAM MODIFICADOS NO COMMIT E QUE FORAM POSTERIORMENTE MODIFICADOS EM UM PULL
-REQUEST DE UMA ISSUE, PARA VERIFICAR SE ESSE COMMIT É BUG INDUCING
-'''
-
 import pandas as pd
 import sqlite3
 
-repo = 'airflow'
+repo = 'dubbo'
 
 csv_file_path = f'commits_from_api/commits_data_{repo}.csv'
 db_file_path = f'issues_by_sdptool/SDP1 - {repo} complete.db'
-bug_introducing_commits_csv = f'bug_introducing_commits_{repo}.csv'
+issues_commits_from_repo = f'issues_commits/issues_commits_{repo}.csv'
 output_final_csv = f'final/final_metrics_{repo}.csv'
+other_csv_path = f'results_sonar/sonarqube_metrics_{repo}.csv'  # Insira o caminho do outro CSV aqui
 
 # Carregar o CSV inicial em um DataFrame
 df_commits = pd.read_csv(csv_file_path)
@@ -39,7 +35,6 @@ conn.commit()
 
 # Inserir os dados do DataFrame na tabela commits
 df_commits.to_sql('commits', conn, if_exists='replace', index=False)
-
 
 # Relacionar os arquivos modificados nos commits com os arquivos modificados nos pull requests
 query_related_commits = '''
@@ -94,20 +89,24 @@ JOIN
     ON ic.ISSUE_ID = ic_max.ISSUE_ID AND ic.committed_at = ic_max.last_commit_date;
 '''
 
-
 df_bug_introducing_commits = pd.read_sql_query(query_bug_introducing_commits, conn)
-
 conn.close()
 
-df_bug_introducing_commits.to_csv(bug_introducing_commits_csv, index=False)
+df_bug_introducing_commits.to_csv(issues_commits_from_repo, index=False)
 
 # Carregar o CSV de commits que introduziram bugs
-df_bug_introducing_commits = pd.read_csv(bug_introducing_commits_csv)
+df_bug_introducing_commits = pd.read_csv(issues_commits_from_repo)
 
 # Atualizar a coluna failure_prone no DataFrame inicial
 df_commits['failure_prone'] = df_commits['sha'].isin(df_bug_introducing_commits['commit'])
 
-# Salvar o DataFrame atualizado em um novo arquivo CSV
-df_commits.to_csv(output_final_csv, index=False)
+# Carregar o outro CSV que contém o atributo commit_sha
+df_other = pd.read_csv(other_csv_path)
+
+# Realizar a junção com base no atributo commit_sha
+df_final = df_commits.merge(df_other, left_on='sha', right_on='commit_sha', how='left')
+
+# Salvar o DataFrame final em um novo arquivo CSV
+df_final.to_csv(output_final_csv, index=False)
 
 print(f"Resultado salvo em {output_final_csv}")

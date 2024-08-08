@@ -12,7 +12,7 @@ import time
 github_token = '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'  # Substitua pelo seu token de autenticação
 repo_owner = 'apache'
 repo_name = 'airflow'
-output_csv = 'commits_data.csv'  # Nome do arquivo CSV de saída
+output_csv = f'commits_data_{repo_name}.csv'  # Nome do arquivo CSV de saída
 
 head = False
 # URL base da API do GitHub para commits
