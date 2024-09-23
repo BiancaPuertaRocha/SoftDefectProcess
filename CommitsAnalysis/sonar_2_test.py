@@ -144,11 +144,14 @@ def main():
         return
 
     for commit in commits:
-        run_sonar_scanner(repo, commit.hexsha)
-        # Limpeza
-        repo.git.reset('--hard', 'HEAD')
-        repo.git.clean('-fd')
+        try:
+            run_sonar_scanner(repo, commit.hexsha)
+        except Exception as e:
+            print(f"Erro ao analisar o commit {commit.hexsha}: {e}")
+        finally:
+            # Limpeza
+            repo.git.reset('--hard', 'HEAD')
+            repo.git.clean('-fd')
 
 if __name__ == "__main__":
     main()
-
