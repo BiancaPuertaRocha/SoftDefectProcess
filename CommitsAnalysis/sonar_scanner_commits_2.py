@@ -8,11 +8,11 @@ import requests
 # Configurações
 SONAR_SCANNER_CMD = 'sonar-scanner'
 SONAR_PROJECT_KEY = 'dubbo'
-SONAR_URL = 'http://localhost:9000'
-SONAR_TOKEN = 'squ_9ba02e2dbcd18ef76b9799b766be04369edf3caa'
+SONAR_URL = 'http://localhost:9001'
+SONAR_TOKEN = 'squ_e98998a79136f5cfe59eb35612b82fbcf2478fa4'
 RESULTS_DIR = 'results_sonar'
 REPO_PATH = f'repos/{SONAR_PROJECT_KEY}'
-BRANCH = '3.2'
+BRANCH = '3.3'
 SONAR_BINARIES_PATH = 'target/classes'
 CSV_FILE = 'sonarqube_metrics.csv'
 
@@ -68,6 +68,7 @@ def run_sonar_scanner(repo, commit_sha):
         sonar.sources=.
         sonar.host.url={SONAR_URL}
         sonar.token={SONAR_TOKEN}
+        sonar.login={SONAR_TOKEN}
         sonar.sourceEncoding=UTF-8
         sonar.java.binaries={SONAR_BINARIES_PATH}
         """
