@@ -76,9 +76,7 @@ def run_sonar_scanner(repo, commit_sha):
         repo.git.checkout(commit_sha)
 
         # Realizar o build do projeto
-        if not build_project():
-            print(f"Build falhou para o commit {commit_sha}. Pulando análise.")
-            return
+        build_success = build_project()  # Continue independente do sucesso do build
         
         # Configurar o SonarQube Scanner
         sonar_properties = f"""
@@ -150,8 +148,11 @@ def main():
             print(f"Erro ao analisar o commit {commit.hexsha}: {e}")
         finally:
             # Limpeza
-            repo.git.reset('--hard', 'HEAD')
-            repo.git.clean('-fd')
+            try:
+                repo.git.reset('--hard', 'HEAD')
+                repo.git.clean('-fd')
+            except Exception as cleanup_error:
+                print(f"Erro ao limpar o repositório após o commit {commit.hexsha}: {cleanup_error}")
 
 if __name__ == "__main__":
     main()
