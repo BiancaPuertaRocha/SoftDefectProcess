@@ -76,7 +76,7 @@ def run_sonar_scanner(repo, commit_sha):
         repo.git.checkout(commit_sha)
 
         # Realizar o build do projeto
-        #build_success = build_project()  # Continue independente do sucesso do build
+        build_success = build_project()  # Continue independente do sucesso do build
         
         # Configurar o SonarQube Scanner
         sonar_properties = f"""
