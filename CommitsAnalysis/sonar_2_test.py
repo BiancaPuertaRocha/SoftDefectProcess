@@ -8,7 +8,7 @@ import requests
 # Configurações
 SONAR_SCANNER_CMD = 'sonar-scanner'
 SONAR_PROJECT_KEY = 'dubbo'
-SONAR_URL = 'http://localhost:9000'
+SONAR_URL = 'http://localhost:9001'
 SONAR_TOKEN = 'squ_9ba02e2dbcd18ef76b9799b766be04369edf3caa'
 RESULTS_DIR = 'results_sonar'
 REPO_PATH = f'repos/{SONAR_PROJECT_KEY}'
