@@ -50,12 +50,15 @@ def save_metrics_to_csv(metrics_data, commit_sha, initial_dir, csv_file):
         writer.writerow(metrics)
         print(f"Metrics for commit {commit_sha} written to CSV")
 
-def build_project(build_tool):
+def build_project(build_tool, skip_tests=False):
     try:
         print(f"Iniciando build do projeto com {build_tool}...")
 
         if build_tool == 'maven':
-            result = subprocess.run(['mvn', 'clean', 'install'], capture_output=True, text=True)
+            command = ['mvn', 'clean', 'install']
+            if skip_tests:
+                command.append('-DskipTests')  # Ignorar testes no Maven
+            result = subprocess.run(command, capture_output=True, text=True)
             
             # Verificar por erro específico do maven-enforcer-plugin
             if "Some Enforcer rules have failed" in result.stderr:
@@ -70,7 +73,11 @@ def build_project(build_tool):
                 return False
 
         elif build_tool == 'gradle':
-            result = subprocess.run(['gradle', 'clean', 'build'], capture_output=True, text=True)
+            command = ['gradle', 'clean', 'build']
+            if skip_tests:
+                command.append('-x')  # Excluir testes no Gradle
+                command.append('test')
+            result = subprocess.run(command, capture_output=True, text=True)
 
             # Verificar erro específico do Gradle relacionado ao plugin Shadow
             if "This version of Shadow supports Gradle 8.3+ only" in result.stderr:
