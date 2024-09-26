@@ -18,8 +18,8 @@ substituir token em sonar_scanner_commits_2.py
 
 ```
 curl -u "admin:admin" -X POST "http://localhost:9001/api/projects/create" \
-  -d "name=dubbo" \
-  -d "project=dubbo"
+  -d "name=flink" \
+  -d "project=flink"
 ```
 
 ## Install sonnar-scanner (docker)

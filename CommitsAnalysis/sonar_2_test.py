@@ -5,6 +5,8 @@ import os
 import csv
 import requests
 import argparse
+import random
+import string
 
 # Configurações padrão
 SONAR_SCANNER_CMD = 'sonar-scanner'
@@ -15,6 +17,12 @@ SONAR_TOKEN = None    # O token será gerado automaticamente
 RESULTS_DIR = 'results_sonar'
 
 
+def generate_random_token_name(base_name):
+    """Gera um nome aleatório baseado em um nome base."""
+    suffix = ''.join(random.choices(string.ascii_letters + string.digits, k=5))
+    return f"{base_name}_{suffix}"
+
+
 def generate_new_sonar_token():
     """Gera um novo token de autenticação no SonarQube."""
     global SONAR_TOKEN
@@ -22,20 +30,24 @@ def generate_new_sonar_token():
     
     print("Gerando um novo token do SonarQube...")
     
-    response = requests.post(
-        f'{SONAR_URL}/api/user_tokens/generate',
-        auth=(SONAR_USER, SONAR_PASS),
-        data={'name': token_name}
-    )
-    
-    if response.status_code == 200:
-        SONAR_TOKEN = response.json()['token']
-        print(f"Novo token gerado: {SONAR_TOKEN}")
-    else:
-        print(f"Erro ao gerar um novo token: {response.text}")
-        return None
-    
-    return SONAR_TOKEN
+    while True:
+        response = requests.post(
+            f'{SONAR_URL}/api/user_tokens/generate',
+            auth=(SONAR_USER, SONAR_PASS),
+            data={'name': token_name}
+        )
+        
+        if response.status_code == 200:
+            SONAR_TOKEN = response.json()['token']
+            print(f"Novo token gerado: {SONAR_TOKEN}")
+            return SONAR_TOKEN
+        elif "already exists" in response.text:
+            # Gera um novo nome aleatório se o token já existir
+            print(f"O token {token_name} já existe. Gerando um novo nome...")
+            token_name = generate_random_token_name(token_name)
+        else:
+            print(f"Erro ao gerar um novo token: {response.text}")
+            return None
 
 
 def get_sonar_metrics(sonar_project_key):
@@ -93,7 +105,6 @@ def save_metrics_to_csv(metrics_data, commit_sha, initial_dir, csv_file):
         print(f"Metrics for commit {commit_sha} written to CSV")
 
 
-
 def build_project(build_tool, skip_tests=True, disable_enforcer=False):
     try:
         print(f"Iniciando build do projeto com {build_tool}...")
@@ -130,10 +141,6 @@ def build_project(build_tool, skip_tests=True, disable_enforcer=False):
                 return False
         else:
             print(f"Ferramenta de build {build_tool} não suportada.")
-            return False
-
-        if result.returncode != 0:
-            print(f"Erro no build com {build_tool}: {result.stderr}")
             return False
 
         print(f"Build do projeto realizado com sucesso usando {build_tool}.")
@@ -206,39 +213,4 @@ def main():
     # Configurando argparse
     parser = argparse.ArgumentParser(description="Rodar o SonarQube Scanner em múltiplos commits.")
     parser.add_argument('--csv_file', required=True, help='Nome do arquivo CSV para salvar as métricas do SonarQube.')
-    parser.add_argument('--sonar_project_key', required=True, help='Chave do projeto no SonarQube.')
-    parser.add_argument('--branch', required=True, help='Branch a ser analisada.')
-    parser.add_argument('--sonar_binaries_path', required=True, help='Caminho para os binários do Java.')
-    parser.add_argument('--build_tool', choices=['maven', 'gradle'], required=True, help='Ferramenta de build (maven ou gradle).')
-
-    args = parser.parse_args()
-
-    try:
-        repo_path = f'repos/{args.sonar_project_key}'
-        print(repo_path)
-        repo = git.Repo(repo_path)
-    except git.exc.InvalidGitRepositoryError:
-        print(f"Erro: O caminho {repo_path} não é um repositório Git válido.")
-        return
-    except Exception as e:
-        print(f"Erro ao abrir o repositório: {e}")
-        return
-
-    # Gerar o token do SonarQube no início
-    if not generate_new_sonar_token():
-        print("Erro ao gerar token inicial do SonarQube. Abortando.")
-        return
-
-    try:
-        commits = list(repo.iter_commits(args.branch))
-        print(f"Commits encontrados: {len(commits)}")
-
-        for commit in commits:
-            run_sonar_scanner(repo, commit.hexsha, args.sonar_project_key, args.sonar_binaries_path, args.csv_file, args.build_tool, args.branch)
-    
-    except Exception as e:
-        print(f"Erro durante a execução: {e}")
-
-
-if __name__ == "__main__":
-    main()
+    parser.add_argument('--sonar_project_key', required=True
