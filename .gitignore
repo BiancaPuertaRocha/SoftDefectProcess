@@ -4,4 +4,4 @@
 dataset - * 
 *.db
 repos*
-*/results_sonar
+results_sonar/*
