@@ -50,20 +50,28 @@ def save_metrics_to_csv(metrics_data, commit_sha, initial_dir, csv_file):
         writer.writerow(metrics)
         print(f"Metrics for commit {commit_sha} written to CSV")
 
-def build_project():
+def build_project(build_tool):
     try:
-        print("Iniciando build do projeto...")
-        result = subprocess.run(['mvn', 'clean', 'install'], capture_output=True, text=True)
-        if result.returncode != 0:
-            print(f"Erro no build do Maven: {result.stderr}")
+        print(f"Iniciando build do projeto com {build_tool}...")
+
+        if build_tool == 'maven':
+            result = subprocess.run(['mvn', 'clean', 'install'], capture_output=True, text=True)
+        elif build_tool == 'gradle':
+            result = subprocess.run(['gradle', 'clean', 'build'], capture_output=True, text=True)
+        else:
+            print(f"Ferramenta de build {build_tool} não suportada.")
             return False
-        print("Build do projeto realizado com sucesso.")
+
+        if result.returncode != 0:
+            print(f"Erro no build com {build_tool}: {result.stderr}")
+            return False
+        print(f"Build do projeto realizado com sucesso usando {build_tool}.")
         return True
     except Exception as e:
         print(f"Erro ao executar o build: {e}")
         return False
 
-def run_sonar_scanner(repo, commit_sha, sonar_project_key, sonar_binaries_path, csv_file, branch):
+def run_sonar_scanner(repo, commit_sha, sonar_project_key, sonar_binaries_path, csv_file, build_tool, branch):
     initial_dir = os.getcwd()
     os.chdir(f'repos/{sonar_project_key}')
     
@@ -72,7 +80,7 @@ def run_sonar_scanner(repo, commit_sha, sonar_project_key, sonar_binaries_path, 
         repo.git.checkout(commit_sha)
 
         # Realizar o build do projeto
-        build_success = build_project()  # Continue independente do sucesso do build
+        build_success = build_project(build_tool)  # Continue independente do sucesso do build
         
         # Configurar o SonarQube Scanner
         sonar_properties = f"""
@@ -127,6 +135,7 @@ def main():
     parser.add_argument('--sonar_project_key', required=True, help='Chave do projeto no SonarQube.')
     parser.add_argument('--branch', required=True, help='Branch a ser analisada.')
     parser.add_argument('--sonar_binaries_path', required=True, help='Caminho para os binários do Java.')
+    parser.add_argument('--build_tool', choices=['maven', 'gradle'], required=True, help='Ferramenta de build (maven ou gradle).')
 
     args = parser.parse_args()
 
@@ -149,7 +158,7 @@ def main():
 
     for commit in commits:
         try:
-            run_sonar_scanner(repo, commit.hexsha, args.sonar_project_key, args.sonar_binaries_path, args.csv_file, args.branch)
+            run_sonar_scanner(repo, commit.hexsha, args.sonar_project_key, args.sonar_binaries_path, args.csv_file, args.build_tool, args.branch)
         except Exception as e:
             print(f"Erro ao analisar o commit {commit.hexsha}: {e}")
         finally:

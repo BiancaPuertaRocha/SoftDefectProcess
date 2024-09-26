@@ -42,3 +42,6 @@ docker run \
 
 
 ```
+
+
+python script.py --csv_file sonarqube_metrics.csv --sonar_project_key dubbo --branch 3.3 --sonar_binaries_path target/classes --build_tool maven
