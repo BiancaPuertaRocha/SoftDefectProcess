@@ -139,7 +139,7 @@ def modify_pom(pom_path):
         print(f"Erro ao modificar o pom.xml: {e}")
 
 
-def build_project(build_tool, skip_tests=True, disable_enforcer=True):
+def build_project(build_tool, skip_tests=True, disable_enforcer=False):
     try:
         print(f"Iniciando build do projeto com {build_tool}...")
 
@@ -189,9 +189,19 @@ def build_project(build_tool, skip_tests=True, disable_enforcer=True):
         return False
 
 
-def run_sonar_scanner(repo, commit_sha, sonar_project_key, sonar_binaries_path, csv_file, build_tool, branch):
+def run_sonar_scanner(commit_sha, sonar_project_key, sonar_binaries_path, csv_file, build_tool, branch):
+    # Determina automaticamente o caminho do repositório
+    repo_path = os.path.join(os.getcwd(), 'repos', sonar_project_key)
+    
+    # Verifica se o repositório existe
+    if not os.path.exists(repo_path):
+        print(f"Repositório não encontrado em {repo_path}. Clonando...")
+        repo = git.Repo.clone_from('URL_DO_REPOSITORIO', repo_path)
+    else:
+        repo = git.Repo(repo_path)
+
     initial_dir = os.getcwd()
-    os.chdir(f'repos/{sonar_project_key}')
+    os.chdir(repo_path)
     
     try:
         # Check out do commit
@@ -205,20 +215,15 @@ def run_sonar_scanner(repo, commit_sha, sonar_project_key, sonar_binaries_path, 
         sonar.projectKey={sonar_project_key}
         sonar.sources=.
         sonar.host.url={SONAR_URL}
-        sonar.token={SONAR_TOKEN}
         sonar.login={SONAR_TOKEN}
+        sonar.language=java
         sonar.sourceEncoding=UTF-8
-        sonar.java.binaries={sonar_binaries_path}
         """
         
-        # Salvar a configuração 
-        with open('sonar-project.properties', 'w') as file:
-            file.write(sonar_properties)
-
-        print(f"Running sonar-scanner for commit {commit_sha}")
-        print(f"Using sonar-project.properties:\n{sonar_properties}")
-        print(f"SONAR_SCANNER_CMD: {SONAR_SCANNER_CMD}")
-
+        with open('sonar-project.properties', 'w') as f:
+            f.write(sonar_properties)
+        
+        # Executar o Sonar Scanner
         result = subprocess.run([SONAR_SCANNER_CMD], capture_output=True, text=True)
 
         # Salvar métricas no CSV
@@ -232,26 +237,28 @@ def run_sonar_scanner(repo, commit_sha, sonar_project_key, sonar_binaries_path, 
         os.chdir(initial_dir)  # Retorna ao diretório inicial
 
 
-def main(repo_path, sonar_project_key, csv_file, sonar_binaries_path, build_tool, branch):
-    # Verifica se o repositório existe
+def main(sonar_project_key, csv_file, sonar_binaries_path, build_tool, branch):
+    # Determina automaticamente o caminho do repositório
+    repo_path = os.path.join(os.getcwd(), 'repos', sonar_project_key)
+
+    # Cria diretório para resultados do SonarQube
+    if not os.path.exists(RESULTS_DIR):
+        os.makedirs(RESULTS_DIR)
+
+    # Clonar o repositório se não existir
     if not os.path.exists(repo_path):
         print(f"Repositório não encontrado em {repo_path}. Clonando...")
         repo = git.Repo.clone_from('URL_DO_REPOSITORIO', repo_path)
     else:
         repo = git.Repo(repo_path)
 
-    # Cria diretório para resultados do SonarQube
-    if not os.path.exists(RESULTS_DIR):
-        os.makedirs(RESULTS_DIR)
-
     # Para cada commit, executa o SonarQube
     for commit in repo.iter_commits(branch):
         print(f"Processando commit {commit.hexsha}...")
-        run_sonar_scanner(repo, commit.hexsha, sonar_project_key, sonar_binaries_path, csv_file, build_tool, branch)
+        run_sonar_scanner(commit.hexsha, sonar_project_key, sonar_binaries_path, csv_file, build_tool, branch)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Executa SonarQube Scanner para cada commit.')
-    parser.add_argument('--repo_path', required=True, help='Caminho do repositório local.')
     parser.add_argument('--sonar_project_key', required=True, help='Chave do projeto no SonarQube.')
     parser.add_argument('--csv_file', required=True, help='Nome do arquivo CSV para salvar as métricas.')
     parser.add_argument('--sonar_binaries_path', required=True, help='Caminho para os binários do SonarQube.')
@@ -259,4 +266,4 @@ if __name__ == '__main__':
     parser.add_argument('--branch', required=True, help='Nome da branch a ser processada.')
 
     args = parser.parse_args()
-    main(args.repo_path, args.sonar_project_key, args.csv_file, args.sonar_binaries_path, args.build_tool, args.branch)
+    main(args.sonar_project_key, args.csv_file, args.sonar_binaries_path, args.build_tool, args.branch)
