@@ -208,9 +208,32 @@ def run_sonar_scanner(repo, commit_sha, sonar_project_key, sonar_binaries_path, 
     finally:
         os.chdir(initial_dir)
 
-
 def main():
     # Configurando argparse
     parser = argparse.ArgumentParser(description="Rodar o SonarQube Scanner em múltiplos commits.")
     parser.add_argument('--csv_file', required=True, help='Nome do arquivo CSV para salvar as métricas do SonarQube.')
-    parser.add_argument('--sonar_project_key', required=True
+    parser.add_argument('--sonar_project_key', required=True, help='Chave do projeto no SonarQube.')
+    parser.add_argument('--repo_path', required=True, help='Caminho para o repositório Git.')
+    parser.add_argument('--build_tool', choices=['maven', 'gradle'], required=True, help='Ferramenta de build do projeto.')
+    parser.add_argument('--sonar_binaries_path', required=True, help='Caminho para os binários do projeto para análise do SonarQube.')
+    parser.add_argument('--branch', required=True, help='Branch a ser analisada.')
+
+    args = parser.parse_args()
+
+    # Verifique se o diretório de resultados existe; se não, crie-o
+    if not os.path.exists(RESULTS_DIR):
+        os.makedirs(RESULTS_DIR)
+
+    # Abrir repositório
+    repo = git.Repo(args.repo_path)
+    
+    # Listar commits na branch especificada
+    commits = list(repo.iter_commits(args.branch))
+    
+    for commit in commits:
+        print(f"Processando commit {commit.hexsha} ({commit.message.strip()})...")
+        run_sonar_scanner(repo, commit.hexsha, args.sonar_project_key, args.sonar_binaries_path, args.csv_file, args.build_tool, args.branch)
+
+
+if __name__ == "__main__":
+    main()
