@@ -7,6 +7,7 @@ import requests
 import argparse
 import random
 import string
+import xml.etree.ElementTree as ET
 
 # Configurações padrão
 SONAR_SCANNER_CMD = 'sonar-scanner'
@@ -105,11 +106,48 @@ def save_metrics_to_csv(metrics_data, commit_sha, initial_dir, csv_file):
         print(f"Metrics for commit {commit_sha} written to CSV")
 
 
-def build_project(build_tool, skip_tests=True, disable_enforcer=False):
+def modify_pom(pom_path):
+    """Adiciona a exclusão do plugin Apache RAT no pom.xml."""
+    try:
+        tree = ET.parse(pom_path)
+        root = tree.getroot()
+
+        # Namespace do XML
+        ns = {'maven': 'http://maven.apache.org/POM/4.0.0'}
+
+        # Criar a seção de exclusão se não existir
+        exclusions = root.find('maven:build/maven:plugins', ns)
+        if exclusions is None:
+            build = root.find('maven:build', ns)
+            if build is None:
+                build = ET.SubElement(root, 'build')
+            exclusions = ET.SubElement(build, 'plugins')
+
+        # Adicionar a exclusão do Apache RAT
+        rat_plugin = ET.SubElement(exclusions, 'plugin')
+        group_id = ET.SubElement(rat_plugin, 'groupId')
+        group_id.text = 'org.apache.rat'
+        artifact_id = ET.SubElement(rat_plugin, 'artifactId')
+        artifact_id.text = 'apache-rat-plugin'
+        version = ET.SubElement(rat_plugin, 'version')
+        version.text = '0.13'
+
+        # Salvar o pom.xml modificado
+        tree.write(pom_path, xml_declaration=True, encoding='utf-8')
+        print(f"Exclusão do plugin Apache RAT adicionada ao {pom_path}.")
+    except Exception as e:
+        print(f"Erro ao modificar o pom.xml: {e}")
+
+
+def build_project(build_tool, skip_tests=True, disable_enforcer=True):
     try:
         print(f"Iniciando build do projeto com {build_tool}...")
 
+        # Modificar o pom.xml para adicionar a exclusão do plugin RAT
         if build_tool == 'maven':
+            pom_path = 'pom.xml'
+            modify_pom(pom_path)  # Adicione esta linha
+
             command = ['mvn', 'compile']  # Compilar código sem empacotar
             if skip_tests:
                 command.append('-DskipTests')  # Ignorar testes no Maven
@@ -180,73 +218,45 @@ def run_sonar_scanner(repo, commit_sha, sonar_project_key, sonar_binaries_path, 
         print(f"Running sonar-scanner for commit {commit_sha}")
         print(f"Using sonar-project.properties:\n{sonar_properties}")
         print(f"SONAR_SCANNER_CMD: {SONAR_SCANNER_CMD}")
-        
-        # Executar o SonarQube Scanner e aguardar sua conclusão
-        result = subprocess.run([SONAR_SCANNER_CMD], capture_output=True, text=True, shell=True)
-        
-        print(f"SonarQube scanner output: {result.stdout}")
-        print(f"SonarQube scanner error: {result.stderr}")
-        
-        result_file = os.path.join(initial_dir, RESULTS_DIR, f'{commit_sha}.json')
-        with open(result_file, 'w') as file:
-            json.dump({
-                'commit_sha': commit_sha,
-                'scanner_output': result.stdout,
-                'scanner_error': result.stderr
-            }, file)
-        
-        print(f"Resultados do commit {commit_sha} armazenados em {result_file}")
-        
-        # Obter métricas do SonarQube e salvar em CSV
+
+        result = subprocess.run([SONAR_SCANNER_CMD], capture_output=True, text=True)
+
+        # Salvar métricas no CSV
         metrics_data = get_sonar_metrics(sonar_project_key)
         if metrics_data:
             save_metrics_to_csv(metrics_data, commit_sha, initial_dir, csv_file)
-    
-    except Exception as e:
-        print(f"Erro ao processar o commit {commit_sha}: {e}")
-    
-    finally:
-        os.chdir(initial_dir)
 
-def main():
-    # Configurando argparse
-    parser = argparse.ArgumentParser(description="Rodar o SonarQube Scanner em múltiplos commits.")
-    parser.add_argument('--csv_file', required=True, help='Nome do arquivo CSV para salvar as métricas do SonarQube.')
+    except Exception as e:
+        print(f"Erro ao executar o sonar-scanner: {e}")
+    finally:
+        os.chdir(initial_dir)  # Retorna ao diretório inicial
+
+
+def main(repo_path, sonar_project_key, csv_file, sonar_binaries_path, build_tool, branch):
+    # Verifica se o repositório existe
+    if not os.path.exists(repo_path):
+        print(f"Repositório não encontrado em {repo_path}. Clonando...")
+        repo = git.Repo.clone_from('URL_DO_REPOSITORIO', repo_path)
+    else:
+        repo = git.Repo(repo_path)
+
+    # Cria diretório para resultados do SonarQube
+    if not os.path.exists(RESULTS_DIR):
+        os.makedirs(RESULTS_DIR)
+
+    # Para cada commit, executa o SonarQube
+    for commit in repo.iter_commits(branch):
+        print(f"Processando commit {commit.hexsha}...")
+        run_sonar_scanner(repo, commit.hexsha, sonar_project_key, sonar_binaries_path, csv_file, build_tool, branch)
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Executa SonarQube Scanner para cada commit.')
+    parser.add_argument('--repo_path', required=True, help='Caminho do repositório local.')
     parser.add_argument('--sonar_project_key', required=True, help='Chave do projeto no SonarQube.')
-    parser.add_argument('--branch', required=True, help='Branch a ser analisada.')
-    parser.add_argument('--sonar_binaries_path', required=True, help='Caminho para os binários do Java.')
-    parser.add_argument('--build_tool', choices=['maven', 'gradle'], required=True, help='Ferramenta de build (maven ou gradle).')
+    parser.add_argument('--csv_file', required=True, help='Nome do arquivo CSV para salvar as métricas.')
+    parser.add_argument('--sonar_binaries_path', required=True, help='Caminho para os binários do SonarQube.')
+    parser.add_argument('--build_tool', required=True, choices=['maven', 'gradle'], help='Ferramenta de build a ser utilizada.')
+    parser.add_argument('--branch', required=True, help='Nome da branch a ser processada.')
 
     args = parser.parse_args()
-
-    # Definindo repo_path automaticamente
-    repo_path = f'repos/{args.sonar_project_key}'
-    print(f"Usando o caminho do repositório: {repo_path}")
-
-    try:
-        repo = git.Repo(repo_path)
-    except git.exc.InvalidGitRepositoryError:
-        print(f"Erro: O caminho {repo_path} não é um repositório Git válido.")
-        return
-    except Exception as e:
-        print(f"Erro ao abrir o repositório: {e}")
-        return
-
-    # Gerar o token do SonarQube no início
-    if not generate_new_sonar_token():
-        print("Erro ao gerar token inicial do SonarQube. Abortando.")
-        return
-
-    try:
-        commits = list(repo.iter_commits(args.branch))
-        print(f"Commits encontrados: {len(commits)}")
-
-        for commit in commits:
-            run_sonar_scanner(repo, commit.hexsha, args.sonar_project_key, args.sonar_binaries_path, args.csv_file, args.build_tool, args.branch)
-
-    except Exception as e:
-        print(f"Erro durante a execução: {e}")
-
-
-if __name__ == "__main__":
-    main()
+    main(args.repo_path, args.sonar_project_key, args.csv_file, args.sonar_binaries_path, args.build_tool, args.branch)
