@@ -50,16 +50,16 @@ def save_metrics_to_csv(metrics_data, commit_sha, initial_dir, csv_file):
         writer.writerow(metrics)
         print(f"Metrics for commit {commit_sha} written to CSV")
 
-def build_project(build_tool, skip_tests=False):
+def build_project(build_tool, skip_tests=True):
     try:
         print(f"Iniciando build do projeto com {build_tool}...")
 
         if build_tool == 'maven':
-            command = ['mvn', 'clean', 'install']
+            command = ['mvn', 'compile']  # Compilar código sem empacotar
             if skip_tests:
                 command.append('-DskipTests')  # Ignorar testes no Maven
             result = subprocess.run(command, capture_output=True, text=True)
-            
+
             # Verificar por erro específico do maven-enforcer-plugin
             if "Some Enforcer rules have failed" in result.stderr:
                 print("Erro no Maven Enforcer Plugin detectado.")
@@ -67,13 +67,13 @@ def build_project(build_tool, skip_tests=False):
                 print("1. Versão de dependências ou Java incompatíveis.")
                 print("2. Regras do plugin maven-enforcer-plugin no arquivo pom.xml.")
                 print("3. Rode o comando com `-X` para mais detalhes de depuração:")
-                print("   mvn clean install -X")
+                print("   mvn compile -X")
                 print("4. Tente ignorar o plugin com `-Denforcer.skip=true`:")
-                print("   mvn clean install -Denforcer.skip=true")
+                print("   mvn compile -Denforcer.skip=true")
                 return False
 
         elif build_tool == 'gradle':
-            command = ['gradle', 'clean', 'build']
+            command = ['gradle', 'compileJava']  # Compilar código sem empacotar
             if skip_tests:
                 command.append('-x')  # Excluir testes no Gradle
                 command.append('test')
@@ -98,6 +98,7 @@ def build_project(build_tool, skip_tests=False):
     except Exception as e:
         print(f"Erro ao executar o build: {e}")
         return False
+
 
 def run_sonar_scanner(repo, commit_sha, sonar_project_key, sonar_binaries_path, csv_file, build_tool, branch):
     initial_dir = os.getcwd()
