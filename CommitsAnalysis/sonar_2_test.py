@@ -213,26 +213,39 @@ def main():
     parser = argparse.ArgumentParser(description="Rodar o SonarQube Scanner em múltiplos commits.")
     parser.add_argument('--csv_file', required=True, help='Nome do arquivo CSV para salvar as métricas do SonarQube.')
     parser.add_argument('--sonar_project_key', required=True, help='Chave do projeto no SonarQube.')
-    parser.add_argument('--repo_path', required=True, help='Caminho para o repositório Git.')
-    parser.add_argument('--build_tool', choices=['maven', 'gradle'], required=True, help='Ferramenta de build do projeto.')
-    parser.add_argument('--sonar_binaries_path', required=True, help='Caminho para os binários do projeto para análise do SonarQube.')
     parser.add_argument('--branch', required=True, help='Branch a ser analisada.')
+    parser.add_argument('--sonar_binaries_path', required=True, help='Caminho para os binários do Java.')
+    parser.add_argument('--build_tool', choices=['maven', 'gradle'], required=True, help='Ferramenta de build (maven ou gradle).')
 
     args = parser.parse_args()
 
-    # Verifique se o diretório de resultados existe; se não, crie-o
-    if not os.path.exists(RESULTS_DIR):
-        os.makedirs(RESULTS_DIR)
+    # Definindo repo_path automaticamente
+    repo_path = f'repos/{args.sonar_project_key}'
+    print(f"Usando o caminho do repositório: {repo_path}")
 
-    # Abrir repositório
-    repo = git.Repo(args.repo_path)
-    
-    # Listar commits na branch especificada
-    commits = list(repo.iter_commits(args.branch))
-    
-    for commit in commits:
-        print(f"Processando commit {commit.hexsha} ({commit.message.strip()})...")
-        run_sonar_scanner(repo, commit.hexsha, args.sonar_project_key, args.sonar_binaries_path, args.csv_file, args.build_tool, args.branch)
+    try:
+        repo = git.Repo(repo_path)
+    except git.exc.InvalidGitRepositoryError:
+        print(f"Erro: O caminho {repo_path} não é um repositório Git válido.")
+        return
+    except Exception as e:
+        print(f"Erro ao abrir o repositório: {e}")
+        return
+
+    # Gerar o token do SonarQube no início
+    if not generate_new_sonar_token():
+        print("Erro ao gerar token inicial do SonarQube. Abortando.")
+        return
+
+    try:
+        commits = list(repo.iter_commits(args.branch))
+        print(f"Commits encontrados: {len(commits)}")
+
+        for commit in commits:
+            run_sonar_scanner(repo, commit.hexsha, args.sonar_project_key, args.sonar_binaries_path, args.csv_file, args.build_tool, args.branch)
+
+    except Exception as e:
+        print(f"Erro durante a execução: {e}")
 
 
 if __name__ == "__main__":
