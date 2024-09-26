@@ -93,7 +93,8 @@ def save_metrics_to_csv(metrics_data, commit_sha, initial_dir, csv_file):
         print(f"Metrics for commit {commit_sha} written to CSV")
 
 
-def build_project(build_tool, skip_tests=True):
+
+def build_project(build_tool, skip_tests=True, disable_enforcer=False):
     try:
         print(f"Iniciando build do projeto com {build_tool}...")
 
@@ -101,11 +102,21 @@ def build_project(build_tool, skip_tests=True):
             command = ['mvn', 'compile']  # Compilar código sem empacotar
             if skip_tests:
                 command.append('-DskipTests')  # Ignorar testes no Maven
+            if disable_enforcer:
+                command.append('-Denforcer.skip=true')  # Desabilitar Maven Enforcer Plugin
             result = subprocess.run(command, capture_output=True, text=True)
 
             if "Some Enforcer rules have failed" in result.stderr:
                 print("Erro no Maven Enforcer Plugin detectado.")
-                return False
+                print("Tentando compilar novamente com Enforcer Plugin desabilitado...")
+                command.append('-Denforcer.skip=true')  # Desabilitar Maven Enforcer Plugin
+                result = subprocess.run(command, capture_output=True, text=True)
+                if result.returncode != 0:
+                    print(f"Erro no build mesmo com o Enforcer Plugin desabilitado: {result.stderr}")
+                    return False
+                else:
+                    print("Build realizado com sucesso após desabilitar o Maven Enforcer Plugin.")
+                    return True
 
         elif build_tool == 'gradle':
             command = ['gradle', 'compileJava']  # Compilar código sem empacotar
