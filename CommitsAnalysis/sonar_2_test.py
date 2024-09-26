@@ -4,23 +4,19 @@ import json
 import os
 import csv
 import requests
+import argparse
 
-# Configurações
+# Configurações padrão
 SONAR_SCANNER_CMD = 'sonar-scanner'
-SONAR_PROJECT_KEY = 'dubbo'
 SONAR_URL = 'http://localhost:9001'
 SONAR_TOKEN = 'squ_fbf2adf1fd0fa1ba8d5f0387cd01e4e20d773451'
 RESULTS_DIR = 'results_sonar'
-REPO_PATH = f'repos/{SONAR_PROJECT_KEY}'
-BRANCH = '3.3'
-SONAR_BINARIES_PATH = 'target/classes'
-CSV_FILE = 'sonarqube_metrics.csv'
 
-def get_sonar_metrics():
+def get_sonar_metrics(sonar_project_key):
     metric_keys = 'code_smells,bugs,vulnerabilities,coverage,duplicated_lines_density,ncloc,files,functions,complexity,comment_lines,sqale_index,sqale_debt_ratio'
     measures_url = f'{SONAR_URL}/api/measures/component'
     params = {
-        'component': SONAR_PROJECT_KEY,
+        'component': sonar_project_key,
         'metricKeys': metric_keys
     }
     auth = (SONAR_TOKEN, '')
@@ -34,8 +30,8 @@ def get_sonar_metrics():
         print(f"Erro ao obter métricas do SonarQube: {response.text}")
         return None
 
-def save_metrics_to_csv(metrics_data, commit_sha, initial_dir):
-    result_file = os.path.join(initial_dir, RESULTS_DIR, CSV_FILE)
+def save_metrics_to_csv(metrics_data, commit_sha, initial_dir, csv_file):
+    result_file = os.path.join(initial_dir, RESULTS_DIR, csv_file)
     file_exists = os.path.isfile(result_file)
 
     print(f"CSV file exists: {file_exists}")
@@ -67,9 +63,9 @@ def build_project():
         print(f"Erro ao executar o build: {e}")
         return False
 
-def run_sonar_scanner(repo, commit_sha):
+def run_sonar_scanner(repo, commit_sha, sonar_project_key, sonar_binaries_path, csv_file, branch):
     initial_dir = os.getcwd()
-    os.chdir(REPO_PATH)
+    os.chdir(f'repos/{sonar_project_key}')
     
     try:
         # Check out do commit
@@ -80,13 +76,13 @@ def run_sonar_scanner(repo, commit_sha):
         
         # Configurar o SonarQube Scanner
         sonar_properties = f"""
-        sonar.projectKey={SONAR_PROJECT_KEY}
+        sonar.projectKey={sonar_project_key}
         sonar.sources=.
         sonar.host.url={SONAR_URL}
         sonar.token={SONAR_TOKEN}
         sonar.login={SONAR_TOKEN}
         sonar.sourceEncoding=UTF-8
-        sonar.java.binaries={SONAR_BINARIES_PATH}
+        sonar.java.binaries={sonar_binaries_path}
         """
         
         # Salvar a configuração 
@@ -114,9 +110,9 @@ def run_sonar_scanner(repo, commit_sha):
         print(f"Resultados do commit {commit_sha} armazenados em {result_file}")
         
         # Obter métricas do SonarQube e salvar em CSV
-        metrics_data = get_sonar_metrics()
+        metrics_data = get_sonar_metrics(sonar_project_key)
         if metrics_data:
-            save_metrics_to_csv(metrics_data, commit_sha, initial_dir)
+            save_metrics_to_csv(metrics_data, commit_sha, initial_dir, csv_file)
     
     except Exception as e:
         print(f"Erro ao processar o commit {commit_sha}: {e}")
@@ -125,25 +121,35 @@ def run_sonar_scanner(repo, commit_sha):
         os.chdir(initial_dir)
 
 def main():
+    # Configurando argparse
+    parser = argparse.ArgumentParser(description="Rodar o SonarQube Scanner em múltiplos commits.")
+    parser.add_argument('--csv_file', required=True, help='Nome do arquivo CSV para salvar as métricas do SonarQube.')
+    parser.add_argument('--sonar_project_key', required=True, help='Chave do projeto no SonarQube.')
+    parser.add_argument('--branch', required=True, help='Branch a ser analisada.')
+    parser.add_argument('--sonar_binaries_path', required=True, help='Caminho para os binários do Java.')
+
+    args = parser.parse_args()
+
     try:
-        print(REPO_PATH)
-        repo = git.Repo(REPO_PATH)
+        repo_path = f'repos/{args.sonar_project_key}'
+        print(repo_path)
+        repo = git.Repo(repo_path)
     except git.exc.InvalidGitRepositoryError:
-        print(f"Erro: O caminho {REPO_PATH} não é um repositório Git válido.")
+        print(f"Erro: O caminho {repo_path} não é um repositório Git válido.")
         return
     except Exception as e:
         print(f"Erro ao abrir o repositório: {e}")
         return
 
     try:
-        commits = list(repo.iter_commits(BRANCH))  
+        commits = list(repo.iter_commits(args.branch))  
     except Exception as e:
         print(f"Erro ao obter commits: {e}")
         return
 
     for commit in commits:
         try:
-            run_sonar_scanner(repo, commit.hexsha)
+            run_sonar_scanner(repo, commit.hexsha, args.sonar_project_key, args.sonar_binaries_path, args.csv_file, args.branch)
         except Exception as e:
             print(f"Erro ao analisar o commit {commit.hexsha}: {e}")
         finally:
