@@ -56,8 +56,27 @@ def build_project(build_tool):
 
         if build_tool == 'maven':
             result = subprocess.run(['mvn', 'clean', 'install'], capture_output=True, text=True)
+            
+            # Verificar por erro específico do maven-enforcer-plugin
+            if "Some Enforcer rules have failed" in result.stderr:
+                print("Erro no Maven Enforcer Plugin detectado.")
+                print("Veja o log acima para mais detalhes e considere verificar:")
+                print("1. Versão de dependências ou Java incompatíveis.")
+                print("2. Regras do plugin maven-enforcer-plugin no arquivo pom.xml.")
+                print("3. Rode o comando com `-X` para mais detalhes de depuração:")
+                print("   mvn clean install -X")
+                print("4. Tente ignorar o plugin com `-Denforcer.skip=true`:")
+                print("   mvn clean install -Denforcer.skip=true")
+                return False
+
         elif build_tool == 'gradle':
             result = subprocess.run(['gradle', 'clean', 'build'], capture_output=True, text=True)
+
+            # Verificar erro específico do Gradle relacionado ao plugin Shadow
+            if "This version of Shadow supports Gradle 8.3+ only" in result.stderr:
+                print("Erro: a versão do plugin Shadow requer Gradle 8.3 ou superior.")
+                print("Solução: atualize a versão do Gradle ou utilize uma versão mais antiga do plugin Shadow.")
+                return False
         else:
             print(f"Ferramenta de build {build_tool} não suportada.")
             return False
@@ -65,8 +84,10 @@ def build_project(build_tool):
         if result.returncode != 0:
             print(f"Erro no build com {build_tool}: {result.stderr}")
             return False
+
         print(f"Build do projeto realizado com sucesso usando {build_tool}.")
         return True
+
     except Exception as e:
         print(f"Erro ao executar o build: {e}")
         return False
