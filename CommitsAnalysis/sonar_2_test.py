@@ -9,8 +9,34 @@ import argparse
 # Configurações padrão
 SONAR_SCANNER_CMD = 'sonar-scanner'
 SONAR_URL = 'http://localhost:9001'
-SONAR_TOKEN = 'squ_fbf2adf1fd0fa1ba8d5f0387cd01e4e20d773451'
+SONAR_USER = 'admin'  # Usuário do SonarQube
+SONAR_PASS = 'admin'  # Senha do SonarQube
+SONAR_TOKEN = None    # O token será gerado automaticamente
 RESULTS_DIR = 'results_sonar'
+
+
+def generate_new_sonar_token():
+    """Gera um novo token de autenticação no SonarQube."""
+    global SONAR_TOKEN
+    token_name = 'sonnar_token_renewed'
+    
+    print("Gerando um novo token do SonarQube...")
+    
+    response = requests.post(
+        f'{SONAR_URL}/api/user_tokens/generate',
+        auth=(SONAR_USER, SONAR_PASS),
+        data={'name': token_name}
+    )
+    
+    if response.status_code == 200:
+        SONAR_TOKEN = response.json()['token']
+        print(f"Novo token gerado: {SONAR_TOKEN}")
+    else:
+        print(f"Erro ao gerar um novo token: {response.text}")
+        return None
+    
+    return SONAR_TOKEN
+
 
 def get_sonar_metrics(sonar_project_key):
     metric_keys = 'code_smells,bugs,vulnerabilities,coverage,duplicated_lines_density,ncloc,files,functions,complexity,comment_lines,sqale_index,sqale_debt_ratio'
@@ -24,11 +50,27 @@ def get_sonar_metrics(sonar_project_key):
     response = requests.get(measures_url, params=params, auth=auth)
     print(f"SonarQube API response status: {response.status_code}")
     print(f"SonarQube API response: {response.text}")
-    if response.status_code == 200:
+    
+    if response.status_code == 401:  # Falha de autenticação
+        print("Token expirado ou inválido. Tentando gerar um novo token...")
+        if generate_new_sonar_token():
+            # Tentar novamente após gerar novo token
+            auth = (SONAR_TOKEN, '')
+            response = requests.get(measures_url, params=params, auth=auth)
+            if response.status_code == 200:
+                return response.json()
+            else:
+                print(f"Erro ao obter métricas do SonarQube após renovar token: {response.text}")
+                return None
+        else:
+            print("Falha ao gerar novo token.")
+            return None
+    elif response.status_code == 200:
         return response.json()
     else:
         print(f"Erro ao obter métricas do SonarQube: {response.text}")
         return None
+
 
 def save_metrics_to_csv(metrics_data, commit_sha, initial_dir, csv_file):
     result_file = os.path.join(initial_dir, RESULTS_DIR, csv_file)
@@ -50,6 +92,7 @@ def save_metrics_to_csv(metrics_data, commit_sha, initial_dir, csv_file):
         writer.writerow(metrics)
         print(f"Metrics for commit {commit_sha} written to CSV")
 
+
 def build_project(build_tool, skip_tests=True):
     try:
         print(f"Iniciando build do projeto com {build_tool}...")
@@ -60,16 +103,8 @@ def build_project(build_tool, skip_tests=True):
                 command.append('-DskipTests')  # Ignorar testes no Maven
             result = subprocess.run(command, capture_output=True, text=True)
 
-            # Verificar por erro específico do maven-enforcer-plugin
             if "Some Enforcer rules have failed" in result.stderr:
                 print("Erro no Maven Enforcer Plugin detectado.")
-                print("Veja o log acima para mais detalhes e considere verificar:")
-                print("1. Versão de dependências ou Java incompatíveis.")
-                print("2. Regras do plugin maven-enforcer-plugin no arquivo pom.xml.")
-                print("3. Rode o comando com `-X` para mais detalhes de depuração:")
-                print("   mvn compile -X")
-                print("4. Tente ignorar o plugin com `-Denforcer.skip=true`:")
-                print("   mvn compile -Denforcer.skip=true")
                 return False
 
         elif build_tool == 'gradle':
@@ -79,10 +114,8 @@ def build_project(build_tool, skip_tests=True):
                 command.append('test')
             result = subprocess.run(command, capture_output=True, text=True)
 
-            # Verificar erro específico do Gradle relacionado ao plugin Shadow
             if "This version of Shadow supports Gradle 8.3+ only" in result.stderr:
                 print("Erro: a versão do plugin Shadow requer Gradle 8.3 ou superior.")
-                print("Solução: atualize a versão do Gradle ou utilize uma versão mais antiga do plugin Shadow.")
                 return False
         else:
             print(f"Ferramenta de build {build_tool} não suportada.")
@@ -157,6 +190,7 @@ def run_sonar_scanner(repo, commit_sha, sonar_project_key, sonar_binaries_path, 
     finally:
         os.chdir(initial_dir)
 
+
 def main():
     # Configurando argparse
     parser = argparse.ArgumentParser(description="Rodar o SonarQube Scanner em múltiplos commits.")
@@ -179,24 +213,21 @@ def main():
         print(f"Erro ao abrir o repositório: {e}")
         return
 
-    try:
-        commits = list(repo.iter_commits(args.branch))  
-    except Exception as e:
-        print(f"Erro ao obter commits: {e}")
+    # Gerar o token do SonarQube no início
+    if not generate_new_sonar_token():
+        print("Erro ao gerar token inicial do SonarQube. Abortando.")
         return
 
-    for commit in commits:
-        try:
+    try:
+        commits = list(repo.iter_commits(args.branch))
+        print(f"Commits encontrados: {len(commits)}")
+
+        for commit in commits:
             run_sonar_scanner(repo, commit.hexsha, args.sonar_project_key, args.sonar_binaries_path, args.csv_file, args.build_tool, args.branch)
-        except Exception as e:
-            print(f"Erro ao analisar o commit {commit.hexsha}: {e}")
-        finally:
-            # Limpeza
-            try:
-                repo.git.reset('--hard', 'HEAD')
-                repo.git.clean('-fd')
-            except Exception as cleanup_error:
-                print(f"Erro ao limpar o repositório após o commit {commit.hexsha}: {cleanup_error}")
+    
+    except Exception as e:
+        print(f"Erro durante a execução: {e}")
+
 
 if __name__ == "__main__":
     main()
