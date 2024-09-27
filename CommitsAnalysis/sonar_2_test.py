@@ -204,6 +204,9 @@ def run_sonar_scanner(commit_sha, sonar_project_key, sonar_binaries_path, csv_fi
     os.chdir(repo_path)
     
     try:
+        # Stash changes before checking out a new commit
+        repo.git.stash('save')
+
         # Check out do commit
         repo.git.checkout(commit_sha)
 
@@ -231,10 +234,12 @@ def run_sonar_scanner(commit_sha, sonar_project_key, sonar_binaries_path, csv_fi
         if metrics_data:
             save_metrics_to_csv(metrics_data, commit_sha, initial_dir, csv_file)
 
+
     except Exception as e:
         print(f"Erro ao executar o sonar-scanner: {e}")
     finally:
         os.chdir(initial_dir)  # Retorna ao diretório inicial
+
 
 
 def main(sonar_project_key, csv_file, sonar_binaries_path, build_tool, branch):
