@@ -7,7 +7,7 @@ import requests
 import argparse
 import random
 import string
-import xml.etree.ElementTree as ET
+from lxml import etree as ET
 
 # Configurações padrão
 SONAR_SCANNER_CMD = 'sonar-scanner'
@@ -109,35 +109,36 @@ def save_metrics_to_csv(metrics_data, commit_sha, initial_dir, csv_file):
 def modify_pom(pom_path):
     """Adiciona a exclusão do plugin Apache RAT no pom.xml."""
     try:
-        tree = ET.parse(pom_path)
+        parser = ET.XMLParser(remove_blank_text=True)
+        tree = ET.parse(pom_path, parser)
         root = tree.getroot()
 
-        # Namespace do XML
-        ns = {'maven': 'http://maven.apache.org/POM/4.0.0'}
+        # Namespace correto
+        ns = {'mvn': 'http://maven.apache.org/POM/4.0.0'}
+        
+        # Verifica se já existe a seção de plugins, senão, cria
+        build = root.find('mvn:build', namespaces=ns)
+        if build is None:
+            build = ET.SubElement(root, '{http://maven.apache.org/POM/4.0.0}build')
+        
+        plugins = build.find('mvn:plugins', namespaces=ns)
+        if plugins is None:
+            plugins = ET.SubElement(build, '{http://maven.apache.org/POM/4.0.0}plugins')
 
-        # Criar a seção de exclusão se não existir
-        exclusions = root.find('maven:build/maven:plugins', ns)
-        if exclusions is None:
-            build = root.find('maven:build', ns)
-            if build is None:
-                build = ET.SubElement(root, 'build')
-            exclusions = ET.SubElement(build, 'plugins')
-
-        # Adicionar a exclusão do Apache RAT
-        rat_plugin = ET.SubElement(exclusions, 'plugin')
-        group_id = ET.SubElement(rat_plugin, 'groupId')
+        # Adiciona o plugin do Apache RAT
+        rat_plugin = ET.SubElement(plugins, '{http://maven.apache.org/POM/4.0.0}plugin')
+        group_id = ET.SubElement(rat_plugin, '{http://maven.apache.org/POM/4.0.0}groupId')
         group_id.text = 'org.apache.rat'
-        artifact_id = ET.SubElement(rat_plugin, 'artifactId')
+        artifact_id = ET.SubElement(rat_plugin, '{http://maven.apache.org/POM/4.0.0}artifactId')
         artifact_id.text = 'apache-rat-plugin'
-        version = ET.SubElement(rat_plugin, 'version')
+        version = ET.SubElement(rat_plugin, '{http://maven.apache.org/POM/4.0.0}version')
         version.text = '0.13'
 
-        # Salvar o pom.xml modificado
-        tree.write(pom_path, xml_declaration=True, encoding='utf-8')
+        # Salva o arquivo corrigido
+        tree.write(pom_path, pretty_print=True, xml_declaration=True, encoding='UTF-8')
         print(f"Exclusão do plugin Apache RAT adicionada ao {pom_path}.")
     except Exception as e:
         print(f"Erro ao modificar o pom.xml: {e}")
-
 
 def build_project(build_tool, skip_tests=True, disable_enforcer=False):
     try:
