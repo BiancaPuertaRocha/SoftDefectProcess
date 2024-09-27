@@ -140,7 +140,7 @@ def modify_pom(pom_path):
     except Exception as e:
         print(f"Erro ao modificar o pom.xml: {e}")
 
-def build_project(build_tool, skip_tests=True, disable_enforcer=False):
+def build_project(build_tool, skip_tests=True, disable_enforcer=True):
     try:
         print(f"Iniciando build do projeto com {build_tool}...")
 
