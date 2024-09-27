@@ -140,7 +140,7 @@ def modify_pom(pom_path):
     except Exception as e:
         print(f"Erro ao modificar o pom.xml: {e}")
 
-def build_project(build_tool, skip_tests=True, disable_enforcer=True):
+def build_project(build_tool, skip_tests=True, disable_enforcer=False):
     try:
         print(f"Iniciando build do projeto com {build_tool}...")
 
@@ -152,6 +152,7 @@ def build_project(build_tool, skip_tests=True, disable_enforcer=True):
             command = ['mvn', 'compile']  # Compilar código sem empacotar
             if skip_tests:
                 command.append('-DskipTests')  # Ignorar testes no Maven
+                command.append('-X')
             if disable_enforcer:
                 command.append('-Denforcer.skip=true')  # Desabilitar Maven Enforcer Plugin
             result = subprocess.run(command, capture_output=True, text=True)
