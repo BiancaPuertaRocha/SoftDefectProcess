@@ -230,7 +230,7 @@ def run_sonar_scanner(commit_sha, sonar_project_key, sonar_binaries_path, csv_fi
 
 
 
-def main(sonar_project_key, csv_file, sonar_binaries_path, build_tool, branch):
+def main(sonar_project_key, csv_file, sonar_binaries_path, build_tool, branch, modify_pom):
     # Determina automaticamente o caminho do repositório
     repo_path = os.path.join(os.getcwd(), 'repos', sonar_project_key)
 
@@ -248,7 +248,7 @@ def main(sonar_project_key, csv_file, sonar_binaries_path, build_tool, branch):
     # Para cada commit, executa o SonarQube
     for commit in repo.iter_commits(branch):
         print(f"Processando commit {commit.hexsha}...")
-        run_sonar_scanner(commit.hexsha, sonar_project_key, sonar_binaries_path, csv_file, build_tool, branch)
+        run_sonar_scanner(commit.hexsha, sonar_project_key, sonar_binaries_path, csv_file, build_tool, branch, modify_pom)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Executa SonarQube Scanner para cada commit.')
