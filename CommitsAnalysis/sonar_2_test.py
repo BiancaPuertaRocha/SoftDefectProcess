@@ -140,48 +140,33 @@ def modify_pom(pom_path):
     except Exception as e:
         print(f"Erro ao modificar o pom.xml: {e}")
 
-def build_project(build_tool, skip_tests=True, disable_enforcer=False):
+def build_project(build_tool, skip_tests=True, disable_enforcer=False, modify_pom=False):
     try:
         print(f"Iniciando build do projeto com {build_tool}...")
 
-        # Modificar o pom.xml para adicionar a exclusão do plugin RAT
-        if build_tool == 'maven':
+        # Modificar o pom.xml para adicionar a exclusão do plugin RAT se o usuário solicitou
+        if build_tool == 'maven' and modify_pom:
             pom_path = 'pom.xml'
-            modify_pom(pom_path)  # Adicione esta linha
+            modify_pom(pom_path)
 
-            command = ['mvn', 'compile']  # Compilar código sem empacotar
-            if skip_tests:
-                command.append('-DskipTests')  # Ignorar testes no Maven
-                command.append('-X')
-            if disable_enforcer:
-                command.append('-Denforcer.skip=true')  # Desabilitar Maven Enforcer Plugin
+        command = ['mvn', 'compile']  # Compilar código sem empacotar
+        if skip_tests:
+            command.append('-DskipTests')  # Ignorar testes no Maven
+        if disable_enforcer:
+            command.append('-Denforcer.skip=true')  # Desabilitar Maven Enforcer Plugin
+        result = subprocess.run(command, capture_output=True, text=True)
+
+        if "Some Enforcer rules have failed" in result.stderr:
+            print("Erro no Maven Enforcer Plugin detectado.")
+            print("Tentando compilar novamente com Enforcer Plugin desabilitado...")
+            command.append('-Denforcer.skip=true')  # Desabilitar Maven Enforcer Plugin
             result = subprocess.run(command, capture_output=True, text=True)
-
-            if "Some Enforcer rules have failed" in result.stderr:
-                print("Erro no Maven Enforcer Plugin detectado.")
-                print("Tentando compilar novamente com Enforcer Plugin desabilitado...")
-                command.append('-Denforcer.skip=true')  # Desabilitar Maven Enforcer Plugin
-                result = subprocess.run(command, capture_output=True, text=True)
-                if result.returncode != 0:
-                    print(f"Erro no build mesmo com o Enforcer Plugin desabilitado: {result.stderr}")
-                    return False
-                else:
-                    print("Build realizado com sucesso após desabilitar o Maven Enforcer Plugin.")
-                    return True
-
-        elif build_tool == 'gradle':
-            command = ['gradle', 'compileJava']  # Compilar código sem empacotar
-            if skip_tests:
-                command.append('-x')  # Excluir testes no Gradle
-                command.append('test')
-            result = subprocess.run(command, capture_output=True, text=True)
-
-            if "This version of Shadow supports Gradle 8.3+ only" in result.stderr:
-                print("Erro: a versão do plugin Shadow requer Gradle 8.3 ou superior.")
+            if result.returncode != 0:
+                print(f"Erro no build mesmo com o Enforcer Plugin desabilitado: {result.stderr}")
                 return False
-        else:
-            print(f"Ferramenta de build {build_tool} não suportada.")
-            return False
+            else:
+                print("Build realizado com sucesso após desabilitar o Maven Enforcer Plugin.")
+                return True
 
         print(f"Build do projeto realizado com sucesso usando {build_tool}.")
         return True
@@ -191,7 +176,8 @@ def build_project(build_tool, skip_tests=True, disable_enforcer=False):
         return False
 
 
-def run_sonar_scanner(commit_sha, sonar_project_key, sonar_binaries_path, csv_file, build_tool, branch):
+
+def run_sonar_scanner(commit_sha, sonar_project_key, sonar_binaries_path, csv_file, build_tool, branch, modify_pom):
     # Determina automaticamente o caminho do repositório
     repo_path = os.path.join(os.getcwd(), 'repos', sonar_project_key)
     
@@ -213,7 +199,7 @@ def run_sonar_scanner(commit_sha, sonar_project_key, sonar_binaries_path, csv_fi
         repo.git.checkout(commit_sha)
 
         # Realizar o build do projeto
-        build_success = build_project(build_tool)  # Continue independente do sucesso do build
+        build_success = build_project(build_tool, modify_pom=modify_pom)  # Passe o parâmetro modify_pom
         
         # Configurar o SonarQube Scanner
         sonar_properties = f"""
@@ -271,6 +257,7 @@ if __name__ == '__main__':
     parser.add_argument('--sonar_binaries_path', required=True, help='Caminho para os binários do SonarQube.')
     parser.add_argument('--build_tool', required=True, choices=['maven', 'gradle'], help='Ferramenta de build a ser utilizada.')
     parser.add_argument('--branch', required=True, help='Nome da branch a ser processada.')
+    parser.add_argument('--modify_pom', action='store_true', help='Modifica o pom.xml para adicionar exclusão do plugin Apache RAT (opcional).')
 
     args = parser.parse_args()
-    main(args.sonar_project_key, args.csv_file, args.sonar_binaries_path, args.build_tool, args.branch)
+    main(args.sonar_project_key, args.csv_file, args.sonar_binaries_path, args.build_tool, args.branch, args.modify_pom)
