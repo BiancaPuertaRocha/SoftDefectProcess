@@ -144,8 +144,9 @@ def main(sonar_project_key, output_csv, branch, sonar_sources):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Executa SonarQube Scanner para cada commit.')
+    parser.add_argument('--sonar_project_key', required=True, help='Name of the project')
     parser.add_argument('--output_csv', required=True, help='Name of the file to save metrics')
     parser.add_argument('--branch', required=True, help='Branch name')
     parser.add_argument('--sonar_sources',  required=True, help='location of .java files')
     args = parser.parse_args()
-    main(args.output_csv, args.branch, args.sonar_sources)
+    main(args.sonar_project_key, args.output_csv, args.branch, args.sonar_sources)
