@@ -19,6 +19,7 @@ SONAR_TOKEN = None    # Auto generated token
 RESULTS_DIR = 'results_sonar'
 
 def get_sonar_metrics(sonar_project_key):
+    global SONAR_TOKEN
     metric_keys = 'code_smells,bugs,vulnerabilities,coverage,duplicated_lines_density,ncloc,files,functions,complexity,comment_lines,sqale_index,sqale_debt_ratio'
     measures_url = f'{SONAR_URL}/api/measures/component'
     params = {
@@ -75,6 +76,7 @@ def save_metrics_to_csv(metrics_data, commit_sha, initial_dir, output_csv):
 
 
 def run_sonar_scanner(commit_sha, sonar_project_key, output_csv, branch, sonar_sources):
+    global SONAR_TOKEN
     # Determine repo path
     repo_path = os.path.join(os.getcwd(), 'repos', sonar_project_key)
     
