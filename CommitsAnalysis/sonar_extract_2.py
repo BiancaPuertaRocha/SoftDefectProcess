@@ -33,7 +33,8 @@ def get_sonar_metrics(sonar_project_key):
     
     if response.status_code == 401:  # auth failed
         print("Token expired or invalid. Trying to generate a new token...")
-        if generate_new_sonar_token(sonar_url=SONAR_URL, sonar_user=SONAR_USER, sonar_pass=SONAR_PASS):
+        SONAR_TOKEN = generate_new_sonar_token(sonar_url=SONAR_URL, sonar_user=SONAR_USER, sonar_pass=SONAR_PASS)
+        if SONAR_TOKEN:
             # Try again after generating new token
             auth = (SONAR_TOKEN, '')
             response = requests.get(measures_url, params=params, auth=auth)
