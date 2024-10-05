@@ -11,7 +11,7 @@ from lxml import etree as ET
 
 from utils import generate_new_sonar_token
 
-SONAR_SCANNER_CMD = 'sonar-scanner'
+SONAR_SCANNER_CMD = 'sonar-scanner -X'
 SONAR_URL = 'http://localhost:9001'
 SONAR_USER = 'admin'  # SonarQube user
 SONAR_PASS = 'admin'  # SonarQube pass
@@ -101,7 +101,8 @@ def run_sonar_scanner(commit_sha, sonar_project_key, output_csv, branch, sonar_s
         sonar.login={SONAR_TOKEN}
         sonar.language=java
         sonar.sourceEncoding=UTF-8
-        sonar.sources={sonar_sources}
+        sonar.sources={sonar_sources},
+        sonar.exclusions=**/*.class
         """
         print(sonar_properties)
         
