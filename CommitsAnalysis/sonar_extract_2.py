@@ -11,7 +11,7 @@ from lxml import etree as ET
 
 from utils import generate_new_sonar_token
 
-SONAR_SCANNER_CMD = 'sonar-scanner -X'
+SONAR_SCANNER_CMD = 'sonar-scanner'
 SONAR_URL = 'http://localhost:9001'
 SONAR_USER = 'admin'  # SonarQube user
 SONAR_PASS = 'admin'  # SonarQube pass
@@ -110,7 +110,8 @@ def run_sonar_scanner(commit_sha, sonar_project_key, output_csv, branch, sonar_s
             f.write(sonar_properties)
         
         # Execute Sonar Scanner
-        result = subprocess.run([SONAR_SCANNER_CMD], capture_output=True, text=True)
+        result = subprocess.run([SONAR_SCANNER_CMD, '-X'], capture_output=True, text=True)
+
 
         # Save metrics
         metrics_data = get_sonar_metrics(sonar_project_key)
