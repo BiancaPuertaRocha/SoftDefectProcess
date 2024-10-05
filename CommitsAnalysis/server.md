@@ -22,6 +22,12 @@ sudo ln -s /opt/sonar-scanner/bin/sonar-scanner /usr/local/bin/sonar-scanner
 
 ```
 
+## Create dir to store the repos
+
+```
+  mkdir repos
+```
+
 # Run
 
 ## Step 1:
