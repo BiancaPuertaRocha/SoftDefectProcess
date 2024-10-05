@@ -1,0 +1,34 @@
+Danilo Medeiros *****************
+
+- mistura de objetivos
+- objetivos nao sao encontrados no texto, falta investigar na literatura (objetivos da quali confundidos com estudos especiais)
+
+Pnesando na quali
+Metricas no contexto da mineração de repositorio/no contexto de quem trabalha com tratamento de dados
+rever titulo 2.5 (pq sao tecnicas classicas)
+
+Redução de feature transformando as features e nao removendo
+
+Ideia de mestrado: generalizar pra outros repositorios algo que é local
+
+Danilo Roberto *******************
+ - metodo FEMA desse professor com resultados promissores (é do tipo filter)
+ - gerar novas features com as features que vc tem? (pode ate ser uma questao de doutorado) - programção negetica
+ - na apresentação faltou um pouco de conceitos de engenharia de software
+ - trabalhar um pouco de explainable IA pra selecionar atributos, pode ajudar um metodo Naive de selecao (shape e limi - seleção de features)
+
+ - pesquisa do kernel tem uma heuristica pos tras, importante corrigir e ressaltar (nao é tao força bruta)
+ - traduzir todas as figuras
+
+ - SSO (resultado melhor que PSO)
+ - Tradução de palavras e colocar o que for em italico, mas a maioria traduzir
+
+
+Porém, neste trabalho, é utilizado o aprendizado profundo
+(Deep Learning), removendo a necessidade de dados de treinamento iniciais e
+promovendo a utilização de dados não estruturados para a predição. ??????????????????????????
+
+Rogério **************
+Qual é a caracteristica ou conjunto de caracteristicas que justificam a aplicação dessas tecnicas? falar mais de engenharia
+Tipo de dado que é analisado. Código fonte, artefato de modificação, report de defeito. Isso justifica essa gama de tecnicas
+Pq existe desbalanceamento? quais dados eu tenho justamente sobre os defeitos. Precisa escrever isso pra justificar o contexto do trabalho

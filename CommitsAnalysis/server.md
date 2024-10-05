@@ -5,16 +5,7 @@
 docker-compose up
 ```
 
-## Generate Token
-```
-curl -X POST -u "admin:admin" \
-"http://127.0.0.1:9001/api/user_tokens/generate" \
--d "name=sonnar_token"
-
-```
-substituir token em sonar_scanner_commits_2.py
-
-## Create project sonar qube
+## Create project sonar
 
 ```
 curl -u "admin:admin" -X POST "http://localhost:9001/api/projects/create" \
@@ -31,17 +22,15 @@ sudo ln -s /opt/sonar-scanner/bin/sonar-scanner /usr/local/bin/sonar-scanner
 
 ```
 
-## Run SonnarScanner (docker)
-```
-docker run \
-  --rm \
-  -e SONAR_HOST_URL="https://your-sonarqube-server" \
-  -e SONAR_LOGIN="your-token" \
-  -v $(pwd):/usr/src \
-  sonarsource/sonar-scanner-cli
+# Run
 
+## Step 1:
 
 ```
+  python commits_extract_1.py --repo_owner apache --repo_name airflow --output_csv commits_data.csv
+```
 
-
-python script.py --csv_file sonarqube_metrics.csv --sonar_project_key dubbo --branch 3.3 --sonar_binaries_path target/classes --build_tool maven
+## Step 2:
+```
+  python sonar_extract_2.py --output_csv sonarqube_metrics.csv --sonar_project_key dubbo --branch 3.3 --sonar_sources src
+```
