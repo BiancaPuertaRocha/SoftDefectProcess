@@ -102,9 +102,8 @@ def run_sonar_scanner(commit_sha, sonar_project_key, output_csv, branch, sonar_s
         sonar.language=java
         sonar.sourceEncoding=UTF-8
         sonar.sources={sonar_sources}
-        sonar.language=java
-        sonar.java.binaries=
         """
+        print(sonar_properties)
         
         with open('sonar-project.properties', 'w') as f:
             f.write(sonar_properties)
