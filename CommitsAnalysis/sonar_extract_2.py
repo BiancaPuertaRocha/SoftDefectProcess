@@ -18,13 +18,14 @@ SONAR_PASS = 'admin'  # SonarQube pass
 SONAR_TOKEN = None    # Auto generated token
 RESULTS_DIR = 'results_sonar'
 
-def get_sonar_metrics(sonar_project_key):
+def get_sonar_metrics(sonar_project_key, commit_sha):
     global SONAR_TOKEN
     metric_keys = 'code_smells,bugs,vulnerabilities,coverage,duplicated_lines_density,ncloc,files,functions,complexity,comment_lines,sqale_index,sqale_debt_ratio'
     measures_url = f'{SONAR_URL}/api/measures/component'
     params = {
         'component': sonar_project_key,
-        'metricKeys': metric_keys
+        'metricKeys': metric_keys,
+        'branch': commit_sha
     }
     auth = (SONAR_TOKEN, '')
 
@@ -48,6 +49,7 @@ def get_sonar_metrics(sonar_project_key):
             print("Fail generating token.")
             return None
     elif response.status_code == 200:
+        print(response.json())
         return response.json()
     else:
         print(f"Erro ao obter métricas do SonarQube: {response.text}")
@@ -110,11 +112,11 @@ def run_sonar_scanner(commit_sha, sonar_project_key, output_csv, branch, sonar_s
             f.write(sonar_properties)
         
         # Execute Sonar Scanner
-        result = subprocess.run([SONAR_SCANNER_CMD, '-X'], capture_output=True, text=True)
+        result = subprocess.run([SONAR_SCANNER_CMD], capture_output=True, text=True)
 
 
         # Save metrics
-        metrics_data = get_sonar_metrics(sonar_project_key)
+        metrics_data = get_sonar_metrics(sonar_project_key, commit_sha)
         if metrics_data:
             save_metrics_to_csv(metrics_data, commit_sha, initial_dir, output_csv)
 
