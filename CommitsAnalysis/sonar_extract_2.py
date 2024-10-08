@@ -102,7 +102,7 @@ def run_sonar_scanner(commit_sha, sonar_project_key, output_csv, branch, sonar_s
         sonar.host.url={SONAR_URL}
         sonar.login={SONAR_TOKEN}
         sonar.sources={sonar_sources},
-        sonar.java.binaries=
+        sonar.java.binaries=.
         """
         print(sonar_properties)
         
