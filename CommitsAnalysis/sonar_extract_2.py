@@ -25,7 +25,7 @@ def get_sonar_metrics(sonar_project_key, commit_sha):
     params = {
         'component': sonar_project_key,
         'metricKeys': metric_keys,
-        'branch': commit_sha
+        #'branch': commit_sha
     }
     auth = (SONAR_TOKEN, '')
 
