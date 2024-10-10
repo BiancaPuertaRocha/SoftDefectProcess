@@ -70,6 +70,27 @@ def get_bug_locations(sonar_project_key, commit_sha):
         return None
 
 
+def get_code_smells(sonar_project_key, commit_sha):
+    issues_url = f'{SONAR_URL}/api/issues/search'
+    params = {
+        'componentKeys': sonar_project_key,
+        'types': 'CODE_SMELL',
+        'statuses': 'OPEN,REOPENED,CONFIRMED',
+        'resolved': 'false'
+    }
+    auth = (SONAR_TOKEN, '')
+
+    response = requests.get(issues_url, params=params, auth=auth)
+    print(f"SonarQube API issues response status: {response.status_code}")
+    print(f"SonarQube API issues response: {response.text}")
+    
+    if response.status_code == 200:
+        return response.json()
+    else:
+        print(f"Erro ao obter code smells do SonarQube: {response.text}")
+        return None
+
+
 def save_bugs_to_csv(bugs_data, commit_sha, initial_dir, output_csv_bugs):
     result_file = os.path.join(initial_dir, RESULTS_DIR, output_csv_bugs)
     file_exists = os.path.isfile(result_file)
@@ -98,6 +119,34 @@ def save_bugs_to_csv(bugs_data, commit_sha, initial_dir, output_csv_bugs):
         print(f"Bug data for commit {commit_sha} written to CSV")
 
 
+def save_code_smells_to_csv(code_smells_data, commit_sha, initial_dir, output_csv_smells):
+    result_file = os.path.join(initial_dir, RESULTS_DIR, output_csv_smells)
+    file_exists = os.path.isfile(result_file)
+
+    print(f"CSV file for code smells exists: {file_exists}")
+    with open(result_file, 'a', newline='') as csvfile:
+        fieldnames = ['commit_sha', 'file', 'line', 'code_smell_message', 'severity', 'status']
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        
+        if not file_exists:
+            writer.writeheader()
+            print(f"CSV header written for code smells: {fieldnames}")
+        
+        for issue in code_smells_data['issues']:
+            locations = issue.get('textRange', {})
+            file_info = {
+                'commit_sha': commit_sha,
+                'file': issue['component'],
+                'line': locations.get('startLine', 'N/A'),
+                'code_smell_message': issue['message'],
+                'severity': issue['severity'],
+                'status': issue['status']
+            }
+            print(f"Code smell data to write: {file_info}")
+            writer.writerow(file_info)
+        print(f"Code smell data for commit {commit_sha} written to CSV")
+
+
 def save_metrics_to_csv(metrics_data, commit_sha, initial_dir, output_csv):
     result_file = os.path.join(initial_dir, RESULTS_DIR, output_csv)
     file_exists = os.path.isfile(result_file)
@@ -119,7 +168,7 @@ def save_metrics_to_csv(metrics_data, commit_sha, initial_dir, output_csv):
         print(f"Metrics for commit {commit_sha} written to CSV")
 
 
-def run_sonar_scanner(commit_sha, sonar_project_key, output_csv, output_csv_bugs, branch, sonar_sources):
+def run_sonar_scanner(commit_sha, sonar_project_key, output_csv, output_csv_bugs, output_csv_smells, branch, sonar_sources):
     global SONAR_TOKEN
     repo_path = os.path.join(os.getcwd(), 'repos', sonar_project_key)
     
@@ -158,35 +207,24 @@ def run_sonar_scanner(commit_sha, sonar_project_key, output_csv, output_csv_bugs
         if bugs_data:
             save_bugs_to_csv(bugs_data, commit_sha, initial_dir, output_csv_bugs)
 
-    except Exception as e:
-        print(f"Error executing sonar-scanner: {e}")
+        # Get code smells and save to CSV
+        code_smells_data = get_code_smells(sonar_project_key, commit_sha)
+        if code_smells_data:
+            save_code_smells_to_csv(code_smells_data, commit_sha, initial_dir, output_csv_smells)
+        
     finally:
         os.chdir(initial_dir)
 
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Run SonarQube analysis for specific commits')
+    parser.add_argument('--commit_sha', required=True, help='Commit SHA to run SonarQube analysis on')
+    parser.add_argument('--sonar_project_key', required=True, help='SonarQube project key')
+    parser.add_argument('--branch', default='master', help='Branch to checkout')
+    parser.add_argument('--output_csv', default='sonar_metrics.csv', help='Output CSV file for metrics')
+    parser.add_argument('--output_csv_bugs', default='sonar_bugs.csv', help='Output CSV file for bugs')
+    parser.add_argument('--output_csv_smells', default='sonar_code_smells.csv', help='Output CSV file for code smells')
+    parser.add_argument('--sonar_sources', required=True, help='Sources to scan with SonarQube')
 
-def main(sonar_project_key, output_csv, output_csv_bugs, branch, sonar_sources):
-    repo_path = os.path.join(os.getcwd(), 'repos', sonar_project_key)
-
-    if not os.path.exists(RESULTS_DIR):
-        os.makedirs(RESULTS_DIR)
-
-    if not os.path.exists(repo_path):
-        print(f"Repo not found in {repo_path}. Cloning...")
-        repo = git.Repo.clone_from('REPO_URL', repo_path)
-    else:
-        repo = git.Repo(repo_path)
-
-    for commit in repo.iter_commits(branch):
-        print(f"Processing commit {commit.hexsha}...")
-        run_sonar_scanner(commit.hexsha, sonar_project_key, output_csv, output_csv_bugs, branch, sonar_sources)
-
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Executa SonarQube Scanner para cada commit e coleta métricas e bugs.')
-    parser.add_argument('--sonar_project_key', required=True, help='Name of the project')
-    parser.add_argument('--output_csv', required=True, help='Name of the file to save metrics')
-    parser.add_argument('--output_csv_bugs', required=True, help='Name of the file to save bugs')
-    parser.add_argument('--branch', required=True, help='Branch name')
-    parser.add_argument('--sonar_sources', required=True, help='location of .java files')
     args = parser.parse_args()
-    main(args.sonar_project_key, args.output_csv, args.output_csv_bugs, args.branch, args.sonar_sources)
+
+    run_sonar_scanner(args.commit_sha, args.sonar_project_key, args.output_csv, args.output_csv_bugs, args.output_csv_smells, args.branch, args.sonar_sources)
