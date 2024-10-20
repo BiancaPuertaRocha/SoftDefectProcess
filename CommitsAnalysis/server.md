@@ -1,16 +1,18 @@
 # Config server
 
+First, make sure your local git version is 2.43.0 and your python version is 3.9.6 (we had problems with the git and python versions).
+
 ## Run sonarQube (inside this repo)
 ```
 docker-compose up
 ```
 
-## Create project sonar
+## Create your sonar project
 
 ```
 curl -u "admin:admin" -X POST "http://localhost:9001/api/projects/create" \
-  -d "name=flink" \
-  -d "project=flink"
+  -d "name=project_name" \
+  -d "project=project_name"
 ```
 
 ## Install sonnar-scanner 
@@ -27,6 +29,13 @@ sudo ln -s /opt/sonar-scanner/bin/sonar-scanner /usr/local/bin/sonar-scanner
 ```
   mkdir repos
   mkdir sonar_results
+```
+
+## Create your virtual environment 
+```
+  python -m venv venv
+  source ./venv/bin/activate
+  pip install -r requirements 
 ```
 
 # Run
