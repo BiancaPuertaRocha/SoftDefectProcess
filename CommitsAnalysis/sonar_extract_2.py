@@ -181,11 +181,10 @@ def main(sonar_project_key, output_csv, output_csv_bugs, output_csv_smells, bran
             start_commit = repo.commit(start_sha)
             # Iterar pelos commits e processar até o commit especificado
             for commit in repo.iter_commits(branch):
-                if commit == start_commit or commit.committed_datetime < start_commit.committed_datetime:
+                # Se o commit for o início ou estiver antes do commit inicial, processá-lo
+                if commit.committed_datetime < start_commit.committed_datetime:
                     print(f"Processing commit {commit.hexsha}...")
                     run_sonar_scanner(commit.hexsha, sonar_project_key, output_csv, output_csv_bugs, output_csv_smells, sonar_sources)
-                if commit == start_commit:
-                    break  # Interromper após processar o commit especificado
         except git.exc.BadName:
             print(f"Commit SHA {start_sha} não encontrado.")
     else:
