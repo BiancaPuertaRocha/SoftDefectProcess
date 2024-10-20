@@ -1,0 +1,6 @@
+CommitsAnalysis/results_sonar/*.csv filter=lfs diff=lfs merge=lfs -text
+CommitsAnalysis/results_sonar/smells_iceberg_final filter=lfs diff=lfs merge=lfs -text
+CommitsAnalysis/results_sonar/bugs_iceberg_final.csv filter=lfs diff=lfs merge=lfs -text
+CommitsAnalysis/results_sonar/bugs_dubbo_final.csv filter=lfs diff=lfs merge=lfs -text
+CommitsAnalysis/results_sonar/smells_dubbo_final filter=lfs diff=lfs merge=lfs -text
+CommitsAnalysis/results_sonar/* filter=lfs diff=lfs merge=lfs -text
