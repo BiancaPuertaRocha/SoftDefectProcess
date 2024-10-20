@@ -163,7 +163,7 @@ def run_sonar_scanner(commit_sha, sonar_project_key, output_csv, output_csv_bugs
     finally:
         os.chdir(initial_dir)
 
-def main(sonar_project_key, output_csv, output_csv_bugs, output_csv_smells, branch, sonar_sources):
+def main(sonar_project_key, output_csv, output_csv_bugs, output_csv_smells, branch, sonar_sources, start_sha=None):
     repo_path = os.path.join(os.getcwd(), 'repos', sonar_project_key)
     
     if not os.path.exists(RESULTS_DIR):
@@ -175,10 +175,24 @@ def main(sonar_project_key, output_csv, output_csv_bugs, output_csv_smells, bran
 
     repo = git.Repo(repo_path)
 
-    # Run SonarQube analysis for each commit
-    for commit in repo.iter_commits(branch):
-        print(f"Processing commit {commit.hexsha}...")
-        run_sonar_scanner(commit.hexsha, sonar_project_key, output_csv, output_csv_bugs, output_csv_smells, sonar_sources)
+    if start_sha:
+        # Encontrar o commit específico
+        try:
+            start_commit = repo.commit(start_sha)
+            # Iterar pelos commits e processar até o commit especificado
+            for commit in repo.iter_commits(branch):
+                if commit == start_commit or commit.committed_datetime < start_commit.committed_datetime:
+                    print(f"Processing commit {commit.hexsha}...")
+                    run_sonar_scanner(commit.hexsha, sonar_project_key, output_csv, output_csv_bugs, output_csv_smells, sonar_sources)
+                if commit == start_commit:
+                    break  # Interromper após processar o commit especificado
+        except git.exc.BadName:
+            print(f"Commit SHA {start_sha} não encontrado.")
+    else:
+        # Se nenhum SHA foi passado, processar todos os commits
+        for commit in repo.iter_commits(branch):
+            print(f"Processing commit {commit.hexsha}...")
+            run_sonar_scanner(commit.hexsha, sonar_project_key, output_csv, output_csv_bugs, output_csv_smells, sonar_sources)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Run SonarQube analysis for all commits in a branch')
@@ -188,6 +202,7 @@ if __name__ == "__main__":
     parser.add_argument('--output_csv_bugs', default='sonar_bugs.csv', help='CSV file to save bug information')
     parser.add_argument('--output_csv_smells', default='sonar_code_smells.csv', help='CSV file to save code smell information')
     parser.add_argument('--sonar_sources', required=True, help='Path to source files for SonarQube')
+    parser.add_argument('--start_sha', help='SHA of the commit to start from')
 
     args = parser.parse_args()
-    main(args.sonar_project_key, args.output_csv, args.output_csv_bugs, args.output_csv_smells, args.branch, args.sonar_sources)
+    main(args.sonar_project_key, args.output_csv, args.output_csv_bugs, args.output_csv_smells, args.branch, args.sonar_sources, args.start_sha)
