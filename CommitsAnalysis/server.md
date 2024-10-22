@@ -59,7 +59,13 @@ Run sonar scanner in each commit to extract modifications (files): code smells a
 ## Step 3: 
 Compile data about fix modifications.
 ```
-  python compile_files_issue.py --folder issues_by_sdptool/project_name
+  python compile_files_sdptool.py --folder issues_by_sdptool/project_name
+```
+
+## Step 4:
+Compile files extracted by sonar scaner
+```
+python compile_files_sonar.py dubbo /caminho/para/pasta
 ```
 
 # About the data 

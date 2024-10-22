@@ -176,10 +176,10 @@ def main(sonar_project_key, output_csv, output_csv_bugs, output_csv_smells, bran
     repo = git.Repo(repo_path)
 
     if start_sha:
-        # Encontrar o commit específico
+        # Find specific commits
         try:
             start_commit = repo.commit(start_sha)
-            # Iterar pelos commits e processar até o commit especificado
+            # Iterate commits until find the start one
             for commit in repo.iter_commits(branch):
                 # Se o commit for o início ou estiver antes do commit inicial, processá-lo
                 if commit.committed_datetime < start_commit.committed_datetime:
