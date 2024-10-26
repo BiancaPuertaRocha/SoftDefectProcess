@@ -1,112 +1,66 @@
 import pandas as pd
-import sqlite3
+import argparse
+import time
 
-repo = 'dubbo'
+def process_files(fixes_path, modifications_path, commits_path, output_path):
+    # Load the CSV files
+    fixes_df = pd.read_csv(fixes_path)  # CSV for issue-fixing modifications
+    modifications_df = pd.read_csv(modifications_path)  # CSV for general modifications
+    commits_df = pd.read_csv(commits_path)  # CSV with commit data
 
-csv_file_path = f'commits_from_api/commits_data_{repo}.csv'
-db_file_path = f'issues_by_sdptool/SDP1 - {repo} complete.db'
-issues_commits_from_repo = f'issues_commits/issues_commits_{repo}.csv'
-output_final_csv = f'final/final_metrics_{repo}.csv'
-other_csv_path = f'results_sonar/sonarqube_metrics_{repo}.csv'  # Insira o caminho do outro CSV aqui
+    # Remove prefix before ":" in file names in fixes and modifications DataFrames
+    fixes_df['FILE_NAME'] = fixes_df['FILE_NAME'].str.split(':').str[-1]
+    modifications_df['file'] = modifications_df['file'].str.split(':').str[-1]
 
-# Carregar o CSV inicial em um DataFrame
-df_commits = pd.read_csv(csv_file_path)
+    # Step 1: Merge the fixes file with the commits file
+    fixes_commit_df = pd.merge(fixes_df, commits_df, left_on='MERGE_COMMIT_SHA', right_on='sha', suffixes=('', '_commit'))
 
-conn = sqlite3.connect(db_file_path)
-cursor = conn.cursor()
+    # Step 2: Merge the general modifications file with the commits file
+    modifications_commit_df = pd.merge(modifications_df, commits_df, left_on='commit_sha', right_on='sha', suffixes=('', '_commit'))
 
-# Criar a tabela commits no SQLite com a nova estrutura
-cursor.execute('''
-CREATE TABLE IF NOT EXISTS commits (
-    sha TEXT PRIMARY KEY,
-    author TEXT,
-    email TEXT,
-    message TEXT,
-    commit_date DATETIME,
-    url TEXT,
-    files_changed INT,
-    modified_files TEXT,
-    additions INT,
-    deletions INT,
-    total_changes INT
-)
-''')
-conn.commit()
+    # Convert dates to datetime format for comparison operations
+    fixes_commit_df['commit_date'] = pd.to_datetime(fixes_commit_df['commit_date'])
+    modifications_commit_df['commit_date'] = pd.to_datetime(modifications_commit_df['commit_date'])
 
-# Inserir os dados do DataFrame na tabela commits
-df_commits.to_sql('commits', conn, if_exists='replace', index=False)
+    # Step 3: Identify modifications prior to the closest fix modification
+    failure_prone_modifications = []
+    start_time = time.time()
+    for index, row in fixes_commit_df.iterrows():
+        # Filter for modifications before the fix and with a different SHA
+        previous_modifications = modifications_commit_df[
+            (modifications_commit_df['file'] == row['FILE_NAME']) &  # Same file
+            (modifications_commit_df['commit_date'] < row['CREATED_AT']) &  # Earlier date
+            (modifications_commit_df['commit_sha'] != row['MERGE_COMMIT_SHA'])  # Different SHA
+        ]
+        
+        # Find the closest modification before the fix
+        if not previous_modifications.empty:
+            last_modification = previous_modifications.sort_values(by='commit_date').iloc[-1]
+            # Mark as failure-prone if there is a previous closest modification
+            last_modification['failure_prone'] = 1
+            failure_prone_modifications.append(last_modification)
 
-# Relacionar os arquivos modificados nos commits com os arquivos modificados nos pull requests
-query_related_commits = '''
-SELECT 
-    c.sha AS "commit", 
-    pfc.FILE_NAME AS filepath, 
-    p.PR_ID, 
-    p.ISSUE_ID
-FROM 
-    commits c
-JOIN 
-    pr_files_changed pfc ON ',' || c.modified_files || ',' LIKE '%,' || pfc.FILE_NAME || ',%'
-JOIN 
-    PULL_RQ p ON pfc.PR_NO = p.PR_ID
-WHERE 
-    p.ISSUE_ID IS NOT NULL;
-'''
+        # Print progress every 5 seconds
+        if time.time() - start_time > 5:
+            print(f"{index + 1} issue modifications processed, {len(failure_prone_modifications)} failure-prone modifications found.")
+            start_time = time.time()
 
-df_related_commits = pd.read_sql_query(query_related_commits, conn)
+    # Concatenate the marked failure-prone modifications into a final DataFrame
+    failure_prone_df = pd.DataFrame(failure_prone_modifications)
 
-# Identificar o commit que introduziu o bug
-query_bug_introducing_commits = '''
-WITH IssueCommits AS (
-    SELECT 
-        i.ISSUE_ID, 
-        i.OPEN_DATE, 
-        p.PR_ID, 
-        c.sha AS "commit", 
-        pfc.FILE_NAME AS filepath,
-        c.commit_date AS committed_at
-    FROM 
-        ISSUE i
-    JOIN 
-        PULL_RQ p ON i.ISSUE_ID = p.ISSUE_ID
-    JOIN 
-        pr_files_changed pfc ON p.PR_ID = pfc.PR_NO
-    JOIN 
-        commits c ON ',' || c.modified_files || ',' LIKE '%,' || pfc.FILE_NAME || ',%'
-    WHERE 
-        c.commit_date < i.OPEN_DATE
-)
-SELECT 
-    ic.ISSUE_ID, 
-    ic.PR_ID, 
-    ic."commit", 
-    ic.filepath,
-    ic.committed_at
-FROM 
-    IssueCommits ic
-JOIN 
-    (SELECT ISSUE_ID, MAX(committed_at) as last_commit_date FROM IssueCommits GROUP BY ISSUE_ID) ic_max 
-    ON ic.ISSUE_ID = ic_max.ISSUE_ID AND ic.committed_at = ic_max.last_commit_date;
-'''
+    # Save the resulting DataFrame to a new CSV
+    failure_prone_df.to_csv(output_path, index=False)
+    print("Processing completed. Results saved to:", output_path)
 
-df_bug_introducing_commits = pd.read_sql_query(query_bug_introducing_commits, conn)
-conn.close()
+if __name__ == "__main__":
+    # Configure argparse to accept input and output files
+    parser = argparse.ArgumentParser(description="Process CSVs to identify failure-prone modifications.")
+    parser.add_argument("--fixes", required=True, help="Path to the issue fixes CSV file")
+    parser.add_argument("--modifications", required=True, help="Path to the general modifications CSV file")
+    parser.add_argument("--commits", required=True, help="Path to the commits data CSV file")
+    parser.add_argument("--output", required=True, help="Path to the output CSV file")
 
-df_bug_introducing_commits.to_csv(issues_commits_from_repo, index=False)
-
-# Carregar o CSV de commits que introduziram bugs
-df_bug_introducing_commits = pd.read_csv(issues_commits_from_repo)
-
-# Atualizar a coluna failure_prone no DataFrame inicial
-df_commits['failure_prone'] = df_commits['sha'].isin(df_bug_introducing_commits['commit'])
-
-# Carregar o outro CSV que contém o atributo commit_sha
-df_other = pd.read_csv(other_csv_path)
-
-# Realizar a junção com base no atributo commit_sha
-df_final = df_commits.merge(df_other, left_on='sha', right_on='commit_sha', how='left')
-
-# Salvar o DataFrame final em um novo arquivo CSV
-df_final.to_csv(output_final_csv, index=False)
-
-print(f"Resultado salvo em {output_final_csv}")
+    args = parser.parse_args()
+    
+    # Call the function with the arguments
+    process_files(args.fixes, args.modifications, args.commits, args.output)

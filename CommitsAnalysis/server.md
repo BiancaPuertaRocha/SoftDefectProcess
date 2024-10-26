@@ -68,6 +68,13 @@ Compile files extracted by sonar scaner
 python compile_files_sonar.py dubbo /caminho/para/pasta
 ```
 
+## Step 5:
+Run analysis in the 2 compiled files, using the commits data do get the date and find which modification introduced the bug thar was solved by the issue.
+```
+python .\analysis_szz.py --fixes path/to/file --modifications path/to/file --commits path/to/file --output test.csv
+```
+
+
 # About the data 
 
 ## repos
