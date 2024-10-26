@@ -21,6 +21,7 @@ def process_files(fixes_path, modifications_path, commits_path, output_path):
     # Convert dates to datetime format for comparison operations
     fixes_commit_df['commit_date'] = pd.to_datetime(fixes_commit_df['commit_date'])
     modifications_commit_df['commit_date'] = pd.to_datetime(modifications_commit_df['commit_date'])
+    fixes_commit_df['CREATED_AT'] = pd.to_datetime(fixes_commit_df['CREATED_AT'] / 1000, unit='s', utc=True)
 
     # Step 3: Identify modifications prior to the closest fix modification
     failure_prone_modifications = []
