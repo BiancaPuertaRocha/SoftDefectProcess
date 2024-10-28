@@ -3,6 +3,8 @@ import argparse
 import time
 
 def process_files(fixes_path, modifications_path, commits_path, output_path):
+    failure_prone = 0
+
     # Load the CSV files
     fixes_df = pd.read_csv(fixes_path)  # CSV for issue-fixing modifications
     modifications_df = pd.read_csv(modifications_path)  # CSV for general modifications
@@ -23,8 +25,10 @@ def process_files(fixes_path, modifications_path, commits_path, output_path):
     modifications_commit_df['commit_date'] = pd.to_datetime(modifications_commit_df['commit_date'])
     fixes_commit_df['CREATED_AT'] = pd.to_datetime(fixes_commit_df['CREATED_AT'] / 1000, unit='s', utc=True)
 
+    # Add a new column for failure-prone modifications and initialize with 0
+    modifications_commit_df['failure_prone'] = 0
+
     # Step 3: Identify modifications prior to the closest fix modification
-    failure_prone_modifications = []
     start_time = time.time()
     for index, row in fixes_commit_df.iterrows():
         # Filter for modifications before the fix and with a different SHA
@@ -36,21 +40,19 @@ def process_files(fixes_path, modifications_path, commits_path, output_path):
         
         # Find the closest modification before the fix
         if not previous_modifications.empty:
-            last_modification = previous_modifications.sort_values(by='commit_date').iloc[-1]
-            # Mark as failure-prone if there is a previous closest modification
-            last_modification['failure_prone'] = 1
-            failure_prone_modifications.append(last_modification)
+            last_modification_index = previous_modifications['commit_date'].idxmax()
+            # Mark the closest modification as failure-prone
+            modifications_commit_df.at[last_modification_index, 'failure_prone'] = 1
+            failure_prone += 1
+
 
         # Print progress every 5 seconds
         if time.time() - start_time > 5:
-            print(f"{index + 1} issue modifications processed, {len(failure_prone_modifications)} failure-prone modifications found.")
+            print(f"{index + 1} issue modifications processed. {failure_prone} failure prone modifications found.")
             start_time = time.time()
 
-    # Concatenate the marked failure-prone modifications into a final DataFrame
-    failure_prone_df = pd.DataFrame(failure_prone_modifications)
-
-    # Save the resulting DataFrame to a new CSV
-    failure_prone_df.to_csv(output_path, index=False)
+    # Save the DataFrame with all modifications and failure-prone labels to a new CSV
+    modifications_commit_df.to_csv(output_path, index=False)
     print("Processing completed. Results saved to:", output_path)
 
 if __name__ == "__main__":
