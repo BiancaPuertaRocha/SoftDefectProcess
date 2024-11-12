@@ -10,4 +10,6 @@ def load_files():
 
     df = pd.read_csv('data/local_dubbo.csv')
     print(df.head())
+    return df
 
+df = load_files()
