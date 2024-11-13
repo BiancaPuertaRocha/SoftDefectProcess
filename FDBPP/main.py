@@ -4,10 +4,12 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 from models import random_forest_raw, random_forest_smotenc, random_forest_adasyn
+#from feature_selection import select_features  # Importando o módulo de seleção de características
 
 # Função para carregar e exibir métricas e plotar
-def process_model(selected_file, model_type, balance_method):
+def process_model(selected_file, model_type, balance_method, feature_selection_method, balance_first):
     df = pd.read_csv(f'data/{selected_file}')
+    
     if model_type == "random_forest" and not balance_method:
         auc_score, y_test, y_pred = random_forest_raw(df)
     elif model_type == "random_forest" and balance_method == "SMOTE":
@@ -33,8 +35,8 @@ def process_model(selected_file, model_type, balance_method):
     plt.show()
 
     result = {
-        'algorithm': model_type, 'dataset': selected_file, 'feature selection': "None",
-        'data balance': balance_method if balance_method else "None", 'accuracy': accuracy,
+        'algorithm': model_type, 'dataset': selected_file, 'feature_selection': feature_selection_method if feature_selection_method != "None" else "None",
+        'data_balance': balance_method if balance_method else "None", 'accuracy': accuracy,
         'precision': precision, 'recall': recall, 'auc': auc_score, 'f1-score': f1
     }
     os.makedirs("results", exist_ok=True)
@@ -47,12 +49,14 @@ def process_model(selected_file, model_type, balance_method):
     messagebox.showinfo("Execução Concluída", "Modelo executado e métricas salvas com sucesso.")
 
 # Função chamada ao clicar em "Run"
-def on_run(file_combo, model_var, balance_var, balance_method_var):
+def on_run(file_combo, model_var, balance_method_var, feature_selection_var, balance_first_var):
     selected_file = file_combo.get()
     selected_model = model_var.get()
-    selected_balance = balance_method_var.get() if balance_var.get() else None
+    selected_balance = balance_method_var.get() if balance_method_var.get() != "None" else None
+    selected_feature_selection = feature_selection_var.get() if feature_selection_var.get() != "None" else "None"
+    balance_first = balance_first_var.get()  # Verifica se o balanceamento vem antes ou depois
     if selected_model == "random_forest":
-        process_model(selected_file, selected_model, selected_balance)
+        process_model(selected_file, selected_model, selected_balance, selected_feature_selection, balance_first)
     else:
         messagebox.showerror("Erro", "Seleção de modelo inválida ou não implementada.")
 
@@ -116,21 +120,34 @@ def build_interface():
     for option in model_options:
         tk.Radiobutton(model_tab, text=option.replace("_", " ").title(), variable=model_var, value=option).pack(anchor="w")
 
-    balance_var = tk.BooleanVar()
-    balance_check = tk.Checkbutton(model_tab, text="Aplicar Data Balance", variable=balance_var)
-    balance_check.pack(pady=10)
-    balance_method_var = tk.StringVar(value="SMOTE")
-    balance_options = ["SMOTE", "ADASYN"]
+    balance_method_var = tk.StringVar(value="None")
+    balance_options = ["None", "SMOTE", "ADASYN"]
+    balance_method_label = tk.Label(model_tab, text="Método de Balanceamento de Dados:")
+    balance_method_label.pack(pady=10)
     for option in balance_options:
         tk.Radiobutton(model_tab, text=option, variable=balance_method_var, value=option).pack(anchor="w")
 
-    run_button = tk.Button(model_tab, text="Run", command=lambda: on_run(file_combo, model_var, balance_var, balance_method_var))
+    # Seleção de Features (opcional)
+    feature_selection_var = tk.StringVar(value="None")
+    feature_options = ["None", "CST", "FS", "CFS"]
+    feature_selection_label = tk.Label(model_tab, text="Seleção de Características:")
+    feature_selection_label.pack(pady=10)
+    for option in feature_options:
+        tk.Radiobutton(model_tab, text=option, variable=feature_selection_var, value=option).pack(anchor="w")
+
+    # Escolher ordem (feature selection primeiro ou balanceamento primeiro)
+    balance_first_var = tk.BooleanVar()
+    order_label = tk.Label(model_tab, text="Escolha a ordem de processamento:")
+    order_label.pack(pady=10)
+    tk.Radiobutton(model_tab, text="Seleção de Características primeiro", variable=balance_first_var, value=False).pack(anchor="w")
+    tk.Radiobutton(model_tab, text="Balanceamento de Dados primeiro", variable=balance_first_var, value=True).pack(anchor="w")
+
+    run_button = tk.Button(model_tab, text="Run", command=lambda: on_run(file_combo, model_var, balance_method_var, feature_selection_var, balance_first_var))
     run_button.pack(pady=20)
 
     root.mainloop()
 
 # Executa a interface
 build_interface()
-
 
 # 1t1KvW5yLhGADNlAbTygowsBfWrwogwqr - dubbo

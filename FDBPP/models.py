@@ -162,3 +162,6 @@ def random_forest_adasyn(df):
 
 
     return auc_score_adasyn, y_test_adasyn, y_pred_adasyn
+
+
+
