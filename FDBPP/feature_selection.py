@@ -6,6 +6,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.feature_selection import f_classif
 
 import numpy as np
+import pandas as pd 
 
 def fisher_score_feature_selection(X, y, threshold=0.5):
     """

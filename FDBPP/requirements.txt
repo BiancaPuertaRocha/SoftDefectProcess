@@ -3,3 +3,5 @@ imbalanced-learn
 numpy
 pandas
 gdown
+tk 
+matplotlib
