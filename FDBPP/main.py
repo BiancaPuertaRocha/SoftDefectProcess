@@ -3,29 +3,51 @@ from tkinter import messagebox, Menu, ttk
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
-from models import random_forest_raw, random_forest_smotenc, random_forest_adasyn
-#from feature_selection import select_features  # Importando o módulo de seleção de características
+from models import *
 
-# Função para carregar e exibir métricas e plotar
 def process_model(selected_file, model_type, balance_method, feature_selection_method, balance_first):
     df = pd.read_csv(f'data/{selected_file}')
     
-    if model_type == "random_forest" and not balance_method:
-        auc_score, y_test, y_pred = random_forest_raw(df)
-    elif model_type == "random_forest" and balance_method == "SMOTE":
-        auc_score, y_test, y_pred = random_forest_smotenc(df)
-    elif model_type == "random_forest" and balance_method == "ADASYN":
-        auc_score, y_test, y_pred = random_forest_adasyn(df)
-    else:
-        messagebox.showerror("Erro", "Configuração de modelo não implementada.")
-        return
+    # Inicializar variáveis de pré-processamento
+    sampler = None
+    feature_selector = None
 
+    # Configuração do sampler (método de balanceamento)
+    if balance_method == "SMOTE":
+        sampler = balance_data_with_smotenc
+    elif balance_method == "ADASYN":
+        sampler = balance_data_with_adasyn
+
+    # Configuração do feature_selector (método de seleção de características)
+    if feature_selection_method == "CFS":
+        feature_selector = cfs_feature_selection
+    elif feature_selection_method == "FS":
+        feature_selector = fisher_score_feature_selection
+    elif feature_selection_method == "CST":
+        feature_selector = chi_square_feature_selection
+
+    # Determinar ordem de execução e chamar o pipeline
+    if sampler is None and feature_selector is None:
+        # Nenhum pré-processamento
+        auc_score, y_test, y_pred = random_forest_pipeline(df)
+        preprocessing_order = "None"
+    elif balance_first:
+        # Balanceamento seguido de seleção de atributos
+        auc_score, y_test, y_pred = random_forest_pipeline(df, sampler=sampler, feature_selector=feature_selector, balance_first=balance_first)
+        preprocessing_order = "Balanceamento -> Seleção de Features"
+    else:
+        # Seleção de atributos seguida de balanceamento
+        auc_score, y_test, y_pred = random_forest_pipeline(df, sampler=sampler, feature_selector=feature_selector, balance_first=balance_first)
+        preprocessing_order = "Seleção de Features -> Balanceamento"
+
+    # Métricas de avaliação
     from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
     accuracy = accuracy_score(y_test, y_pred)
     precision = precision_score(y_test, y_pred, zero_division=1)
     recall = recall_score(y_test, y_pred, zero_division=1)
     f1 = f1_score(y_test, y_pred, zero_division=1)
 
+    # Visualizar métricas
     metrics = {'Accuracy': accuracy, 'Precision': precision, 'Recall': recall, 'F1-Score': f1, 'AUC': auc_score}
     plt.figure(figsize=(10, 6))
     plt.bar(metrics.keys(), metrics.values(), color=['blue', 'orange', 'green', 'red', 'purple'])
@@ -34,10 +56,18 @@ def process_model(selected_file, model_type, balance_method, feature_selection_m
     plt.title("Model Performance Metrics")
     plt.show()
 
+    # Salvar métricas, incluindo informações de pré-processamento
     result = {
-        'algorithm': model_type, 'dataset': selected_file, 'feature_selection': feature_selection_method if feature_selection_method != "None" else "None",
-        'data_balance': balance_method if balance_method else "None", 'accuracy': accuracy,
-        'precision': precision, 'recall': recall, 'auc': auc_score, 'f1-score': f1
+        'algorithm': model_type,
+        'dataset': selected_file,
+        'feature_selection': feature_selection_method if feature_selection_method != "None" else "None",
+        'data_balance': balance_method if balance_method != "None" else "None",
+        'preprocessing_order': preprocessing_order,
+        'accuracy': accuracy,
+        'precision': precision,
+        'recall': recall,
+        'auc': auc_score,
+        'f1-score': f1
     }
     os.makedirs("results", exist_ok=True)
     results_path = 'results/metrics.csv'
@@ -48,19 +78,16 @@ def process_model(selected_file, model_type, balance_method, feature_selection_m
 
     messagebox.showinfo("Execução Concluída", "Modelo executado e métricas salvas com sucesso.")
 
-# Função chamada ao clicar em "Run"
+# Função para o botão "Run"
 def on_run(file_combo, model_var, balance_method_var, feature_selection_var, balance_first_var):
     selected_file = file_combo.get()
     selected_model = model_var.get()
     selected_balance = balance_method_var.get() if balance_method_var.get() != "None" else None
     selected_feature_selection = feature_selection_var.get() if feature_selection_var.get() != "None" else "None"
-    balance_first = balance_first_var.get()  # Verifica se o balanceamento vem antes ou depois
-    if selected_model == "random_forest":
-        process_model(selected_file, selected_model, selected_balance, selected_feature_selection, balance_first)
-    else:
-        messagebox.showerror("Erro", "Seleção de modelo inválida ou não implementada.")
+    balance_first = balance_first_var.get()  # Define a ordem de execução
+    process_model(selected_file, selected_model, selected_balance, selected_feature_selection, balance_first)
 
-# Interface Gráfica com Tkinter
+# Interface Gráfica com a aba "Carregar Projeto" restaurada
 def build_interface():
     root = tk.Tk()
     root.title("Interface de Modelagem de Dados")
@@ -78,6 +105,7 @@ def build_interface():
     tab_control.add(model_tab, text="Construir Modelo")
     tab_control.pack(expand=1, fill="both")
     
+    # Aba "Carregar Projeto"
     label_id = tk.Label(load_tab, text="Insira o file_id:")
     label_id.pack(pady=10)
     entry_id = tk.Entry(load_tab, width=40)
@@ -108,6 +136,7 @@ def build_interface():
     download_button = tk.Button(load_tab, text="Baixar Arquivo", command=on_download)
     download_button.pack(pady=20)
 
+    # Aba "Construir Modelo"
     label_file = tk.Label(model_tab, text="Selecione um arquivo:")
     label_file.pack(pady=10)
     file_combo = ttk.Combobox(model_tab, values=os.listdir("data"))
@@ -149,5 +178,3 @@ def build_interface():
 
 # Executa a interface
 build_interface()
-
-# 1t1KvW5yLhGADNlAbTygowsBfWrwogwqr - dubbo

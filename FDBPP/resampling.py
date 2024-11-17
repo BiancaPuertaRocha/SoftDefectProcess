@@ -24,12 +24,12 @@ def balance_data_with_smote(X, y, sampling_strategy='auto', random_state=42):
 #para dados categoricos
 def balance_data_with_smotenc(X, y, categorical_features, sampling_strategy='auto', random_state=42):
     """
-    Aplica o SMOTENC para balancear os dados desbalanceados, incluindo dados categóricos.
+    Balanceia os dados desbalanceados, usando SMOTE ou SMOTENC, dependendo do tipo de features.
 
     Parâmetros:
     - X: DataFrame ou array com as features.
     - y: Array ou Series com o rótulo alvo.
-    - categorical_features: Lista de índices das colunas categóricas em X.
+    - categorical_features: Lista de índices das colunas categóricas em X (para SMOTENC).
     - sampling_strategy: Estratégia de amostragem (padrão é 'auto').
     - random_state: Semente para a reprodutibilidade dos resultados.
 
@@ -42,13 +42,18 @@ def balance_data_with_smotenc(X, y, categorical_features, sampling_strategy='aut
         le = LabelEncoder()
         y = le.fit_transform(y)
 
-    # Definir o SMOTENC, que lida com dados categóricos
-    smote_nc = SMOTENC(categorical_features=categorical_features,
-                       sampling_strategy=sampling_strategy,
-                       random_state=random_state)
+    # Verificar se há colunas categóricas
+    if categorical_features:
+        # Usar SMOTENC para dados categóricos
+        smote = SMOTENC(categorical_features=categorical_features,
+                        sampling_strategy=sampling_strategy,
+                        random_state=random_state)
+    else:
+        # Usar SMOTE padrão para dados numéricos
+        smote = SMOTE(sampling_strategy=sampling_strategy, random_state=random_state)
 
-    # Aplicar o SMOTENC para balancear as classes
-    X_resampled, y_resampled = smote_nc.fit_resample(X, y)
+    # Aplicar o método escolhido para balancear as classes
+    X_resampled, y_resampled = smote.fit_resample(X, y)
 
     return X_resampled, y_resampled
 

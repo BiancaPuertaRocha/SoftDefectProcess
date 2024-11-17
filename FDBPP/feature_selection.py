@@ -59,7 +59,6 @@ def cfs_feature_selection(X, y, threshold=0.5):
 
     return selected_features
 
-
 def chi_square_feature_selection(X, y, k=10):
     """
     Seleciona os melhores atributos usando o Chi-Square Test.
@@ -72,13 +71,20 @@ def chi_square_feature_selection(X, y, k=10):
     Retorna:
     - selected_features: Lista de nomes dos atributos selecionados.
     """
+    # Filtrar apenas colunas numéricas
+    X = X.select_dtypes(include=["number"])
+
+    # Garantir que os valores sejam não-negativos
+    if (X < 0).any().any():
+        raise ValueError("O DataFrame contém valores negativos, que não são compatíveis com o teste Chi-Square.")
+
     # Transformar y em rótulos numéricos, se necessário
     if y.dtype == 'object' or isinstance(y, pd.Series):
         y = LabelEncoder().fit_transform(y)
 
     # Aplicar Chi-Square Test para selecionar os k melhores atributos
     chi_selector = SelectKBest(score_func=chi2, k=k)
-    X_selected = chi_selector.fit_transform(X, y)
+    chi_selector.fit(X, y)
 
     # Obter os nomes das features selecionadas
     selected_features = X.columns[chi_selector.get_support()].tolist()
