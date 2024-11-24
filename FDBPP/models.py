@@ -61,8 +61,8 @@ def random_forest_pipeline(df, sampler=None, feature_selector=None, threshold=0.
     X = X.reset_index(drop=True)
     y = y.reset_index(drop=True)
 
-    print(sampler.__name__)
-    print(feature_selector.__name__)
+    # print(sampler.__name__)
+    # print(feature_selector.__name__)
     if balance_first:
         # Pré-processamento inicial (categorias ou balanceamento)
         if sampler is not None:
@@ -73,7 +73,10 @@ def random_forest_pipeline(df, sampler=None, feature_selector=None, threshold=0.
             ] if sampler.__name__ == 'balance_data_with_smotenc' else None
 
             # Balancear os dados
-            X, y = sampler(X, y, categorical_features=categorical_columns)
+            if sampler.__name__ == 'balance_data_with_smotenc':
+                X, y = sampler(X, y, categorical_features=categorical_columns)
+            else:
+                X, y = sampler(X, y)
 
         # Seleção de atributos
         if feature_selector is not None:
@@ -98,7 +101,11 @@ def random_forest_pipeline(df, sampler=None, feature_selector=None, threshold=0.
             ] if sampler.__name__ == 'balance_data_with_smotenc' else None
 
             # Balancear os dados
-            X, y = sampler(X, y, categorical_features=categorical_columns)
+            if sampler.__name__ == 'balance_data_with_smotenc':
+                X, y = sampler(X, y, categorical_features=categorical_columns)
+            else:
+                X, y = sampler(X, y)
+
     # Codificar variáveis categóricas após o balanceamento e seleção
     X = pd.get_dummies(X, columns=X.select_dtypes(include=['object', 'category']).columns)
 

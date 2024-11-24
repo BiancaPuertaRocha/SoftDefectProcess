@@ -37,10 +37,6 @@ def balance_data_with_smotenc(X, y, categorical_features, sampling_strategy='aut
     - X_resampled: Features balanceadas.
     - y_resampled: Rótulos balanceados.
     """
-    # Transformar rótulos para valores numéricos caso sejam categóricos
-    if y.dtype == 'object' or isinstance(y[0], str):
-        le = LabelEncoder()
-        y = le.fit_transform(y)
 
     # Verificar se há colunas categóricas
     if categorical_features:
@@ -73,10 +69,19 @@ def balance_data_with_adasyn(X, y, sampling_strategy='auto', random_state=42, n_
     - X_resampled: Features balanceadas.
     - y_resampled: Rótulos balanceados.
     """
-    adasyn = ADASYN(sampling_strategy=sampling_strategy, random_state=random_state, n_neighbors=n_neighbors)
-    X_resampled, y_resampled = adasyn.fit_resample(X, y)
-    return X_resampled, y_resampled
+    # Verificar se há colunas não numéricas e codificar
+    X_encoded = X.copy()
+    
+    # Codificar colunas categóricas com LabelEncoder
+    for col in X_encoded.select_dtypes(include=['object']).columns:
+        le = LabelEncoder()
+        X_encoded[col] = le.fit_transform(X_encoded[col])
 
+    # Aplicar o ADASYN
+    adasyn = ADASYN(sampling_strategy=sampling_strategy, random_state=random_state, n_neighbors=n_neighbors)
+    X_resampled, y_resampled = adasyn.fit_resample(X_encoded, y)
+    
+    return X_resampled, y_resampled
 
 
 def balance_data_with_undersampling(X, y, sampling_strategy='auto', random_state=42):
