@@ -5,17 +5,19 @@ from models.random_forest import RandomForestModel
 from resampling import balance_data_with_smotenc, balance_data_with_adasyn, balance_data_with_undersampling
 from feature_selection import fisher_score_feature_selection, chi_square_feature_selection, cfs_feature_selection
 
-def run_experiments(df, model_class, methods, iterations=1):
+
+def run_experiments(df, model_class, methods, iterations=1): 
     results = []
     print('Running experiments...')
 
     for method_name, method in methods.items():
-        print(f'Running {method}...')
+        print(f'Running {method_name}...')
 
         metrics = {'accuracy': [], 'precision': [], 'recall': [], 'auc': [], 'f1': []}
 
         for _ in range(iterations):
-            auc_score, y_test, y_pred = method(df)
+            # Chamar o método para obter os resultados
+            auc_score, y_test, y_pred = method()
 
             # Calcular as métricas
             accuracy = accuracy_score(y_test, y_pred)
@@ -64,17 +66,24 @@ def main():
         return
 
     # Instanciar o modelo
-    model_class = models[args.model]()
+    model_class = models[args.model]()  # Passar o dataframe ao instanciar a classe
     
     # Configurar os métodos para o modelo escolhido
     methods = {
-        "raw": model_class.model_raw,
-        "smotenc": model_class.model_with_sampler(df, sampler=balance_data_with_smotenc),
-        "adasyn": model_class.model_with_sampler(df, sampler=balance_data_with_adasyn),
-        "fisher": model_class.model_with_feature_selector(df, feature_selector=fisher_score_feature_selection),
-        "smotenc_fisher": model_class.model_sampler_feature_selector(df, sampler=balance_data_with_smotenc, feature_selector=fisher_score_feature_selection),
-        "adasyn_fisher": model_class.model_sampler_feature_selector(df, sampler=balance_data_with_adasyn, feature_selector=fisher_score_feature_selection),
-        # Adicione outros métodos específicos para o modelo, se necessário
+        "raw": lambda: model_class.model_raw(df=df),
+        "smotenc": lambda: model_class.model_with_sampler(df=df, sampler=balance_data_with_smotenc),
+        "adasyn": lambda: model_class.model_with_sampler(df=df, sampler=balance_data_with_adasyn),
+        "fisher": lambda: model_class.model_with_feature_selector(df=df, feature_selector=fisher_score_feature_selection),
+        "smotenc_fisher": lambda: model_class.model_sampler_feature_selector(
+            df=df,
+            sampler=balance_data_with_smotenc,
+            feature_selector=fisher_score_feature_selection
+        ),
+        "adasyn_fisher": lambda: model_class.model_sampler_feature_selector(
+            df=df,
+            sampler=balance_data_with_adasyn,
+            feature_selector=fisher_score_feature_selection
+        ),
     }
 
     # Executar os experimentos
