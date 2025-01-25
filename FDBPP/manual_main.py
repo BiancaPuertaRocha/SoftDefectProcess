@@ -2,11 +2,16 @@ import argparse
 import pandas as pd
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
 from models.random_forest import RandomForestModel
+from resampling import balance_data_with_smotenc, balance_data_with_adasyn, balance_data_with_undersampling
+from feature_selection import fisher_score_feature_selection, chi_square_feature_selection, cfs_feature_selection
 
-def run_experiments(df, model_class, methods, iterations=30):
+def run_experiments(df, model_class, methods, iterations=1):
     results = []
+    print('Running experiments...')
 
     for method_name, method in methods.items():
+        print(f'Running {method}...')
+
         metrics = {'accuracy': [], 'precision': [], 'recall': [], 'auc': [], 'f1': []}
 
         for _ in range(iterations):
@@ -30,15 +35,15 @@ def run_experiments(df, model_class, methods, iterations=30):
         avg_metrics['method'] = method_name  # Adicionar o nome do método para identificação
 
         results.append(avg_metrics)
-
+    print('Done!')
     return pd.DataFrame(results)
 
 
 def main():
     # Configurar o argparse
     parser = argparse.ArgumentParser(description="Execute experiments with different models and settings.")
-    parser.add_argument("input_file", type=str, required=True, help="Path to the input CSV file containing the dataset.")
-    parser.add_argument("output_file", type=str, required=True, help="Path to the output CSV file where results will be saved.")
+    parser.add_argument("input_file", type=str, help="Path to the input CSV file containing the dataset.")
+    parser.add_argument("output_file", type=str, help="Path to the output CSV file where results will be saved.")
     parser.add_argument(
         "--model", type=str, required=True,
         help="Name of the model to use (e.g., 'random_forest')."
@@ -64,10 +69,11 @@ def main():
     # Configurar os métodos para o modelo escolhido
     methods = {
         "raw": model_class.model_raw,
-        "smotenc": model_class.model_with_sampler(df, sampler='balance_data_with_smotenc'),
-        "adasyn": model_class.model_with_sampler(df, sampler='balance_data_with_adasyn'),
-        "smotenc_fisher": model_class.model_sampler_feature_selector(df, sampler='balance_data_with_smotenc', feature_selector='fisher_score_feature_selection'),
-        "adasyn_fisher": model_class.model_sampler_feature_selector(df, sampler='balance_data_with_adasyn', feature_selector='fisher_score_feature_selection'),
+        "smotenc": model_class.model_with_sampler(df, sampler=balance_data_with_smotenc),
+        "adasyn": model_class.model_with_sampler(df, sampler=balance_data_with_adasyn),
+        "fisher": model_class.model_with_feature_selector(df, feature_selector=fisher_score_feature_selection),
+        "smotenc_fisher": model_class.model_sampler_feature_selector(df, sampler=balance_data_with_smotenc, feature_selector=fisher_score_feature_selection),
+        "adasyn_fisher": model_class.model_sampler_feature_selector(df, sampler=balance_data_with_adasyn, feature_selector=fisher_score_feature_selection),
         # Adicione outros métodos específicos para o modelo, se necessário
     }
 

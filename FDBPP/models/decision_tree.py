@@ -1,15 +1,15 @@
 import pandas as pd
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import BaggingClassifier
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_auc_score
 
+from base import GenericModelBase
 
-from models.base import GenericModelBase
-
-class RandomForestModel(GenericModelBase):
+class BaggingDecisionTreeModel(GenericModelBase):
     def generic_pipeline(self, df, sampler=None, feature_selector=None, threshold=0.5, k=10, balance_first=False):
         """
-        Pipeline específico para treinar Random Forest com ou sem balanceamento e seleção de atributos.
+        Pipeline específico para treinar Bagging com Decision Trees com ou sem balanceamento e seleção de atributos.
         """
         print('Bulding model...')
         X = df.drop('failure_prone', axis=1)
@@ -54,15 +54,13 @@ class RandomForestModel(GenericModelBase):
         # Dividir em treino e teste
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
 
-        # Treinar o modelo Random Forest
-        model = RandomForestClassifier(random_state=42)
+        # Treinar o modelo Bagging com Decision Trees
+        model = BaggingClassifier(base_estimator=DecisionTreeClassifier(random_state=42), random_state=42, n_estimators=10)
         model.fit(X_train, y_train)
 
         # Fazer predições e calcular AUC
         y_pred = model.predict(X_test)
         y_pred_proba = model.predict_proba(X_test)[:, 1]
         auc_score = roc_auc_score(y_test, y_pred_proba)
-
-        print('Bulding done!')
 
         return auc_score, y_test, y_pred
