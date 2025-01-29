@@ -10,6 +10,8 @@ def process_files(fixes_path, modifications_path, commits_path, output_path):
     modifications_df = pd.read_csv(modifications_path)  # CSV for general modifications
     commits_df = pd.read_csv(commits_path)  # CSV with commit data
 
+    print(f'initial modifications {len(modifications_df)}')
+
     # Remove prefix before ":" in file names in fixes and modifications DataFrames
     fixes_df['FILE_NAME'] = fixes_df['FILE_NAME'].str.split(':').str[-1]
     modifications_df['file'] = modifications_df['file'].str.split(':').str[-1]
@@ -19,6 +21,8 @@ def process_files(fixes_path, modifications_path, commits_path, output_path):
 
     # Step 2: Merge the general modifications file with the commits file
     modifications_commit_df = pd.merge(modifications_df, commits_df, left_on='commit_sha', right_on='sha', suffixes=('', '_commit'))
+
+    print(f'after merge modifications {len(modifications_commit_df)}')
 
     # Convert dates to datetime format for comparison operations
     fixes_commit_df['commit_date'] = pd.to_datetime(fixes_commit_df['commit_date'])
