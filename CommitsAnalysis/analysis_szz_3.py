@@ -17,10 +17,10 @@ def process_files(fixes_path, modifications_path, commits_path, output_path):
     modifications_df['file'] = modifications_df['file'].str.split(':').str[-1]
 
     # Step 1: Merge the fixes file with the commits file
-    fixes_commit_df = pd.merge(fixes_df, commits_df, left_on='MERGE_COMMIT_SHA', right_on='sha', suffixes=('', '_commit'), how='left')
+    fixes_commit_df = pd.merge(fixes_df, commits_df, left_on='MERGE_COMMIT_SHA', right_on='sha', suffixes=('', '_commit'))
 
     # Step 2: Merge the general modifications file with the commits file
-    modifications_commit_df = pd.merge(modifications_df, commits_df, left_on='commit_sha', right_on='sha', suffixes=('', '_commit'), how='left')
+    modifications_commit_df = pd.merge(modifications_df, commits_df, left_on='commit_sha', right_on='sha', suffixes=('', '_commit'))
 
     print(f'after merge modifications {len(modifications_commit_df)}')
 

@@ -163,7 +163,7 @@ def run_sonar_scanner(commit_sha, sonar_project_key, output_csv, output_csv_bugs
     finally:
         os.chdir(initial_dir)
 
-def main(sonar_project_key, output_csv, output_csv_bugs, output_csv_smells, branch, sonar_sources, start_sha=None):
+def main(sonar_project_key, output_csv, output_csv_bugs, output_csv_smells, sonar_sources, start_sha=None):
     repo_path = os.path.join(os.getcwd(), 'repos', sonar_project_key)
     
     if not os.path.exists(RESULTS_DIR):
@@ -175,28 +175,30 @@ def main(sonar_project_key, output_csv, output_csv_bugs, output_csv_smells, bran
 
     repo = git.Repo(repo_path)
 
-    if start_sha:
-        # Find specific commits
-        try:
-            start_commit = repo.commit(start_sha)
-            # Iterate commits until find the start one
-            for commit in repo.iter_commits(branch):
-                # Se o commit for o início ou estiver antes do commit inicial, processá-lo
-                if commit.committed_datetime < start_commit.committed_datetime:
-                    print(f"Processing commit {commit.hexsha}...")
-                    run_sonar_scanner(commit.hexsha, sonar_project_key, output_csv, output_csv_bugs, output_csv_smells, sonar_sources)
-        except git.exc.BadName:
-            print(f"Commit SHA {start_sha} não encontrado.")
-    else:
-        # Se nenhum SHA foi passado, processar todos os commits
-        for commit in repo.iter_commits(branch):
-            print(f"Processing commit {commit.hexsha}...")
-            run_sonar_scanner(commit.hexsha, sonar_project_key, output_csv, output_csv_bugs, output_csv_smells, sonar_sources)
+    # Iterar por todas as branches
+    for branch in repo.branches:
+        print(f"Processing branch {branch.name}...")
+        repo.git.checkout(branch.name)
+        
+        if start_sha:
+            # Find specific commits starting from start_sha
+            try:
+                start_commit = repo.commit(start_sha)
+                for commit in repo.iter_commits(branch.name):
+                    if commit.committed_datetime < start_commit.committed_datetime:
+                        print(f"Processing commit {commit.hexsha}...")
+                        run_sonar_scanner(commit.hexsha, sonar_project_key, output_csv, output_csv_bugs, output_csv_smells, sonar_sources)
+            except git.exc.BadName:
+                print(f"Commit SHA {start_sha} não encontrado.")
+        else:
+            # Processar todos os commits
+            for commit in repo.iter_commits(branch.name):
+                print(f"Processing commit {commit.hexsha}...")
+                run_sonar_scanner(commit.hexsha, sonar_project_key, output_csv, output_csv_bugs, output_csv_smells, sonar_sources)
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Run SonarQube analysis for all commits in a branch')
+    parser = argparse.ArgumentParser(description='Run SonarQube analysis for all commits in all branches')
     parser.add_argument('--sonar_project_key', required=True, help='SonarQube project key')
-    parser.add_argument('--branch', required=True, help='Branch to analyze')
     parser.add_argument('--output_csv', default='sonar_metrics.csv', help='CSV file to save SonarQube metrics')
     parser.add_argument('--output_csv_bugs', default='sonar_bugs.csv', help='CSV file to save bug information')
     parser.add_argument('--output_csv_smells', default='sonar_code_smells.csv', help='CSV file to save code smell information')
@@ -204,4 +206,4 @@ if __name__ == "__main__":
     parser.add_argument('--start_sha', help='SHA of the commit to start from')
 
     args = parser.parse_args()
-    main(args.sonar_project_key, args.output_csv, args.output_csv_bugs, args.output_csv_smells, args.branch, args.sonar_sources, args.start_sha)
+    main(args.sonar_project_key, args.output_csv, args.output_csv_bugs, args.output_csv_smells, args.sonar_sources, args.start_sha)
