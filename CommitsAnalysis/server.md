@@ -46,13 +46,13 @@ Use SDPTool to extract issue and pull request data.
 ## Step 1:
 
 ```
-  python commits_extract_1.py --repo_owner owner_name --repo_name project_name --output_csv commits/commits_data_project_name.csv
+  python commits_extract_1.py --repo_owner apache --repo_name iceberg --output_csv commits/commits_data_iceberg.csv
 ```
 
 ## Step 2:
 Run sonar scanner in each commit to extract modifications (files): code smells and bugs.
 ```
-  python sonar_extract_2.py --output_csv sonarqube_metrics_project_name_final.csv --output_csv_bugs bugs_project_name_final.csv --output_csv_smells smells_project_name_final.csv --sonar_project_key project_name --branch main --sonar_sources . --start_sha fd4688cf603a713c578ab2f54d403daa922e2ee3 (optional)
+  python sonar_extract_2.py --output_csv sonarqube_metrics_pinot_final.csv --output_csv_bugs bugs_pinot_final.csv --output_csv_smells smells_pinot_final.csv --sonar_project_key pinot --sonar_sources . --start_sha fd4688cf603a713c578ab2f54d403daa922e2ee3 (optional)
 
 ```
 

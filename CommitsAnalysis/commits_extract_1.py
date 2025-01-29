@@ -3,6 +3,7 @@ import csv
 import time
 import argparse
 
+# GitHub Token for authentication
 GITHUB_TOKEN = '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'
 
 # Function to fetch commit details from GitHub API
@@ -22,7 +23,7 @@ def fetch_commit_details(base_url, commit_sha, headers):
 # Function to save commit data to a CSV file
 def save_commit_to_csv(output_csv, commit_data):
     with open(output_csv, 'a', newline='', encoding='utf-8') as csvfile:
-        fieldnames = ['sha', 'author', 'email', 'message', 'commit_date', 'url', 'files_changed', 'modified_files', 'additions', 'deletions', 'total_changes']
+        fieldnames = ['sha', 'branch', 'author', 'email', 'message', 'commit_date', 'url', 'files_changed', 'modified_files', 'additions', 'deletions', 'total_changes']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writerow(commit_data)
 
@@ -63,7 +64,7 @@ def main():
 
     # Open CSV file and write header
     with open(output_csv, 'a', newline='', encoding='utf-8') as csvfile:
-        fieldnames = ['sha', 'author', 'email', 'message', 'commit_date', 'url', 'files_changed', 'modified_files', 'additions', 'deletions', 'total_changes']
+        fieldnames = ['sha', 'branch', 'author', 'email', 'message', 'commit_date', 'url', 'files_changed', 'modified_files', 'additions', 'deletions', 'total_changes']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
 
@@ -93,6 +94,7 @@ def main():
                     if commit_details:
                         commit_data = {
                             'sha': commit_details['sha'],
+                            'branch': branch,  # Adding the branch to the data
                             'author': commit_details['commit']['author']['name'],
                             'email': commit_details['commit']['author']['email'],
                             'message': commit_details['commit']['message'],
