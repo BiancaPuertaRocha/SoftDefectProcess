@@ -2,6 +2,8 @@ import argparse
 import pandas as pd
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
 from models.random_forest import RandomForestModel
+from models.voting_classifier import VotingEnsembleModel
+from models.decision_tree import BaggingDecisionTreeModel
 from resampling import balance_data_with_smotenc, balance_data_with_adasyn, balance_data_with_undersampling
 from feature_selection import fisher_score_feature_selection, chi_square_feature_selection, cfs_feature_selection
 
@@ -43,11 +45,11 @@ def run_experiments(df, model_class, methods, iterations=1):
 
 def main():
     # Configurar o argparse
-    parser = argparse.ArgumentParser(description="Execute experiments with different models and settings.")
-    parser.add_argument("input_file", type=str, help="Path to the input CSV file containing the dataset.")
-    parser.add_argument("output_file", type=str, help="Path to the output CSV file where results will be saved.")
+    parser = argparse.ArgumentParser(description='Execute experiments with different models and settings.')
+    parser.add_argument('input_file', type=str, help='Path to the input CSV file containing the dataset.')
+    parser.add_argument('output_file', type=str, help='Path to the output CSV file where results will be saved.')
     parser.add_argument(
-        "--model", type=str, required=True,
+        '--model', type=str, required=True,
         help="Name of the model to use (e.g., 'random_forest')."
     )
     args = parser.parse_args()
@@ -57,7 +59,9 @@ def main():
 
     # Configurar os modelos disponíveis
     models = {
-        "random_forest": RandomForestModel,
+        'random_forest': RandomForestModel,
+        'decision_tree': BaggingDecisionTreeModel,
+        'voting_classifier': VotingEnsembleModel
     }
 
     # Verificar se o modelo solicitado está disponível
@@ -70,16 +74,16 @@ def main():
     
     # Configurar os métodos para o modelo escolhido
     methods = {
-        "raw": lambda: model_class.model_raw(df=df),
-        "smotenc": lambda: model_class.model_with_sampler(df=df, sampler=balance_data_with_smotenc),
-        "adasyn": lambda: model_class.model_with_sampler(df=df, sampler=balance_data_with_adasyn),
-        "fisher": lambda: model_class.model_with_feature_selector(df=df, feature_selector=fisher_score_feature_selection),
-        "smotenc_fisher": lambda: model_class.model_sampler_feature_selector(
+        'raw': lambda: model_class.model_raw(df=df),
+        'smotenc': lambda: model_class.model_with_sampler(df=df, sampler=balance_data_with_smotenc),
+        'adasyn': lambda: model_class.model_with_sampler(df=df, sampler=balance_data_with_adasyn),
+        'fisher': lambda: model_class.model_with_feature_selector(df=df, feature_selector=fisher_score_feature_selection),
+        'smotenc_fisher': lambda: model_class.model_sampler_feature_selector(
             df=df,
             sampler=balance_data_with_smotenc,
             feature_selector=fisher_score_feature_selection
         ),
-        "adasyn_fisher": lambda: model_class.model_sampler_feature_selector(
+        'adasyn_fisher': lambda: model_class.model_sampler_feature_selector(
             df=df,
             sampler=balance_data_with_adasyn,
             feature_selector=fisher_score_feature_selection
@@ -92,8 +96,8 @@ def main():
     # Salvar os resultados no arquivo de saída
     results_df.to_csv(args.output_file, index=False)
 
-    print(f"Resultados salvos no arquivo: {args.output_file}")
+    print(f'Resultados salvos no arquivo: {args.output_file}')
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
