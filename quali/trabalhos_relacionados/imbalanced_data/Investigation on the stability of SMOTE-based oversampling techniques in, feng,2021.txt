@@ -1,0 +1,7 @@
+
+
+SMOTE
+
+conjunto de dados de defeitos de software tendem a ter mais daddos
+nao defeituosos do que defeituosos
+

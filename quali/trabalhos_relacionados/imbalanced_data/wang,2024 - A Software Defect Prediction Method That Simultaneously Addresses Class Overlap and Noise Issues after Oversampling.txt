@@ -1,0 +1,16 @@
+A Software Defect Prediction Method That Simultaneously
+Addresses Class Overlap and Noise Issues after Oversampling
+Dados desbalanceados
+- undersampling pode levar a perder informaçoes importantes
+- oversampling pode gerar dados ruidosos e overlapping (SOBREPOSTOS)
+- para overlap pode ser utilizado o raio dos pontos para identificar vizinhos e eliminar, por exemplo
+- para dados ruidosos, é dito que em estudos se observa que 40% dos dados sao tagueados erroneamente na hora de realizar uma modificação no repositorio, por isso é importante tratar (outliers)
+- alguns estudos usam k-means para identificar outliers (centroid e o que nao esta nos grupos vira anomalia)
+
+
+é interessante dividir 80:20 para teste e treinamento, fazer isso algumas vezes aleatoriamente e obter a media como a efetividade em vez do resultado unico
+
+datasets publicos: : PROMISE [47], AEEEM [48],
+NASA [49], and Relink [50]
+
+aqui tem a tabela do percentual de instancias defeituosas e percentual de dados desbalanceados
