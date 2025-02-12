@@ -13,6 +13,7 @@ SONAR_USER = 'admin'  # SonarQube user
 SONAR_PASS = 'admin'  # SonarQube pass
 SONAR_TOKEN = None    # Auto generated token
 RESULTS_DIR = 'results_sonar'
+LOCK_FILE = 'sonar-scanner.lock'
 
 def get_sonar_metrics(sonar_project_key, commit_sha):
     global SONAR_TOKEN
@@ -164,6 +165,9 @@ def run_sonar_scanner(commit_sha, sonar_project_key, output_csv, output_csv_bugs
             save_code_smells_to_csv(code_smells_data, commit_sha, initial_dir, output_csv_smells, branch_name)
 
     finally:
+       
+        if os.path.exists(LOCK_FILE):
+            os.remove(LOCK_FILE)
         os.chdir(initial_dir)
 
 def main(sonar_project_key, output_csv, output_csv_bugs, output_csv_smells, sonar_sources, start_sha=None):
@@ -171,30 +175,43 @@ def main(sonar_project_key, output_csv, output_csv_bugs, output_csv_smells, sona
     
     if not os.path.exists(RESULTS_DIR):
         os.makedirs(RESULTS_DIR)
-
+    
     if not os.path.exists(repo_path):
         print(f"Repo not found in {repo_path}. Cloning...")
         git.Repo.clone_from('REPO_URL', repo_path)
-
+    
     repo = git.Repo(repo_path)
-
-    # Iterar por todas as branches
+    
     for branch in repo.branches:
         print(f"Processing branch {branch.name}...")
-        repo.git.checkout(branch.name)
+        try:
+            lock_file = os.path.join(repo_path, '.git', 'index.lock')
+            if os.path.exists(lock_file):
+                os.remove(lock_file)
+                print("Removed stale Git lock file.")
+            
+            repo.git.checkout(branch.name)
+        except git.exc.GitCommandError:
+            print(f"Skipping branch {branch.name} due to error.")
+            continue
         
         if start_sha:
-            # Find specific commits starting from start_sha
             try:
                 start_commit = repo.commit(start_sha)
+                found_commit = False
                 for commit in repo.iter_commits(branch.name):
-                    if commit.committed_datetime < start_commit.committed_datetime:
+                    if commit.hexsha == start_sha:
+                        found_commit = True
+                    if found_commit:
                         print(f"Processing commit {commit.hexsha}...")
                         run_sonar_scanner(commit.hexsha, sonar_project_key, output_csv, output_csv_bugs, output_csv_smells, sonar_sources, branch.name)
+                if not found_commit:
+                    print(f"Commit SHA {start_sha} não encontrado nesta branch. Pulando para próxima branch.")
+                    continue
             except git.exc.BadName:
-                print(f"Commit SHA {start_sha} não encontrado.")
+                print(f"Commit SHA {start_sha} inválido. Pulando para próxima branch.")
+                continue
         else:
-            # Processar todos os commits
             for commit in repo.iter_commits(branch.name):
                 print(f"Processing commit {commit.hexsha}...")
                 run_sonar_scanner(commit.hexsha, sonar_project_key, output_csv, output_csv_bugs, output_csv_smells, sonar_sources, branch.name)

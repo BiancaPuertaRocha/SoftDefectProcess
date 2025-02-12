@@ -7,12 +7,11 @@ import argparse
 GITHUB_TOKEN = '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'
 
 # Function to fetch commit details from GitHub API
-def fetch_commit_details(base_url, commit_sha, headers, max_retries=5):
+def fetch_commit_details(base_url, commit_sha, headers):
     url = f'{base_url}/{commit_sha}'
-    retries = 0
     failed_attempts = 0  # Contador de falhas seguidas
 
-    while retries < max_retries:
+    while True:  # Loop infinito para tentar indefinidamente
         try:
             response = requests.get(url, headers=headers, timeout=10)  # Timeout para evitar travamentos
             if response.status_code == 200:
@@ -20,23 +19,18 @@ def fetch_commit_details(base_url, commit_sha, headers, max_retries=5):
             elif response.status_code == 403:  # Rate limit exceeded
                 print(f'Rate limit reached. Waiting 60 seconds...')
                 time.sleep(60)
-                retries += 1
             else:
                 print(f'Error accessing API for commit {commit_sha}: {response.status_code} - {response.text}')
                 return None
         except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
-            print(f'Connection error: {e}. Retrying in {2 ** retries} seconds...')
-            time.sleep(2 ** retries)  # Exponential backoff
-            retries += 1
+            print(f'Connection error: {e}. Retrying...')
+            time.sleep(5)  # Espera um tempo antes de tentar novamente
             failed_attempts += 1
 
-            if failed_attempts == 3:  # Se falhar 3 vezes seguidas
-                print("Failed 3 times in a row. Waiting 1 hour before retrying...")
-                time.sleep(3600)  # Espera 1 hora
+            if failed_attempts >= 3:  # Se falhar várias vezes seguidas, tenta uma pausa maior
+                print("Failed multiple times in a row. Waiting 1 hour before retrying...")
+                time.sleep(3600)  # Espera 1 hora antes de tentar novamente
                 failed_attempts = 0  # Reseta o contador
-
-    print(f'Failed to fetch commit {commit_sha} after {max_retries} retries.')
-    return None
 
 # Function to save commit data to a CSV file
 def save_commit_to_csv(output_csv, commit_data):
