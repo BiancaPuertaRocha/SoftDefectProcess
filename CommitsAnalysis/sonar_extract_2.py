@@ -1,6 +1,5 @@
 import git
 import subprocess
-import json
 import os
 import csv
 import requests
@@ -123,7 +122,7 @@ def save_metrics_to_csv(metrics_data, commit_sha, initial_dir, output_csv, branc
         metrics['branch'] = branch_name
         writer.writerow(metrics)
 
-def run_sonar_scanner(commit_sha, sonar_project_key, output_csv, output_csv_bugs, output_csv_smells, sonar_sources, branch_name):
+def run_sonar_scanner(commit_sha, sonar_project_key, output_csv, output_csv_bugs, output_csv_smells, sonar_sources, branch_name, commit_counter):
     global SONAR_TOKEN
     repo_path = os.path.join(os.getcwd(), 'repos', sonar_project_key)
     
@@ -164,8 +163,12 @@ def run_sonar_scanner(commit_sha, sonar_project_key, output_csv, output_csv_bugs
         if code_smells_data:
             save_code_smells_to_csv(code_smells_data, commit_sha, initial_dir, output_csv_smells, branch_name)
 
+        # Run git gc every 100 commits
+        if commit_counter % 100 == 0:
+            subprocess.run(["git", "gc", "--prune=now"], capture_output=True, text=True)
+            print(f"Executed git gc --prune=now after {commit_counter} commits.")
+
     finally:
-       
         if os.path.exists(LOCK_FILE):
             os.remove(LOCK_FILE)
         os.chdir(initial_dir)
@@ -182,6 +185,8 @@ def main(sonar_project_key, output_csv, output_csv_bugs, output_csv_smells, sona
     
     repo = git.Repo(repo_path)
     
+    commit_counter = 0  # Initialize counter for commits
+
     for branch in repo.branches:
         print(f"Processing branch {branch.name}...")
         try:
@@ -205,7 +210,8 @@ def main(sonar_project_key, output_csv, output_csv_bugs, output_csv_smells, sona
                         found_commit = True
                     if found_commit:
                         print(f"Processing commit {commit.hexsha}...")
-                        run_sonar_scanner(commit.hexsha, sonar_project_key, output_csv, output_csv_bugs, output_csv_smells, sonar_sources, branch.name)
+                        commit_counter += 1
+                        run_sonar_scanner(commit.hexsha, sonar_project_key, output_csv, output_csv_bugs, output_csv_smells, sonar_sources, branch.name, commit_counter)
                 if not found_commit:
                     print(f"Commit SHA {start_sha} não encontrado nesta branch. Pulando para próxima branch.")
                     continue
@@ -215,7 +221,8 @@ def main(sonar_project_key, output_csv, output_csv_bugs, output_csv_smells, sona
         else:
             for commit in repo.iter_commits(branch.name):
                 print(f"Processing commit {commit.hexsha}...")
-                run_sonar_scanner(commit.hexsha, sonar_project_key, output_csv, output_csv_bugs, output_csv_smells, sonar_sources, branch.name)
+                commit_counter += 1
+                run_sonar_scanner(commit.hexsha, sonar_project_key, output_csv, output_csv_bugs, output_csv_smells, sonar_sources, branch.name, commit_counter)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Run SonarQube analysis for all commits in all branches')
