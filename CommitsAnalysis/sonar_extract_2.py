@@ -191,7 +191,8 @@ def main(sonar_project_key, output_csv, output_csv_bugs, output_csv_smells, sona
                 print("Removed stale Git lock file.")
             
             repo.git.checkout(branch.name)
-        except git.exc.GitCommandError:
+        except git.exc.GitCommandError as e:
+            print(e)
             print(f"Skipping branch {branch.name} due to error.")
             continue
         
