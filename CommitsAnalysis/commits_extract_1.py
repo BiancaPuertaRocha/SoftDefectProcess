@@ -22,7 +22,7 @@ def fetch_commit_details(base_url, commit_sha, headers):
             else:
                 print(f'Error accessing API for commit {commit_sha}: {response.status_code} - {response.text}')
                 return None
-        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+        except Exception as e:
             print(f'Connection error: {e}. Retrying...')
             time.sleep(5)  # Espera um tempo antes de tentar novamente
             failed_attempts += 1
