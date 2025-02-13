@@ -3,9 +3,9 @@ import pandas as pd
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
 from models.random_forest import RandomForestModel
 from models.voting_classifier import VotingEnsembleModel
-from models.decision_tree import BaggingDecisionTreeModel
-from resampling import balance_data_with_smotenc, balance_data_with_adasyn, balance_data_with_undersampling
-from feature_selection import fisher_score_feature_selection, chi_square_feature_selection, cfs_feature_selection
+from models.bagging import BaggingDecisionTreeModel, BaggingRandomForest
+from pre_process.resampling import balance_data_with_smotenc, balance_data_with_adasyn, balance_data_with_undersampling
+from pre_process.feature_selection import fisher_score_feature_selection, chi_square_feature_selection, cfs_feature_selection
 
 
 def run_experiments(df, model_class, methods, iterations=1): 
@@ -60,8 +60,9 @@ def main():
     # Configurar os modelos disponíveis
     models = {
         'random_forest': RandomForestModel,
-        'decision_tree': BaggingDecisionTreeModel,
-        'voting_classifier': VotingEnsembleModel
+        'bagging_decision_tree': BaggingDecisionTreeModel,
+        'voting_classifier': VotingEnsembleModel,
+        'bagging_random_forest': BaggingRandomForest,
     }
 
     # Verificar se o modelo solicitado está disponível
@@ -87,6 +88,26 @@ def main():
             df=df,
             sampler=balance_data_with_adasyn,
             feature_selector=fisher_score_feature_selection
+        ),
+        'smotenc_csf': lambda: model_class.model_sampler_feature_selector(
+            df=df,
+            sampler=balance_data_with_smotenc,
+            feature_selector=cfs_feature_selection
+        ),
+        'adasyn_cfs': lambda: model_class.model_sampler_feature_selector(
+            df=df,
+            sampler=balance_data_with_adasyn,
+            feature_selector=cfs_feature_selection
+        ),
+        'smotenc_chi': lambda: model_class.model_sampler_feature_selector(
+            df=df,
+            sampler=balance_data_with_smotenc,
+            feature_selector=chi_square_feature_selection
+        ),
+        'adasyn_chi': lambda: model_class.model_sampler_feature_selector(
+            df=df,
+            sampler=balance_data_with_adasyn,
+            feature_selector=chi_square_feature_selection
         ),
     }
 
