@@ -193,6 +193,9 @@ def run_sonar_scanner(commit_sha, sonar_project_key, output_csv, output_csv_bugs
         os.chdir(initial_dir)
 
 def main(sonar_project_key, output_csv, output_csv_bugs, output_csv_smells, sonar_sources, start_sha=None):
+
+    global SONAR_TOKEN
+    
     repo_path = os.path.join(os.getcwd(), 'repos', sonar_project_key)
     
     if not os.path.exists(RESULTS_DIR):
