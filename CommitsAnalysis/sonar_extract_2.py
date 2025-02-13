@@ -206,6 +206,8 @@ def main(sonar_project_key, output_csv, output_csv_bugs, output_csv_smells, sona
     
     commit_counter = 0  # Initialize counter for commits
 
+    SONAR_TOKEN = generate_new_sonar_token(sonar_url=SONAR_URL, sonar_user=SONAR_USER, sonar_pass=SONAR_PASS)
+
     for branch in repo.branches:
         print(f"Processing branch {branch.name}...")
         try:
