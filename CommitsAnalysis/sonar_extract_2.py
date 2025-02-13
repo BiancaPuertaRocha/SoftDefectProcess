@@ -4,6 +4,7 @@ import os
 import csv
 import requests
 import argparse
+import time
 from utils import generate_new_sonar_token
 
 SONAR_SCANNER_CMD = 'sonar-scanner'
@@ -125,48 +126,70 @@ def save_metrics_to_csv(metrics_data, commit_sha, initial_dir, output_csv, branc
 def run_sonar_scanner(commit_sha, sonar_project_key, output_csv, output_csv_bugs, output_csv_smells, sonar_sources, branch_name, commit_counter):
     global SONAR_TOKEN
     repo_path = os.path.join(os.getcwd(), 'repos', sonar_project_key)
-    
+
     initial_dir = os.getcwd()
     os.chdir(repo_path)
-    
-    try:
-        # Checkout specific commit
-        repo = git.Repo(repo_path)
-        repo.git.checkout(commit_sha)
 
+    try:
+        repo = git.Repo(repo_path)
+
+        # Descartar qualquer mudança antes do checkout
+        repo.git.reset('--hard')
+
+        # Forçar limpeza de arquivos não rastreados
+        repo.git.clean('-fd')
+
+        # Tentar checkout com tratamento de erro
+        try:
+            repo.git.checkout(commit_sha)
+        except git.exc.GitCommandError as e:
+            print(f"Erro ao mudar para o commit {commit_sha}: {e}")
+            return  # Pular este commit e continuar
+
+        # Criar o arquivo de configuração do Sonar Scanner
         sonar_properties = f"""
         sonar.projectKey={sonar_project_key}
         sonar.host.url={SONAR_URL}
         sonar.login={SONAR_TOKEN}
-        sonar.sources={sonar_sources},
+        sonar.sources={sonar_sources}
         sonar.java.binaries=.
         """
-        
+
         with open('sonar-project.properties', 'w') as f:
             f.write(sonar_properties)
-        
-        # Run Sonar Scanner
-        subprocess.run([SONAR_SCANNER_CMD], capture_output=True, text=True)
 
-        # Collect and save metrics
+        # Rodar Sonar Scanner com timeout e capturar erros
+        try:
+            result = subprocess.run([SONAR_SCANNER_CMD], capture_output=True, text=True, timeout=300)
+            if result.returncode != 0:
+                print(f"Sonar Scanner falhou no commit {commit_sha}. Saída:\n{result.stderr}")
+                return
+        except subprocess.TimeoutExpired:
+            print(f"Sonar Scanner demorou muito no commit {commit_sha}. Pulando...")
+            return
+
+        # Coletar e salvar métricas
         metrics_data = get_sonar_metrics(sonar_project_key, commit_sha)
         if metrics_data:
             save_metrics_to_csv(metrics_data, commit_sha, initial_dir, output_csv, branch_name)
-        
-        # Collect and save bugs
+
+        # Coletar e salvar bugs
         bugs_data = get_bug_locations(sonar_project_key)
         if bugs_data:
             save_bugs_to_csv(bugs_data, commit_sha, initial_dir, output_csv_bugs, branch_name)
 
-        # Collect and save code smells
+        # Coletar e salvar code smells
         code_smells_data = get_code_smells(sonar_project_key)
         if code_smells_data:
             save_code_smells_to_csv(code_smells_data, commit_sha, initial_dir, output_csv_smells, branch_name)
 
-        # Run git gc every 100 commits
+        # Executar git gc a cada 100 commits
         if commit_counter % 100 == 0:
             subprocess.run(["git", "gc", "--prune=now"], capture_output=True, text=True)
-            print(f"Executed git gc --prune=now after {commit_counter} commits.")
+            print(f"Executado git gc --prune=now após {commit_counter} commits.")
+
+        # Pequena pausa para liberar memória
+        time.sleep(1)
 
     finally:
         if os.path.exists(LOCK_FILE):
