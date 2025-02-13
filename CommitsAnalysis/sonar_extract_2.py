@@ -133,16 +133,12 @@ def run_sonar_scanner(commit_sha, sonar_project_key, output_csv, output_csv_bugs
     try:
         repo = git.Repo(repo_path)
 
-        # Descartar qualquer mudança antes do checkout
-        repo.git.reset('--hard')
-
-        # Forçar limpeza de arquivos não rastreados
-        repo.git.clean('-fd')
-
         # Tentar checkout com tratamento de erro
         try:
             repo.git.checkout(commit_sha)
         except git.exc.GitCommandError as e:
+            subprocess.run(["git", "gc", "--prune=now"], cwd=repo_path, capture_output=True, text=True)
+
             print(f"Erro ao mudar para o commit {commit_sha}: {e}")
             return  # Pular este commit e continuar
 
