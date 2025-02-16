@@ -5,50 +5,50 @@ from sklearn.preprocessing import LabelEncoder
 
 def balance_data_with_smote(X, y, sampling_strategy='auto', random_state=42):
     """
-    Aplica o SMOTE para balancear os dados desbalanceados.
+    Applies SMOTE to balance imbalanced data.
 
-    Parâmetros:
-    - X: DataFrame ou array com as features.
-    - y: Array ou Series com o rótulo alvo.
-    - sampling_strategy: Estratégia de amostragem (padrão é 'auto').
-    - random_state: Semente para a reprodutibilidade dos resultados.
+    Parameters:
+    - X: DataFrame or array containing the features.
+    - y: Array or Series with the target labels.
+    - sampling_strategy: Sampling strategy (default is 'auto').
+    - random_state: Seed for reproducibility.
 
-    Retorna:
-    - X_resampled: Features balanceadas.
-    - y_resampled: Rótulos balanceados.
+    Returns:
+    - X_resampled: Balanced features.
+    - y_resampled: Balanced labels.
     """
     smote = SMOTE(sampling_strategy=sampling_strategy, random_state=random_state)
     X_resampled, y_resampled = smote.fit_resample(X, y)
     return X_resampled, y_resampled
 
-#para dados categoricos
+# For categorical data
 def balance_data_with_smotenc(X, y, categorical_features, sampling_strategy='auto', random_state=42):
     """
-    Balanceia os dados desbalanceados, usando SMOTE ou SMOTENC, dependendo do tipo de features.
+    Balances imbalanced data using either SMOTE or SMOTENC, depending on feature types.
 
-    Parâmetros:
-    - X: DataFrame ou array com as features.
-    - y: Array ou Series com o rótulo alvo.
-    - categorical_features: Lista de índices das colunas categóricas em X (para SMOTENC).
-    - sampling_strategy: Estratégia de amostragem (padrão é 'auto').
-    - random_state: Semente para a reprodutibilidade dos resultados.
+    Parameters:
+    - X: DataFrame or array containing the features.
+    - y: Array or Series with the target labels.
+    - categorical_features: List of indices of categorical columns in X (for SMOTENC).
+    - sampling_strategy: Sampling strategy (default is 'auto').
+    - random_state: Seed for reproducibility.
 
-    Retorna:
-    - X_resampled: Features balanceadas.
-    - y_resampled: Rótulos balanceados.
+    Returns:
+    - X_resampled: Balanced features.
+    - y_resampled: Balanced labels.
     """
 
-    # Verificar se há colunas categóricas
+    # Check for categorical columns
     if categorical_features:
-        # Usar SMOTENC para dados categóricos
+        # Use SMOTENC for categorical data
         smote = SMOTENC(categorical_features=categorical_features,
                         sampling_strategy=sampling_strategy,
                         random_state=random_state)
     else:
-        # Usar SMOTE padrão para dados numéricos
+        # Use standard SMOTE for numerical data
         smote = SMOTE(sampling_strategy=sampling_strategy, random_state=random_state)
 
-    # Aplicar o método escolhido para balancear as classes
+    # Apply the chosen method to balance the classes
     X_resampled, y_resampled = smote.fit_resample(X, y)
 
     return X_resampled, y_resampled
@@ -56,28 +56,28 @@ def balance_data_with_smotenc(X, y, categorical_features, sampling_strategy='aut
 
 def balance_data_with_adasyn(X, y, sampling_strategy='auto', random_state=42, n_neighbors=5):
     """
-    Aplica o ADASYN para balancear os dados desbalanceados.
+    Applies ADASYN to balance imbalanced data.
 
-    Parâmetros:
-    - X: DataFrame ou array com as features.
-    - y: Array ou Series com o rótulo alvo.
-    - sampling_strategy: Estratégia de amostragem (padrão é 'auto').
-    - random_state: Semente para a reprodutibilidade dos resultados.
-    - n_neighbors: Número de vizinhos a serem usados para gerar as amostras sintéticas.
+    Parameters:
+    - X: DataFrame or array containing the features.
+    - y: Array or Series with the target labels.
+    - sampling_strategy: Sampling strategy (default is 'auto').
+    - random_state: Seed for reproducibility.
+    - n_neighbors: Number of neighbors used to generate synthetic samples.
 
-    Retorna:
-    - X_resampled: Features balanceadas.
-    - y_resampled: Rótulos balanceados.
+    Returns:
+    - X_resampled: Balanced features.
+    - y_resampled: Balanced labels.
     """
-    # Verificar se há colunas não numéricas e codificar
+    # Encode non-numeric columns if any
     X_encoded = X.copy()
     
-    # Codificar colunas categóricas com LabelEncoder
+    # Encode categorical columns using LabelEncoder
     for col in X_encoded.select_dtypes(include=['object']).columns:
         le = LabelEncoder()
         X_encoded[col] = le.fit_transform(X_encoded[col])
 
-    # Aplicar o ADASYN
+    # Apply ADASYN
     adasyn = ADASYN(sampling_strategy=sampling_strategy, random_state=random_state, n_neighbors=n_neighbors)
     X_resampled, y_resampled = adasyn.fit_resample(X_encoded, y)
     
@@ -86,19 +86,18 @@ def balance_data_with_adasyn(X, y, sampling_strategy='auto', random_state=42, n_
 
 def balance_data_with_undersampling(X, y, sampling_strategy='auto', random_state=42):
     """
-    Aplica o Random Under Sampling para balancear os dados desbalanceados.
+    Applies Random Under Sampling to balance imbalanced data.
 
-    Parâmetros:
-    - X: DataFrame ou array com as features.
-    - y: Array ou Series com o rótulo alvo.
-    - sampling_strategy: Proporção desejada de amostras (padrão é 'auto', que balanceia igualmente).
-    - random_state: Semente para a reprodutibilidade dos resultados.
+    Parameters:
+    - X: DataFrame or array containing the features.
+    - y: Array or Series with the target labels.
+    - sampling_strategy: Desired sample ratio (default is 'auto', which balances classes equally).
+    - random_state: Seed for reproducibility.
 
-    Retorna:
-    - X_resampled: Features balanceadas.
-    - y_resampled: Rótulos balanceados.
+    Returns:
+    - X_resampled: Balanced features.
+    - y_resampled: Balanced labels.
     """
     rus = RandomUnderSampler(sampling_strategy=sampling_strategy, random_state=random_state)
     X_resampled, y_resampled = rus.fit_resample(X, y)
     return X_resampled, y_resampled
-
