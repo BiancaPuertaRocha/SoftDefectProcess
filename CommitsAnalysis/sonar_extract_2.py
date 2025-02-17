@@ -193,9 +193,7 @@ def run_sonar_scanner(commit_sha, sonar_project_key, output_csv, output_csv_bugs
         os.chdir(initial_dir)
 
 def main(sonar_project_key, output_csv, output_csv_bugs, output_csv_smells, sonar_sources, start_sha=None):
-
     global SONAR_TOKEN
-    
     repo_path = os.path.join(os.getcwd(), 'repos', sonar_project_key)
     
     if not os.path.exists(RESULTS_DIR):
@@ -206,47 +204,51 @@ def main(sonar_project_key, output_csv, output_csv_bugs, output_csv_smells, sona
         git.Repo.clone_from('REPO_URL', repo_path)
     
     repo = git.Repo(repo_path)
-    
-    commit_counter = 0  # Initialize counter for commits
-
+    commit_counter = 0
     SONAR_TOKEN = generate_new_sonar_token(sonar_url=SONAR_URL, sonar_user=SONAR_USER, sonar_pass=SONAR_PASS)
 
-    for branch in repo.branches:
-        print(f"Processing branch {branch.name}...")
-        try:
-            lock_file = os.path.join(repo_path, '.git', 'index.lock')
-            if os.path.exists(lock_file):
-                os.remove(lock_file)
-                print("Removed stale Git lock file.")
-            
-            repo.git.checkout(branch.name)
-        except git.exc.GitCommandError as e:
-            print(e)
-            print(f"Skipping branch {branch.name} due to error.")
-            continue
+    # Obtendo a branch principal
+    try:
+        main_branch = repo.active_branch  # Obtém a branch ativa
+    except TypeError:
+        print("Não foi possível determinar a branch principal automaticamente.")
+        return
+
+    print(f"Processing main branch {main_branch.name}...")
+    
+    try:
+        lock_file = os.path.join(repo_path, '.git', 'index.lock')
+        if os.path.exists(lock_file):
+            os.remove(lock_file)
+            print("Removed stale Git lock file.")
         
-        if start_sha:
-            try:
-                start_commit = repo.commit(start_sha)
-                found_commit = False
-                for commit in repo.iter_commits(branch.name):
-                    if commit.hexsha == start_sha:
-                        found_commit = True
-                    if found_commit:
-                        print(f"Processing commit {commit.hexsha}...")
-                        commit_counter += 1
-                        run_sonar_scanner(commit.hexsha, sonar_project_key, output_csv, output_csv_bugs, output_csv_smells, sonar_sources, branch.name, commit_counter)
-                if not found_commit:
-                    print(f"Commit SHA {start_sha} não encontrado nesta branch. Pulando para próxima branch.")
-                    continue
-            except git.exc.BadName:
-                print(f"Commit SHA {start_sha} inválido. Pulando para próxima branch.")
-                continue
-        else:
-            for commit in repo.iter_commits(branch.name):
-                print(f"Processing commit {commit.hexsha}...")
-                commit_counter += 1
-                run_sonar_scanner(commit.hexsha, sonar_project_key, output_csv, output_csv_bugs, output_csv_smells, sonar_sources, branch.name, commit_counter)
+        repo.git.checkout(main_branch.name)
+    except git.exc.GitCommandError as e:
+        print(e)
+        print(f"Skipping main branch {main_branch.name} due to error.")
+        return
+
+    if start_sha:
+        try:
+            start_commit = repo.commit(start_sha)
+            found_commit = False
+            for commit in repo.iter_commits(main_branch.name):
+                if commit.hexsha == start_sha:
+                    found_commit = True
+                if found_commit:
+                    print(f"Processing commit {commit.hexsha}...")
+                    commit_counter += 1
+                    run_sonar_scanner(commit.hexsha, sonar_project_key, output_csv, output_csv_bugs, output_csv_smells, sonar_sources, main_branch.name, commit_counter)
+            if not found_commit:
+                print(f"Commit SHA {start_sha} não encontrado nesta branch.")
+        except git.exc.BadName:
+            print(f"Commit SHA {start_sha} inválido.")
+    else:
+        for commit in repo.iter_commits(main_branch.name):
+            print(f"Processing commit {commit.hexsha}...")
+            commit_counter += 1
+            run_sonar_scanner(commit.hexsha, sonar_project_key, output_csv, output_csv_bugs, output_csv_smells, sonar_sources, main_branch.name, commit_counter)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Run SonarQube analysis for all commits in all branches')
