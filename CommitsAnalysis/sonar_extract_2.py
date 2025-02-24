@@ -210,7 +210,8 @@ def main(sonar_project_key, output_csv, output_csv_bugs, output_csv_smells, sona
     # Obtendo a branch principal
     try:
         main_branch = repo.active_branch  # Obtém a branch ativa
-    except TypeError:
+    except TypeError as e:
+        print(e)
         print("Não foi possível determinar a branch principal automaticamente.")
         return
 
