@@ -156,7 +156,7 @@ def run_sonar_scanner(commit_sha, sonar_project_key, output_csv, output_csv_bugs
 
         # Rodar Sonar Scanner com timeout e capturar erros
         try:
-            result = subprocess.run([SONAR_SCANNER_CMD], capture_output=True, text=True, timeout=300)
+            result = subprocess.run([SONAR_SCANNER_CMD], capture_output=True, text=True, timeout=3000)
             if result.returncode != 0:
                 print(f"Sonar Scanner falhou no commit {commit_sha}. Saída:\n{result.stderr}")
                 return
@@ -207,12 +207,12 @@ def main(sonar_project_key, output_csv, output_csv_bugs, output_csv_smells, sona
     commit_counter = 0
     SONAR_TOKEN = generate_new_sonar_token(sonar_url=SONAR_URL, sonar_user=SONAR_USER, sonar_pass=SONAR_PASS)
 
-    # Obtendo a branch principal
+    # getting main branch
     try:
-        main_branch = repo.active_branch  # Obtém a branch ativa
+        main_branch = repo.active_branch 
     except TypeError as e:
         print(e)
-        print("Não foi possível determinar a branch principal automaticamente.")
+        print("No branch found.")
         return
 
     print(f"Processing main branch {main_branch.name}...")
