@@ -4,17 +4,17 @@ import argparse
 def unwind_and_merge(input_file1, input_file2, output_file):
     # Load the first CSV file and perform the unwind on modified_files
     df1 = pd.read_csv(input_file1)
-    df1_expanded = df1.assign(file=df1['modified_files'].str.split(',')).explode('file')
-    df1_expanded.drop(columns=['modified_files'], inplace=True)
+    # df1_expanded = df1.assign(file=df1['modified_files'].str.split(',')).explode('file')
+    df1.drop(columns=['modified_files'], inplace=True)
 
     # Load the second CSV file
     df2 = pd.read_csv(input_file2)
 
-    df1_expanded['FILE_NAME'] = df1_expanded['file'].str.split(':').str[-1]
+    df1['FILE_NAME'] = df1['file'].str.split(':').str[-1]
     df2['file'] = df2['file'].str.split(':').str[-1]
 
     # Merge on sha and file
-    merged_df = pd.merge(df1_expanded, df2, left_on=['sha', 'file'], right_on=['commit_sha', 'file'], how='left')
+    merged_df = pd.merge(df1, df2, left_on=['sha', 'file'], right_on=['commit_sha', 'file'], how='left')
 
     # Save the merged DataFrame to the output file
     merged_df.to_csv(output_file, index=False)
