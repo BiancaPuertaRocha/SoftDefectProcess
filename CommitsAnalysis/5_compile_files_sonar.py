@@ -31,6 +31,9 @@ smells_df = smells_df.rename(columns={'line': 'smell_line', 'severity': 'smell_s
 merged_df = pd.merge(bugs_df, smells_df, on=['commit_sha', 'file'], how='outer')
 merged_df = pd.merge(merged_df, metrics_df, on=['commit_sha'], how='outer')
 
+# # Preencher valores ausentes com um valor padrão (se necessário)
+# merged_df.fillna('Não encontrado', inplace=True)
+
 # Salvar o resultado final em um novo arquivo CSV
 output_file = os.path.join(directory, f'merged_modifications_{prefix}_final.csv')
 merged_df.to_csv(output_file, index=False)
