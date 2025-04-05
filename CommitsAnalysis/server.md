@@ -86,7 +86,7 @@ Run analysis in the 2 compiled files, using the commits data do get the date and
 python 7_analysis_szz.py --fixes issues_by_sdptool/project_name/compiled_results.csv --modifications modifications/modifications_project_name.csv --commits commits/commits_data_project_name.csv --output szz/final_project_name.csv
 
 ```
-
+python 7_analysis_szz.py --fixes issues_by_sdptool/dubbo/compiled_results.csv --modifications modifications/modifications_dubbo.csv --commits commits/commits_data_dubbo.csv --output szz/final_dubbo.csv
 
 # About the data 
 
