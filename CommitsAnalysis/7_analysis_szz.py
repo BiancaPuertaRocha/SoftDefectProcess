@@ -60,10 +60,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Process CSVs to identify failure-prone modifications.")
     parser.add_argument("--fixes", required=True, help="Path to the issue fixes CSV file")
     parser.add_argument("--modifications", required=True, help="Path to the general modifications CSV file")
-    parser.add_argument("--commits", required=True, help="Path to the commits data CSV file")
     parser.add_argument("--output", required=True, help="Path to the output CSV file")
 
     args = parser.parse_args()
     
     # Call the function with the arguments
-    process_files(args.fixes, args.modifications, args.commits, args.output)
+    process_files(args.fixes, args.modifications, args.output)

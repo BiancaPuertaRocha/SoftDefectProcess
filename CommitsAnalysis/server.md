@@ -83,10 +83,9 @@ python 6_generate_modifications_file.py --commits commits/commits_data_project_n
 ## Step 7:
 Run analysis in the 2 compiled files, using the commits data do get the date and find which modification introduced the bug thar was solved by the issue.
 ```
-python 7_analysis_szz.py --fixes issues_by_sdptool/project_name/compiled_results.csv --modifications modifications/modifications_project_name.csv --commits commits/commits_data_project_name.csv --output szz/final_project_name.csv
+python 7_analysis_szz.py --fixes issues_by_sdptool/project_name/compiled_results.csv --modifications modifications/modifications_project_name.csv --output szz/final_project_name.csv
 
 ```
-python 7_analysis_szz.py --fixes issues_by_sdptool/dubbo/compiled_results.csv --modifications modifications/modifications_dubbo.csv --commits commits/commits_data_dubbo.csv --output szz/final_dubbo.csv
 
 # About the data 
 
