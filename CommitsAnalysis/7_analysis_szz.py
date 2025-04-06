@@ -2,13 +2,12 @@ import pandas as pd
 import argparse
 import time
 
-def process_files(fixes_path, modifications_path, commits_path, output_path):
+def process_files(fixes_path, modifications_path, output_path):
     failure_prone = 0
 
     # Load the CSV files
     fixes_df = pd.read_csv(fixes_path)  # CSV for issue-fixing modifications
     modifications_df = pd.read_csv(modifications_path)  # CSV for general modifications
-    commits_df = pd.read_csv(commits_path)  # CSV with commit data
 
     print(f'initial modifications {len(modifications_df)}')
 
@@ -16,37 +15,34 @@ def process_files(fixes_path, modifications_path, commits_path, output_path):
     fixes_df['FILE_NAME'] = fixes_df['FILE_NAME'].str.split(':').str[-1]
     modifications_df['file'] = modifications_df['file'].str.split(':').str[-1]
 
-    # Step 1: Merge the fixes file with the commits file
-    fixes_commit_df = pd.merge(fixes_df, commits_df, left_on='MERGE_COMMIT_SHA', right_on='sha', suffixes=('', '_commit'))
+    # Step 1: Merge the fixes file with the commits file ti get commit date
+    fixes_commit_df = pd.merge(fixes_df, modifications_df, left_on='MERGE_COMMIT_SHA', right_on='sha', suffixes=('', '_commit'))
 
-    # Step 2: Merge the general modifications file with the commits file
-    modifications_commit_df = pd.merge(modifications_df, commits_df, left_on='commit_sha', right_on='sha', suffixes=('', '_commit'))
-
-    print(f'after merge modifications {len(modifications_commit_df)}')
+    print(f'after merge modifications {len(modifications_df)}')
 
     # Convert dates to datetime format for comparison operations
     fixes_commit_df['commit_date'] = pd.to_datetime(fixes_commit_df['commit_date'])
-    modifications_commit_df['commit_date'] = pd.to_datetime(modifications_commit_df['commit_date'])
+    modifications_df['commit_date'] = pd.to_datetime(modifications_df['commit_date'])
     fixes_commit_df['CREATED_AT'] = pd.to_datetime(fixes_commit_df['CREATED_AT'] / 1000, unit='s', utc=True)
 
     # Add a new column for failure-prone modifications and initialize with 0
-    modifications_commit_df['failure_prone'] = 0
+    modifications_df['failure_prone'] = 0
 
-    # Step 3: Identify modifications prior to the closest fix modification
+    # Step 2: Identify modifications prior to the closest fix modification
     start_time = time.time()
     for index, row in fixes_commit_df.iterrows():
         # Filter for modifications before the fix and with a different SHA
-        previous_modifications = modifications_commit_df[
-            (modifications_commit_df['file'] == row['FILE_NAME']) &  # Same file
-            (modifications_commit_df['commit_date'] < row['CREATED_AT']) &  # Earlier date
-            (modifications_commit_df['sha'] != row['MERGE_COMMIT_SHA'])  # Different SHA
+        previous_modifications = modifications_df[
+            (modifications_df['file'] == row['FILE_NAME']) &  # Same file
+            (modifications_df['commit_date'] < row['CREATED_AT']) &  # Earlier date
+            (modifications_df['sha'] != row['MERGE_COMMIT_SHA'])  # Different SHA
         ]
         
         # Find the closest modification before the fix
         if not previous_modifications.empty:
             last_modification_index = previous_modifications['commit_date'].idxmax()
             # Mark the closest modification as failure-prone
-            modifications_commit_df.at[last_modification_index, 'failure_prone'] = 1
+            modifications_df.at[last_modification_index, 'failure_prone'] = 1
             failure_prone += 1
 
 
@@ -56,7 +52,7 @@ def process_files(fixes_path, modifications_path, commits_path, output_path):
             start_time = time.time()
 
     # Save the DataFrame with all modifications and failure-prone labels to a new CSV
-    modifications_commit_df.to_csv(output_path, index=False)
+    modifications_df.to_csv(output_path, index=False)
     print("Processing completed. Results saved to:", output_path)
 
 if __name__ == "__main__":
