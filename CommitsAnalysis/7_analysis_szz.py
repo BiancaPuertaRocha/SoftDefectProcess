@@ -18,8 +18,6 @@ def process_files(fixes_path, modifications_path, output_path):
     # Step 1: Merge the fixes file with the commits file ti get commit date
     fixes_commit_df = pd.merge(fixes_df, modifications_df, left_on='MERGE_COMMIT_SHA', right_on='sha', suffixes=('', '_commit'))
 
-    print(f'after merge modifications {len(modifications_df)}')
-
     # Convert dates to datetime format for comparison operations
     fixes_commit_df['commit_date'] = pd.to_datetime(fixes_commit_df['commit_date'])
     modifications_df['commit_date'] = pd.to_datetime(modifications_df['commit_date'])
