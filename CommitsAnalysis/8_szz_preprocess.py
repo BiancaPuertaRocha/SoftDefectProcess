@@ -2,7 +2,7 @@ import pandas as pd
 import argparse
 
 # Colunas a remover
-COLUMNS_TO_DROP = ['author', 'files', 'url', 'email', 'sha', 'file', 'files']
+COLUMNS_TO_DROP = ['author', 'files', 'url', 'email', 'file', 'branch_commits', 'branch_x', 'branch_y']
 # Métricas a serem propagadas
 METRIC_COLUMNS = [
     'code_smells', 'bugs', 'vulnerabilities', 'coverage',
@@ -27,7 +27,7 @@ def main():
     df = df.merge(metrics_by_sha, on='sha', how='left')
 
     # Salva o novo CSV
-    output_path = args.csv_file.replace('.csv', '_limpo.csv')
+    output_path = args.csv_file.replace('.csv', '_clear.csv')
     df.to_csv(output_path, index=False)
     print(f'Arquivo processado salvo em: {output_path}')
 
