@@ -87,6 +87,11 @@ python 7_analysis_szz.py --fixes issues_by_sdptool/project_name/compiled_results
 
 ```
 
+## Step 8:
+Clean csv to remove columns that are unecessary or that are always equal. Irrelevant.
+```
+python 8_szz_preprocess.py szz/final_project_name.csv szz/final_project_name_preprocessed.csv
+```
 
 # About the data 
 
