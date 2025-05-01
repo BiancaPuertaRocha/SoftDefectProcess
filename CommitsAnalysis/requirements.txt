@@ -2,3 +2,4 @@ pandas
 requests
 gitpython
 lxml
+scikit-learn
