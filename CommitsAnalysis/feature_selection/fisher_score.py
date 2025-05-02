@@ -1,15 +1,14 @@
 import numpy as np
 import pandas as pd
 import optuna
-
-from sklearn.feature_selection import SelectKBest, chi2
 from sklearn.model_selection import cross_val_score
 from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.ensemble import RandomForestClassifier
 
 
-class Chi2FeatureSelector:
+class FisherScoreFeatureSelector:
     """
-    Feature selection using Chi-squared test with Bayesian Optimization to find the optimal number of features (k).
+    Feature selection using Fisher Score with Bayesian Optimization to find the optimal number of features (k).
     Accepts any classifier provided at initialization.
     """
     def __init__(self, classifier, n_trials=20, direction="maximize", sampler=None):
@@ -22,26 +21,51 @@ class Chi2FeatureSelector:
         self.best_score = None
         self.selected_features = None
 
+    def _fisher_score(self, X, y):
+        """
+        Compute Fisher score for each feature in X.
+        """
+        n_features = X.shape[1]
+        fisher_scores = []
+
+        for i in range(n_features):
+            feature = X.iloc[:, i]
+            mean_class_0 = feature[y == 0].mean()
+            mean_class_1 = feature[y == 1].mean()
+            var_class_0 = feature[y == 0].var()
+            var_class_1 = feature[y == 1].var()
+
+            # Fisher score calculation (between-class variance / within-class variance)
+            fisher_score = (mean_class_0 - mean_class_1) ** 2 / (var_class_0 + var_class_1)
+            fisher_scores.append(fisher_score)
+
+        return fisher_scores
+
     def _evaluate_k(self, df, k):
         X = df.drop(columns=['failure_prone'])
         y = df['failure_prone']
 
-        # Encode categorical target if needed
+        # Encode target if needed
         if y.dtype == 'object':
             y = LabelEncoder().fit_transform(y)
 
-        # Chi-squared requires non-negative input
+        # Fisher score requires non-negative values
         scaler = StandardScaler()
         X_scaled = scaler.fit_transform(X)
 
-        selector = SelectKBest(score_func=chi2, k=k)
-        X_selected = selector.fit_transform(X_scaled, y)
+        # Compute Fisher Scores for all features
+        fisher_scores = self._fisher_score(pd.DataFrame(X_scaled, columns=X.columns), y)
+
+        # Select the top k features based on Fisher score
+        top_k_features = np.argsort(fisher_scores)[-k:]
+        selected_features = X.columns[top_k_features]
 
         # Cross-validation with the provided classifier
+        X_selected = X[selected_features]
         score = cross_val_score(self.classifier, X_selected, y, cv=5, scoring='accuracy').mean()
 
         # Store currently selected features
-        self.current_features = X.columns[selector.get_support()]
+        self.current_features = selected_features
         return score
 
     def _objective(self, trial):

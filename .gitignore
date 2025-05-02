@@ -6,5 +6,4 @@ dataset - *
 repos*
 *.csv
 CommitsAnalysis/szz/final_*.zip
-CommitsAnalysis/szz/final_pinot.zip
 CommitsAnalysis/szz/*.zip
