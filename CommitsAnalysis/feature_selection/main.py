@@ -86,7 +86,7 @@ def process_csv_and_run_function(csv_filename, function_name):
     # Executa a função consider_messages, se definida
     df_final = consider_messages(df_final)
 
-    df = df.drop(columns=colunas_extra)
+    df_final = df_final.drop(columns=colunas_extra)
 
     print(f"\nDataFrame: {len(df_final)} linhas.")
 
