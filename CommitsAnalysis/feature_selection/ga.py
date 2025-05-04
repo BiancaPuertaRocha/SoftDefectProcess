@@ -89,7 +89,8 @@ class GAFeatureSelector:
 
         try:
             score, selected_features = self._run_ga(self.df, pop_size, n_gen, cxpb, mutpb)
-        except Exception:
+        except Exception as e:
+            print(e)
             return 0.0
         self.selected_features = selected_features 
         return score

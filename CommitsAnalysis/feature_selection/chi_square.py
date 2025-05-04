@@ -80,7 +80,8 @@ class Chi2FeatureSelector:
 
         try:
             score = self._evaluate_k(self.df, k)
-        except Exception:
+        except Exception as e:
+            print(e)
             return 0.0
         return score
 
