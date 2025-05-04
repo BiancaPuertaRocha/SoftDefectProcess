@@ -74,7 +74,7 @@ def process_csv_and_run_function(csv_filename, function_name):
     df_final = pd.concat(numeric_chunks, ignore_index=True)
     print(f"\nDataFrame: {len(df_final)} lines.")
 
-    df_final = consider_messages(df)
+    df_final = consider_messages(df_final)
     
     # Call feature selection function
     if function_name in globals():
