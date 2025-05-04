@@ -59,8 +59,6 @@ def consider_messages(df):
 def process_csv_and_run_function(csv_filename, function_name):
     numeric_chunks = []
 
-    df_final = consider_messages(df_final)
-
     for chunk in pd.read_csv(csv_filename, chunksize=10000):
         # Transform categoric to numeric
         if 'bug_status' in chunk.columns and 'smell_status' in chunk.columns:
@@ -73,7 +71,10 @@ def process_csv_and_run_function(csv_filename, function_name):
 
         numeric_chunks.append(df_numeric)
 
-    df_final = pd.concat(numeric_chunks, ignore_index=True)
+    all_chunks = numeric_chunks + ["message", "bug_message", "code_smell_message"]
+    df_final = pd.concat(all_chunks, ignore_index=True)
+    df_final = consider_messages(df_final)
+    
     print(f"\nDataFrame: {len(df_final)} lines.")
     
     # Call feature selection function
