@@ -45,7 +45,7 @@ def run_chi_random_forest(df, csv_filename):
     print(f"Selected features saved to: {filename}")
 
 
-def run_chi_random_forest(df, csv_filename):
+def run_ga_random_forest(df, csv_filename):
     clf = RandomForestClassifier(n_estimators=50, random_state=42)
     ga_feature_selector = GAFeatureSelector(clf)
     selected_features = ga_feature_selector.run(df)
