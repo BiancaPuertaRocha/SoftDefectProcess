@@ -13,6 +13,15 @@ class Chi2FeatureSelector:
     Accepts any classifier provided at initialization.
     """
     def __init__(self, classifier, n_trials=20, direction="maximize", sampler=None):
+        """
+        Initializes the Chi2FeatureSelector with the given classifier and optimization settings.
+
+        Parameters:
+        - classifier: A classifier to evaluate the selected features with.
+        - n_trials: The number of trials for Optuna optimization.
+        - direction: Optimization direction, either 'maximize' or 'minimize'.
+        - sampler: The sampler to use for Optuna optimization (default is None).
+        """
         self.classifier = classifier
         self.n_trials = n_trials
         self.direction = direction
@@ -23,6 +32,16 @@ class Chi2FeatureSelector:
         self.selected_features = None
 
     def _evaluate_k(self, df, k):
+        """
+        Evaluate the performance of selecting the top k features using Chi-squared test.
+
+        Parameters:
+        - df: The DataFrame containing the features and target column.
+        - k: The number of top features to select.
+
+        Returns:
+        - score: The cross-validation score with the selected features.
+        """
         X = df.drop(columns=['failure_prone'])
         y = df['failure_prone']
 
@@ -30,21 +49,31 @@ class Chi2FeatureSelector:
         if y.dtype == 'object':
             y = LabelEncoder().fit_transform(y)
 
-        # Chi-squared requires non-negative input
+        # Chi-squared requires non-negative input, so standardize the features
         scaler = StandardScaler()
         X_scaled = scaler.fit_transform(X)
 
+        # Select top k features based on Chi-squared test
         selector = SelectKBest(score_func=chi2, k=k)
         X_selected = selector.fit_transform(X_scaled, y)
 
         # Cross-validation with the provided classifier
         score = cross_val_score(self.classifier, X_selected, y, cv=5, scoring='accuracy').mean()
 
-        # Store currently selected features
+        # Store the currently selected features
         self.current_features = X.columns[selector.get_support()]
         return score
 
     def _objective(self, trial):
+        """
+        Objective function for Optuna optimization. It suggests an optimal k and evaluates the score.
+
+        Parameters:
+        - trial: The current Optuna trial.
+
+        Returns:
+        - score: The cross-validation score for the selected number of features (k).
+        """
         X = self.df.drop(columns=['failure_prone'])
         max_k = X.shape[1]
         k = trial.suggest_int("k", 1, max_k)
@@ -56,10 +85,20 @@ class Chi2FeatureSelector:
         return score
 
     def run(self, df):
+        """
+        Runs the feature selection process using Optuna for hyperparameter tuning.
+        
+        Parameters:
+        - df: The DataFrame containing the features and target column.
+
+        Returns:
+        - selected_features: The features selected after optimization.
+        """
         self.df = df
         self.study = optuna.create_study(direction=self.direction, sampler=self.sampler)
         self.study.optimize(self._objective, n_trials=self.n_trials)
 
+        # Best number of features (k) and its corresponding score
         self.best_k = self.study.best_params["k"]
         self.best_score = self.study.best_value
         self.selected_features = self.current_features

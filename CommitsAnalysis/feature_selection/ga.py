@@ -22,6 +22,7 @@ class GAFeatureSelector:
         self.study = None
         self.best_params = None
         self.best_score = None
+        self.selected_features = None 
 
     def _run_ga(self, df, pop_size, n_gen, cxpb, mutpb):
         X = df.drop(columns=['failure_prone'])
@@ -71,7 +72,7 @@ class GAFeatureSelector:
         X_best = X[selected_features]
         final_score = cross_val_score(self.classifier, X_best, y, cv=5, scoring='f1_macro').mean()
 
-        return final_score
+        return final_score, selected_features
 
     def _objective(self, trial):
         pop_size = trial.suggest_int("pop_size", 10, 50)
@@ -80,9 +81,10 @@ class GAFeatureSelector:
         mutpb = trial.suggest_float("mutpb", 0.01, 0.3)
 
         try:
-            score = self._run_ga(self.df, pop_size, n_gen, cxpb, mutpb)
+            score, selected_features = self._run_ga(self.df, pop_size, n_gen, cxpb, mutpb)
         except Exception:
             return 0.0
+        self.selected_features = selected_features 
         return score
 
     def run(self, df):
@@ -97,4 +99,7 @@ class GAFeatureSelector:
         print(self.best_params)
         print("Best F1-macro:", self.best_score)
 
-        return self.best_params
+        print("\nBest features selected:")
+        print(self.selected_features) 
+
+        return self.selected_features 

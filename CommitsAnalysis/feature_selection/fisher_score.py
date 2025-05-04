@@ -84,6 +84,7 @@ class FisherScoreFeatureSelector:
         self.study = optuna.create_study(direction=self.direction, sampler=self.sampler)
         self.study.optimize(self._objective, n_trials=self.n_trials)
 
+        # Best k and the corresponding score
         self.best_k = self.study.best_params["k"]
         self.best_score = self.study.best_value
         self.selected_features = self.current_features
