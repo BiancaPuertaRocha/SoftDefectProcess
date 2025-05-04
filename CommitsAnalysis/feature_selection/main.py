@@ -8,7 +8,7 @@ from ga import GAFeatureSelector
 from fisher_score import FisherScoreFeatureSelector
 
 
-def run_fisher_random_forest(df):
+def run_fisher_random_forest(df, csv_filename):
     clf = RandomForestClassifier(n_estimators=50, random_state=42)
     fisher_feature_selector = FisherScoreFeatureSelector(clf)
     selected_features = fisher_feature_selector.run(df)
@@ -18,7 +18,7 @@ def run_fisher_random_forest(df):
     selected_df = df[selected_features]
 
     function_name = "run_fisher_random_forest"
-    filename = f"{df.name}_{function_name}_selected_features.csv"
+    filename = f"{csv_filename}_{function_name}_selected_features.csv"
     selected_df.to_csv(filename, index=False)
 
     print(f"Selected features saved to: {filename}")
@@ -93,7 +93,7 @@ def process_csv_and_run_function(csv_filename, function_name):
     # Chama a função de seleção de atributos, se existir
     if function_name in globals():
         print(f"Executando função '{function_name}'")
-        globals()[function_name](df_final)
+        globals()[function_name](df_final, csv_filename)
     else:
         print(f"Função '{function_name}' não encontrada.")
 
