@@ -42,6 +42,7 @@ class GAFeatureSelector:
             scores = cross_val_score(clf, X_selected, y, cv=5, scoring='f1_macro')
             return scores.mean(),
 
+        # Criação de estruturas para GA
         if not hasattr(creator, "FitnessMax"):
             creator.create("FitnessMax", base.Fitness, weights=(1.0,))
         if not hasattr(creator, "Individual"):
@@ -65,14 +66,20 @@ class GAFeatureSelector:
         stats.register("max", np.max)
 
         pop, _ = algorithms.eaSimple(pop, toolbox, cxpb=cxpb, mutpb=mutpb, ngen=n_gen,
-                                     stats=stats, halloffame=hof, verbose=False)
+                                    stats=stats, halloffame=hof, verbose=False)
 
         best_ind = hof[0]
         selected_features = [X.columns[i] for i, bit in enumerate(best_ind) if bit == 1]
+
+        if not selected_features:
+            print("No features were selected.")
+            return 0.0, None  # Retorna 0.0 e None em caso de falha
+
         X_best = X[selected_features]
         final_score = cross_val_score(self.classifier, X_best, y, cv=5, scoring='f1_macro').mean()
 
         return final_score, selected_features
+
 
     def _objective(self, trial):
         pop_size = trial.suggest_int("pop_size", 10, 50)
