@@ -27,6 +27,22 @@ def run_fisher_random_forest(df, csv_filename):
 
     print(f"Selected features saved to: {filename}")
 
+
+def run_ga_random_forest(df, csv_filename):
+    clf = RandomForestClassifier(n_estimators=50, random_state=42)
+    ga_feature_selector = GAFeatureSelector(clf)
+    selected_features = ga_feature_selector.run(df)
+    
+    print(f"Selected Features: {selected_features}")
+
+    selected_df = df[selected_features]
+
+    function_name = "run_ga_random_forest"
+    filename = f"{csv_filename}_{function_name}_selected_features.csv"
+    selected_df.to_csv(filename, index=False)
+
+    print(f"Selected features saved to: {filename}")
+
 def consider_messages(df, max_features=20):
     df['bug_message'] = df['bug_message'].fillna('')
     df['message'] = df['message'].fillna('')
@@ -90,7 +106,7 @@ def process_csv_and_run_function(csv_filename, function_name):
     # Executa a função consider_messages, se definida
     df_final = consider_messages(df_final)
     df_final = remove_columns_with_unique_values(df_final)
-    
+
     df_final = df_final.drop(columns=colunas_extra)
 
     print(f"\nDataFrame: {len(df_final)} linhas.")
