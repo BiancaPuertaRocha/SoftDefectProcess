@@ -61,7 +61,7 @@ class FisherScoreFeatureSelector:
 
         try:
             score, selected_features = self._evaluate_k(self.df, k)
-        except Exception e:
+        except Exception as e:
             print(e)
             return 0.0
         return score
