@@ -1,16 +1,4 @@
-import numpy as np
-import pandas as pd
-import optuna
-from sklearn.model_selection import cross_val_score
-from sklearn.preprocessing import StandardScaler, LabelEncoder
-from sklearn.ensemble import RandomForestClassifier
-
-
 class FisherScoreFeatureSelector:
-    """
-    Feature selection using Fisher Score with Bayesian Optimization to find the optimal number of features (k).
-    Accepts any classifier provided at initialization.
-    """
     def __init__(self, classifier, n_trials=20, direction="maximize", sampler=None):
         self.classifier = classifier
         self.n_trials = n_trials
@@ -64,9 +52,7 @@ class FisherScoreFeatureSelector:
         X_selected = X[selected_features]
         score = cross_val_score(self.classifier, X_selected, y, cv=5, scoring='accuracy').mean()
 
-        # Store currently selected features
-        self.current_features = selected_features
-        return score
+        return score, selected_features
 
     def _objective(self, trial):
         X = self.df.drop(columns=['failure_prone'])
@@ -74,8 +60,9 @@ class FisherScoreFeatureSelector:
         k = trial.suggest_int("k", 1, max_k)
 
         try:
-            score = self._evaluate_k(self.df, k)
-        except Exception:
+            score, selected_features = self._evaluate_k(self.df, k)
+        except Exception e:
+            print(e)
             return 0.0
         return score
 
@@ -87,7 +74,10 @@ class FisherScoreFeatureSelector:
         # Best k and the corresponding score
         self.best_k = self.study.best_params["k"]
         self.best_score = self.study.best_value
-        self.selected_features = self.current_features
+        
+        # Run the evaluation again to get the best features
+        _, selected_features = self._evaluate_k(self.df, self.best_k)
+        self.selected_features = selected_features
 
         print(f"\nBest number of features (k): {self.best_k}")
         print(f"Best cross-validation score: {self.best_score:.4f}")
