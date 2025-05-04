@@ -5,18 +5,19 @@ from sklearn.ensemble import RandomForestClassifier
 import argparse
 
 from ga import GAFeatureSelector
+from fisher_score import FisherScoreFeatureSelector
 
 
-def run_ga_random_forest(df):
+def run_fisher_random_forest(df):
     clf = RandomForestClassifier(n_estimators=50, random_state=42)
-    ga_feature_selector = GAFeatureSelector(clf)
-    selected_features = ga_feature_selector.run(df)
+    fisher_feature_selector = FisherScoreFeatureSelector(clf)
+    selected_features = fisher_feature_selector.run(df)
     
     print(f"Selected Features: {selected_features}")
 
     selected_df = df[selected_features]
 
-    function_name = "run_ga_random_forest"
+    function_name = "run_fisher_random_forest"
     filename = f"{df.name}_{function_name}_selected_features.csv"
     selected_df.to_csv(filename, index=False)
 
