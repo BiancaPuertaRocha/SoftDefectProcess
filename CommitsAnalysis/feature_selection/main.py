@@ -7,6 +7,10 @@ import argparse
 from ga import GAFeatureSelector
 from fisher_score import FisherScoreFeatureSelector
 
+def remove_columns_with_unique_values(df):
+    df_cleaned = df.loc[:, df.nunique() > 1]
+    return df_cleaned
+
 
 def run_fisher_random_forest(df, csv_filename):
     clf = RandomForestClassifier(n_estimators=50, random_state=42)
@@ -85,7 +89,8 @@ def process_csv_and_run_function(csv_filename, function_name):
 
     # Executa a função consider_messages, se definida
     df_final = consider_messages(df_final)
-
+    df_final = remove_columns_with_unique_values(df_final)
+    
     df_final = df_final.drop(columns=colunas_extra)
 
     print(f"\nDataFrame: {len(df_final)} linhas.")
