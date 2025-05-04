@@ -22,7 +22,7 @@ def run_ga_random_forest(df):
 
     print(f"Selected features saved to: {filename}")
 
-def consider_messages(df):
+def consider_messages(df, max_features=20):
     df['bug_message'] = df['bug_message'].fillna('')
     df['message'] = df['message'].fillna('')
     df['code_smell_message'] = df['code_smell_message'].fillna('')
