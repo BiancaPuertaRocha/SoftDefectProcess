@@ -57,7 +57,8 @@ def consider_messages(df):
 
 
 def process_csv_and_run_function(csv_filename, function_name):
-    numeric_chunks = []
+    all_chunks = []
+    colunas_extra = ["message", "bug_message", "code_smell_message"]
 
     for chunk in pd.read_csv(csv_filename, chunksize=10000):
         # Transform categoric to numeric
@@ -65,24 +66,33 @@ def process_csv_and_run_function(csv_filename, function_name):
             chunk['bug_status'] = chunk['bug_status'].astype('category').cat.codes
             chunk['smell_status'] = chunk['smell_status'].astype('category').cat.codes
 
-        # Only numeric
+        # Seleciona colunas numéricas
         df_numeric = chunk.select_dtypes(include='number')
-        print(f"Colunas numéricas do pedaço: {list(df_numeric.columns)}")
 
-        numeric_chunks.append(df_numeric)
+        # Seleciona apenas as colunas extras que existem no chunk
+        colunas_existentes = [col for col in colunas_extra if col in chunk.columns]
 
-    all_chunks = numeric_chunks + ["message", "bug_message", "code_smell_message"]
+        # Junta numéricos + colunas de texto
+        df_final_chunk = pd.concat([df_numeric, chunk[colunas_existentes]], axis=1)
+
+        print(f"Colunas do pedaço: {list(df_final_chunk.columns)}")
+
+        all_chunks.append(df_final_chunk)
+
+    # Junta todos os pedaços em um único DataFrame
     df_final = pd.concat(all_chunks, ignore_index=True)
+
+    # Executa a função consider_messages, se definida
     df_final = consider_messages(df_final)
-    
-    print(f"\nDataFrame: {len(df_final)} lines.")
-    
-    # Call feature selection function
+
+    print(f"\nDataFrame: {len(df_final)} linhas.")
+
+    # Chama a função de seleção de atributos, se existir
     if function_name in globals():
-        print(f"Executing function '{function_name}'")
+        print(f"Executando função '{function_name}'")
         globals()[function_name](df_final)
     else:
-        print(f"Function '{function_name}' not found.")
+        print(f"Função '{function_name}' não encontrada.")
 
 
 def main():
