@@ -13,19 +13,19 @@ def remove_columns_with_unique_values(df):
 
 def run_fisher_random_forest(df, csv_filename):
     clf = RandomForestClassifier(n_estimators=50, random_state=42)
-    runner = FSRunner(clf)
+    runner = FSRunner(clf, 'random_forest')
     runner.run_fisher(df, csv_filename)
 
 
 def run_chi_random_forest(df, csv_filename):
     clf = RandomForestClassifier(n_estimators=50, random_state=42)
-    runner = FSRunner(clf)
+    runner = FSRunner(clf, 'random_forest')
     runner.run_chi(df, csv_filename)
 
 
 def run_ga_random_forest(df, csv_filename):
     clf = RandomForestClassifier(n_estimators=50, random_state=42)
-    runner = FSRunner(clf)
+    runner = FSRunner(clf, 'random_forest')
     runner.run_ga(df, csv_filename)
 
 def consider_messages(df, max_features=20):
