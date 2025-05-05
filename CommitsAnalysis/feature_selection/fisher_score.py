@@ -7,6 +7,10 @@ from sklearn.ensemble import RandomForestClassifier
 
 
 class FisherScoreFeatureSelector:
+    """
+    Feature selection using Fisher Score with hyperparameter tuning via Bayesian Optimization (Optuna).
+    A customizable classifier is used for evaluation.
+    """
     def __init__(self, classifier, n_trials=20, direction="maximize", sampler=None):
         self.classifier = classifier
         self.n_trials = n_trials
@@ -31,7 +35,6 @@ class FisherScoreFeatureSelector:
             var_class_0 = feature[y == 0].var()
             var_class_1 = feature[y == 1].var()
 
-            # Fisher score calculation (between-class variance / within-class variance)
             fisher_score = (mean_class_0 - mean_class_1) ** 2 / (var_class_0 + var_class_1)
             fisher_scores.append(fisher_score)
 
@@ -41,11 +44,9 @@ class FisherScoreFeatureSelector:
         X = df.drop(columns=['failure_prone'])
         y = df['failure_prone']
 
-        # Encode target if needed
         if y.dtype == 'object':
             y = LabelEncoder().fit_transform(y)
 
-        # Fisher score requires non-negative values
         scaler = StandardScaler()
         X_scaled = scaler.fit_transform(X)
 

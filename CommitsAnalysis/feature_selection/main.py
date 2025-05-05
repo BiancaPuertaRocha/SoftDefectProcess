@@ -29,6 +29,9 @@ def run_ga_random_forest(df, csv_filename):
     runner.run_ga(df, csv_filename)
 
 def consider_messages(df, max_features=20):
+    """
+    Runs tf-idf in the messages
+    """
     df['bug_message'] = df['bug_message'].fillna('')
     df['message'] = df['message'].fillna('')
     df['code_smell_message'] = df['code_smell_message'].fillna('')
@@ -62,7 +65,10 @@ def consider_messages(df, max_features=20):
     return df_final
 
 
-def process_csv_and_run_function(csv_filename, function_name):
+def prepare_csv_and_run_function(csv_filename, function_name):
+    """
+    Removes all the non numeric fields and the messages are transformed with TF-IDF
+    """
     all_chunks = []
     colunas_extra = ["message", "bug_message", "code_smell_message"]
 
@@ -72,31 +78,23 @@ def process_csv_and_run_function(csv_filename, function_name):
             chunk['bug_status'] = chunk['bug_status'].astype('category').cat.codes
             chunk['smell_status'] = chunk['smell_status'].astype('category').cat.codes
 
-        # Seleciona colunas numéricas
         df_numeric = chunk.select_dtypes(include='number')
-
-        # Seleciona apenas as colunas extras que existem no chunk
         colunas_existentes = [col for col in colunas_extra if col in chunk.columns]
-
-        # Junta numéricos + colunas de texto
         df_final_chunk = pd.concat([df_numeric, chunk[colunas_existentes]], axis=1)
-
-        print(f"Colunas do pedaço: {list(df_final_chunk.columns)}")
 
         all_chunks.append(df_final_chunk)
 
-    # Junta todos os pedaços em um único DataFrame
     df_final = pd.concat(all_chunks, ignore_index=True)
 
-    # Executa a função consider_messages, se definida
+    # run tf-idf in the messages
     df_final = consider_messages(df_final)
     df_final = remove_columns_with_unique_values(df_final)
 
     df_final = df_final.drop(columns=colunas_extra)
 
-    print(f"\nDataFrame: {len(df_final)} linhas.")
+    print(f"\nDataFrame: {len(df_final)} lines.")
 
-    # Chama a função de seleção de atributos, se existir
+    # Calls function
     if function_name in globals():
         print(f"Executando função '{function_name}'")
         globals()[function_name](df_final, csv_filename)
@@ -111,7 +109,7 @@ def main():
     
     args = parser.parse_args()
 
-    process_csv_and_run_function(args.csv_filename, args.function_name)
+    prepare_csv_and_run_function(args.csv_filename, args.function_name)
 
 if __name__ == "__main__":
     main()

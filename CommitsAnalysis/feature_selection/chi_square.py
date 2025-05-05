@@ -13,15 +13,6 @@ class Chi2FeatureSelector:
     Accepts any classifier provided at initialization.
     """
     def __init__(self, classifier, n_trials=20, direction="maximize", sampler=None):
-        """
-        Initializes the Chi2FeatureSelector with the given classifier and optimization settings.
-
-        Parameters:
-        - classifier: A classifier to evaluate the selected features with.
-        - n_trials: The number of trials for Optuna optimization.
-        - direction: Optimization direction, either 'maximize' or 'minimize'.
-        - sampler: The sampler to use for Optuna optimization (default is None).
-        """
         self.classifier = classifier
         self.n_trials = n_trials
         self.direction = direction
@@ -38,14 +29,10 @@ class Chi2FeatureSelector:
         X = df.drop(columns=['failure_prone'])
         y = df['failure_prone']
 
-        # Encode categorical target if needed
         if y.dtype == 'object':
             y = LabelEncoder().fit_transform(y)
 
-        # Remover linhas com NaN
         X_clean = X.dropna()
-
-        # Garantir que os dados sejam não-negativos
         X_clean[X_clean < 0] = 0
 
         # Standardize the features
