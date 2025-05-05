@@ -31,7 +31,7 @@ class Chi2FeatureSelector:
         self.best_score = None
         self.selected_features = None
 
-        def _evaluate_k(self, df, k):
+    def _evaluate_k(self, df, k):
         """
         Evaluate the performance of selecting the top k features using Chi-squared test.
         """
