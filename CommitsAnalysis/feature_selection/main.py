@@ -4,9 +4,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.ensemble import RandomForestClassifier
 import argparse
 
-from ga import GAFeatureSelector
-from fisher_score import FisherScoreFeatureSelector
-from chi_square import Chi2FeatureSelector
+from fs_runner import FSRunner
 
 def remove_columns_with_unique_values(df):
     df_cleaned = df.loc[:, df.nunique() > 1]
@@ -15,50 +13,20 @@ def remove_columns_with_unique_values(df):
 
 def run_fisher_random_forest(df, csv_filename):
     clf = RandomForestClassifier(n_estimators=50, random_state=42)
-    fisher_feature_selector = FisherScoreFeatureSelector(clf)
-    selected_features = fisher_feature_selector.run(df)
-    
-    print(f"Selected Features: {selected_features}")
-
-    selected_df = df[selected_features]
-
-    function_name = "run_fisher_random_forest"
-    filename = f"{csv_filename}_{function_name}_selected_features.csv"
-    selected_df.to_csv(filename, index=False)
-
-    print(f"Selected features saved to: {filename}")
+    runner = FSRunner(clf)
+    runner.run_fisher(df, csv_filename)
 
 
 def run_chi_random_forest(df, csv_filename):
     clf = RandomForestClassifier(n_estimators=50, random_state=42)
-    chi_feature_selector = Chi2FeatureSelector(clf)
-    selected_features = chi_feature_selector.run(df)
-    
-    print(f"Selected Features: {selected_features}")
-
-    selected_df = df[selected_features]
-
-    function_name = "run_chi_random_forest"
-    filename = f"{csv_filename}_{function_name}_selected_features.csv"
-    selected_df.to_csv(filename, index=False)
-
-    print(f"Selected features saved to: {filename}")
+    runner = FSRunner(clf)
+    runner.run_chi(df, csv_filename)
 
 
 def run_ga_random_forest(df, csv_filename):
     clf = RandomForestClassifier(n_estimators=50, random_state=42)
-    ga_feature_selector = GAFeatureSelector(clf)
-    selected_features = ga_feature_selector.run(df)
-    
-    print(f"Selected Features: {selected_features}")
-
-    selected_df = df[selected_features]
-
-    function_name = "run_ga_random_forest"
-    filename = f"{csv_filename}_{function_name}_selected_features.csv"
-    selected_df.to_csv(filename, index=False)
-
-    print(f"Selected features saved to: {filename}")
+    runner = FSRunner(clf)
+    runner.run_ga(df, csv_filename)
 
 def consider_messages(df, max_features=20):
     df['bug_message'] = df['bug_message'].fillna('')
