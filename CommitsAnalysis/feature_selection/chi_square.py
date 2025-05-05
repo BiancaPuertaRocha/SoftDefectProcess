@@ -21,6 +21,7 @@ class Chi2FeatureSelector:
         self.best_k = None
         self.best_score = None
         self.selected_features = None
+        self.current_features = []  # Initialize to an empty list to avoid AttributeError
 
     def _evaluate_k(self, df, k):
         """
@@ -32,7 +33,12 @@ class Chi2FeatureSelector:
         if y.dtype == 'object':
             y = LabelEncoder().fit_transform(y)
 
-        X_clean = X.dropna()
+        # Remove rows with missing values in X or y to ensure they have the same number of samples
+        df_clean = df.dropna(subset=['failure_prone'])
+        X_clean = df_clean.drop(columns=['failure_prone'])
+        y_clean = df_clean['failure_prone']
+
+        # Ensure that negative values are replaced with 0
         X_clean[X_clean < 0] = 0
 
         # Standardize the features
@@ -41,15 +47,14 @@ class Chi2FeatureSelector:
 
         # Select top k features based on Chi-squared test
         selector = SelectKBest(score_func=chi2, k=k)
-        X_selected = selector.fit_transform(X_scaled, y)
+        X_selected = selector.fit_transform(X_scaled, y_clean)
 
         # Cross-validation with the provided classifier
-        score = cross_val_score(self.classifier, X_selected, y, cv=5, scoring='accuracy').mean()
+        score = cross_val_score(self.classifier, X_selected, y_clean, cv=5, scoring='accuracy').mean()
 
         # Store the currently selected features
-        self.current_features = X.columns[selector.get_support()]
+        self.current_features = X.columns[selector.get_support()].tolist()
         return score
-
 
     def _objective(self, trial):
         """
