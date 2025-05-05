@@ -34,7 +34,7 @@ class Chi2FeatureSelector:
             y = LabelEncoder().fit_transform(y)
 
         # Remove rows with missing values in X or y to ensure they have the same number of samples
-        df_clean = df.dropna(subset=['failure_prone'])
+        df_clean = df.dropna()
         X_clean = df_clean.drop(columns=['failure_prone'])
         y_clean = df_clean['failure_prone']
 
