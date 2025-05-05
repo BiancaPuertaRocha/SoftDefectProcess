@@ -45,6 +45,9 @@ class Chi2FeatureSelector:
         X = df.drop(columns=['failure_prone'])
         y = df['failure_prone']
 
+        X = X.dropna()
+        y = y[X.index] 
+
         # Encode categorical target if needed
         if y.dtype == 'object':
             y = LabelEncoder().fit_transform(y)
