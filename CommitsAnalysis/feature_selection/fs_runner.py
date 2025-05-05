@@ -9,7 +9,7 @@ class FSRunner:
         self.model_name = model_name
 
     def run_fisher(self, df, csv_filename):
-        fisher_feature_selector = FisherScoreFeatureSelector(clf)
+        fisher_feature_selector = FisherScoreFeatureSelector(self.clf)
         selected_features = fisher_feature_selector.run(df)
         
         print(f"Selected Features: {selected_features}")
@@ -24,7 +24,7 @@ class FSRunner:
 
 
     def run_chi(self, df, csv_filename):
-        chi_feature_selector = Chi2FeatureSelector(clf)
+        chi_feature_selector = Chi2FeatureSelector(self.clf)
         selected_features = chi_feature_selector.run(df)
         
         print(f"Selected Features: {selected_features}")
@@ -39,7 +39,7 @@ class FSRunner:
 
 
     def run_ga(self, df, csv_filename):
-        ga_feature_selector = GAFeatureSelector(clf)
+        ga_feature_selector = GAFeatureSelector(self.clf)
         selected_features = ga_feature_selector.run(df)
         
         print(f"Selected Features: {selected_features}")
