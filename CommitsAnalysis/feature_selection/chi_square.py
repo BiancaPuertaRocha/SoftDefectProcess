@@ -30,11 +30,15 @@ class Chi2FeatureSelector:
 
         # Remove rows with missing values in X or y to ensure they have the same number of samples
         df_clean = df.dropna()
-        df_clean = df_clean[(df_clean >= 0).all(axis=1)] 
+        
+        # Remove rows with any negative values
+        df_clean = df_clean[(df_clean >= 0).all(axis=1)]
+        
+        # Separate features (X) and target (y)
         X_clean = df_clean.drop(columns=['failure_prone'])
         y_clean = df_clean['failure_prone']
 
-        # Ensure that negative values are replaced with 0
+        # Ensure that all values in X are non-negative by replacing negative values with 0
         X_clean[X_clean < 0] = 0
 
         # Standardize the features
@@ -49,9 +53,9 @@ class Chi2FeatureSelector:
         score = cross_val_score(self.classifier, X_selected, y_clean, cv=5, scoring='accuracy').mean()
 
         # Store the currently selected features
-        self.current_features = X.columns[selector.get_support()].tolist()
+        self.current_features = X_clean.columns[selector.get_support()].tolist()
         return score
-
+        
     def _objective(self, trial):
         """
         Objective function for Optuna optimization. It suggests an optimal k and evaluates the score.
