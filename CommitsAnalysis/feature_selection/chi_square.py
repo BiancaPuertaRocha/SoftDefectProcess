@@ -27,14 +27,10 @@ class Chi2FeatureSelector:
         """
         Evaluate the performance of selecting the top k features using Chi-squared test.
         """
-        X = df.drop(columns=['failure_prone'])
-        y = df['failure_prone']
-
-        if y.dtype == 'object':
-            y = LabelEncoder().fit_transform(y)
 
         # Remove rows with missing values in X or y to ensure they have the same number of samples
         df_clean = df.dropna()
+        df_clean = df_clean[(df_clean >= 0).all(axis=1)] 
         X_clean = df_clean.drop(columns=['failure_prone'])
         y_clean = df_clean['failure_prone']
 
