@@ -31,16 +31,18 @@ class Chi2FeatureSelector:
         # Remove rows with missing values in X or y to ensure they have the same number of samples
         df_clean = df.dropna()
 
-        # Remove rows with any negative values in X and also remove the corresponding rows in y
+        # Separate features (X) and target (y)
         X_clean = df_clean.drop(columns=['failure_prone'])
         y_clean = df_clean['failure_prone']
-        
-        # Find rows where all values in X are non-negative
-        mask = (X_clean >= 0).all(axis=1)
-        
-        # Apply the mask to both X and y
+
+        # Remove rows with any negative values in X and also remove the corresponding rows in y
+        mask = (X_clean >= 0).all(axis=1)  # Only keep rows with non-negative values in X
         X_clean = X_clean[mask]
         y_clean = y_clean[mask]
+
+        # Ensure that after this filtering, all values in X_clean are non-negative
+        if (X_clean < 0).any().any():
+            print("Warning: There are still negative values in X_clean.")
 
         # Standardize the features
         scaler = StandardScaler()
