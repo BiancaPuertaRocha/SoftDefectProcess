@@ -31,30 +31,26 @@ class Chi2FeatureSelector:
         self.best_score = None
         self.selected_features = None
 
-    def _evaluate_k(self, df, k):
+        def _evaluate_k(self, df, k):
         """
         Evaluate the performance of selecting the top k features using Chi-squared test.
-
-        Parameters:
-        - df: The DataFrame containing the features and target column.
-        - k: The number of top features to select.
-
-        Returns:
-        - score: The cross-validation score with the selected features.
         """
         X = df.drop(columns=['failure_prone'])
         y = df['failure_prone']
-
-        X = X.dropna()
-        y = y[X.index] 
 
         # Encode categorical target if needed
         if y.dtype == 'object':
             y = LabelEncoder().fit_transform(y)
 
-        # Chi-squared requires non-negative input, so standardize the features
+        # Remover linhas com NaN
+        X_clean = X.dropna()
+
+        # Garantir que os dados sejam não-negativos
+        X_clean[X_clean < 0] = 0
+
+        # Standardize the features
         scaler = StandardScaler()
-        X_scaled = scaler.fit_transform(X)
+        X_scaled = scaler.fit_transform(X_clean)
 
         # Select top k features based on Chi-squared test
         selector = SelectKBest(score_func=chi2, k=k)
@@ -66,6 +62,7 @@ class Chi2FeatureSelector:
         # Store the currently selected features
         self.current_features = X.columns[selector.get_support()]
         return score
+
 
     def _objective(self, trial):
         """
