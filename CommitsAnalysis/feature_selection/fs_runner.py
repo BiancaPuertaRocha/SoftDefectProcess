@@ -4,11 +4,11 @@ from chi_square import Chi2FeatureSelector
 
 class FSRunner:
 
-    def __init__(clf, model_name):
+    def __init__(self, clf, model_name):
         self.clf = clf
         self.model_name = model_name
 
-    def run_fisher(df, csv_filename):
+    def run_fisher(self, df, csv_filename):
         fisher_feature_selector = FisherScoreFeatureSelector(clf)
         selected_features = fisher_feature_selector.run(df)
         
@@ -23,7 +23,7 @@ class FSRunner:
         print(f"Selected features saved to: {filename}")
 
 
-    def run_chi(df, csv_filename):
+    def run_chi(self, df, csv_filename):
         chi_feature_selector = Chi2FeatureSelector(clf)
         selected_features = chi_feature_selector.run(df)
         
@@ -38,7 +38,7 @@ class FSRunner:
         print(f"Selected features saved to: {filename}")
 
 
-    def run_ga(df, csv_filename):
+    def run_ga(self, df, csv_filename):
         ga_feature_selector = GAFeatureSelector(clf)
         selected_features = ga_feature_selector.run(df)
         
