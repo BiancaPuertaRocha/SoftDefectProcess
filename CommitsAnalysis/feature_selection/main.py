@@ -35,7 +35,7 @@ def run_chi_bagging_random_forest(df, csv_filename):
     Runs feature selection Chi Square using Bagging with Random Forest as base estimator.
     """
     base_clf = RandomForestClassifier(n_estimators=50, random_state=42)
-    clf = BaggingClassifier(base_estimator=base_clf, n_estimators=10, random_state=42)
+    clf = BaggingClassifier(estimator=base_clf, n_estimators=10, random_state=42)
     runner = FSRunner(clf, 'bagging_random_forest')
     runner.run_chi(df, csv_filename)
 
@@ -44,7 +44,7 @@ def run_fisher_bagging_random_forest(df, csv_filename):
     Runs feature selection Fisher Score using Bagging with Random Forest as base estimator.
     """
     base_clf = RandomForestClassifier(n_estimators=50, random_state=42)
-    clf = BaggingClassifier(base_estimator=base_clf, n_estimators=10, random_state=42)
+    clf = BaggingClassifier(estimator=base_clf, n_estimators=10, random_state=42)
     runner = FSRunner(clf, 'bagging_random_forest')
     runner.run_fisher(df, csv_filename)
 
@@ -54,7 +54,7 @@ def run_ga_bagging_random_forest(df, csv_filename):
     Runs feature selection Genetic Algorithm using Bagging with Random Forest as base estimator.
     """
     base_clf = RandomForestClassifier(n_estimators=50, random_state=42)
-    clf = BaggingClassifier(base_estimator=base_clf, n_estimators=10, random_state=42)
+    clf = BaggingClassifier(estimator=base_clf, n_estimators=10, random_state=42)
     runner = FSRunner(clf, 'bagging_random_forest')
     runner.run_ga(df, csv_filename)
 
