@@ -4,7 +4,7 @@ import optuna
 
 from sklearn.feature_selection import SelectKBest, chi2
 from sklearn.model_selection import cross_val_score
-from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.preprocessing import MinMaxScaler, LabelEncoder
 
 
 class Chi2FeatureSelector:
@@ -35,17 +35,8 @@ class Chi2FeatureSelector:
         X_clean = df_clean.drop(columns=['failure_prone'])
         y_clean = df_clean['failure_prone']
 
-        # Remove rows with any negative values in X and also remove the corresponding rows in y
-        mask = (X_clean >= 0).all(axis=1)  # Only keep rows with non-negative values in X
-        X_clean = X_clean[mask]
-        y_clean = y_clean[mask]
-
-        # Ensure that after this filtering, all values in X_clean are non-negative
-        if (X_clean < 0).any().any():
-            print("Warning: There are still negative values in X_clean.")
-
-        # Standardize the features
-        scaler = StandardScaler()
+        # Standardize the features using MinMaxScaler to ensure non-negative values
+        scaler = MinMaxScaler()
         X_scaled = scaler.fit_transform(X_clean)
 
         # Select top k features based on Chi-squared test
@@ -62,12 +53,6 @@ class Chi2FeatureSelector:
     def _objective(self, trial):
         """
         Objective function for Optuna optimization. It suggests an optimal k and evaluates the score.
-
-        Parameters:
-        - trial: The current Optuna trial.
-
-        Returns:
-        - score: The cross-validation score for the selected number of features (k).
         """
         X = self.df.drop(columns=['failure_prone'])
         max_k = X.shape[1]
@@ -83,12 +68,6 @@ class Chi2FeatureSelector:
     def run(self, df):
         """
         Runs the feature selection process using Optuna for hyperparameter tuning.
-        
-        Parameters:
-        - df: The DataFrame containing the features and target column.
-
-        Returns:
-        - selected_features: The features selected after optimization.
         """
         self.df = df
         self.study = optuna.create_study(direction=self.direction, sampler=self.sampler)
