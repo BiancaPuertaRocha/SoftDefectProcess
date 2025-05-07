@@ -34,7 +34,7 @@ class GAFeatureSelector:
         N_FEATURES = X.shape[1]
 
         def eval_individual(individual):
-            if sum(individual) == 0:
+            if sum(individual) < 3:
                 return 0.0,
             selected_features = [i for i, bit in enumerate(individual) if bit == 1]
             X_selected = X.iloc[:, selected_features]

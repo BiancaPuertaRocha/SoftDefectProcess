@@ -66,7 +66,7 @@ class FisherScoreFeatureSelector:
     def _objective(self, trial):
         X = self.df.drop(columns=['failure_prone'])
         max_k = X.shape[1]
-        k = trial.suggest_int("k", 1, max_k)
+        k = trial.suggest_int("k", 3, max_k)
 
         try:
             score, selected_features = self._evaluate_k(self.df, k)
