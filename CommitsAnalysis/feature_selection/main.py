@@ -1,6 +1,13 @@
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.ensemble import RandomForestClassifier, BaggingClassifier
+from sklearn.ensemble import VotingClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.naive_bayes import GaussianNB
+from sklearn.svm import SVC
+
 import argparse
 
 from fs_runner import FSRunner
@@ -31,18 +38,12 @@ def run_ga_random_forest(df, csv_filename):
 #BAGGING + RANDOM FOREST
 
 def run_chi_bagging_random_forest(df, csv_filename):
-    """
-    Runs feature selection Chi Square using Bagging with Random Forest as base estimator.
-    """
     base_clf = RandomForestClassifier(n_estimators=50, random_state=42)
     clf = BaggingClassifier(estimator=base_clf, n_estimators=10, random_state=42)
     runner = FSRunner(clf, 'bagging_random_forest')
     runner.run_chi(df, csv_filename)
 
 def run_fisher_bagging_random_forest(df, csv_filename):
-    """
-    Runs feature selection Fisher Score using Bagging with Random Forest as base estimator.
-    """
     base_clf = RandomForestClassifier(n_estimators=50, random_state=42)
     clf = BaggingClassifier(estimator=base_clf, n_estimators=10, random_state=42)
     runner = FSRunner(clf, 'bagging_random_forest')
@@ -50,13 +51,65 @@ def run_fisher_bagging_random_forest(df, csv_filename):
 
 
 def run_ga_bagging_random_forest(df, csv_filename):
-    """
-    Runs feature selection Genetic Algorithm using Bagging with Random Forest as base estimator.
-    """
     base_clf = RandomForestClassifier(n_estimators=50, random_state=42)
     clf = BaggingClassifier(estimator=base_clf, n_estimators=10, random_state=42)
     runner = FSRunner(clf, 'bagging_random_forest')
     runner.run_ga(df, csv_filename)
+
+
+# Voting classifier (CART, KNN, LR, NB, RF e SVM)
+def create_voting_classifier():
+    """
+    Creates ensemble model with voting with classifiers:
+    CART, KNN, Logistic Regression, Naive Bayes, Random Forest e SVM.
+    """
+    estimators = [
+        ('cart', DecisionTreeClassifier(random_state=42)),
+        ('knn', KNeighborsClassifier()),
+        ('lr', LogisticRegression(max_iter=1000, random_state=42)),
+        ('nb', GaussianNB()),
+        ('rf', RandomForestClassifier(n_estimators=50, random_state=42)),
+        ('svm', SVC(probability=True, random_state=42))
+    ]
+    return VotingClassifier(estimators=estimators, voting='soft')
+
+
+def run_chi_voting(df, csv_filename):
+    clf = create_voting_classifier()
+    runner = FSRunner(clf, 'voting')
+    runner.run_chi(df, csv_filename)
+
+def run_fisher_voting(df, csv_filename):
+    clf = create_voting_classifier()
+    runner = FSRunner(clf, 'voting')
+    runner.run_fisher(df, csv_filename)
+
+def run_ga_voting(df, csv_filename):
+    clf = create_voting_classifier()
+    runner = FSRunner(clf, 'voting')
+    runner.run_ga(df, csv_filename)
+
+
+#BAGGING + DT
+def run_chi_bagging_cart(df, csv_filename):
+    base_clf = DecisionTreeClassifier(random_state=42)
+    clf = BaggingClassifier(estimator=base_clf, n_estimators=10, random_state=42)
+    runner = FSRunner(clf, 'bagging_cart')
+    runner.run_chi(df, csv_filename)
+
+def run_fisher_bagging_cart(df, csv_filename):
+    base_clf = DecisionTreeClassifier(random_state=42)
+    clf = BaggingClassifier(estimator=base_clf, n_estimators=10, random_state=42)
+    runner = FSRunner(clf, 'bagging_cart')
+    runner.run_fisher(df, csv_filename)
+
+def run_ga_bagging_cart(df, csv_filename):
+    base_clf = DecisionTreeClassifier(random_state=42)
+    clf = BaggingClassifier(estimator=base_clf, n_estimators=10, random_state=42)
+    runner = FSRunner(clf, 'bagging_cart')
+    runner.run_ga(df, csv_filename)
+
+
 
 def apply_tfidf_to_messages(df, max_features=20):
     """
