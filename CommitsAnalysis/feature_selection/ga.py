@@ -14,7 +14,7 @@ class GAFeatureSelector:
     Feature selection using Genetic Algorithm with hyperparameter tuning via Bayesian Optimization (Optuna).
     A customizable classifier is used for evaluation.
     """
-    def __init__(self, classifier, n_trials=20, direction="maximize", sampler=None):
+    def __init__(self, classifier, n_trials=20, direction="maximize", sampler=None, min_features=3):
         self.classifier = classifier
         self.n_trials = n_trials
         self.direction = direction
@@ -23,6 +23,7 @@ class GAFeatureSelector:
         self.best_params = None
         self.best_score = None
         self.selected_features = None 
+        self.min_features = min_features
 
     def _run_ga(self, df, pop_size, n_gen, cxpb, mutpb):
         X = df.drop(columns=['failure_prone'])
@@ -34,7 +35,7 @@ class GAFeatureSelector:
         N_FEATURES = X.shape[1]
 
         def eval_individual(individual):
-            if sum(individual) < 3:
+            if sum(individual) < self.min_features:
                 return 0.0,
             selected_features = [i for i, bit in enumerate(individual) if bit == 1]
             X_selected = X.iloc[:, selected_features]

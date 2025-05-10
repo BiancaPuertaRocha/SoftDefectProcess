@@ -1,23 +1,23 @@
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.ensemble import RandomForestClassifier, BaggingClassifier
-from sklearn.ensemble import VotingClassifier
+from sklearn.ensemble import RandomForestClassifier, BaggingClassifier, VotingClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import SVC
-
 import argparse
-
 from fs_runner import FSRunner
 
+
+MIN_FEATURES = 5
+
 def remove_columns_with_unique_values(df):
-    """Removes columns that contain only a single unique value."""
+    """Remove columns that have only one unique value."""
     return df.loc[:, df.nunique() > 1]
 
 
-#RANDOM FOREST
+# RANDOM FOREST
 
 def run_fisher_random_forest(df, csv_filename):
     clf = RandomForestClassifier(n_estimators=50, random_state=42)
@@ -35,7 +35,7 @@ def run_ga_random_forest(df, csv_filename):
     runner.run_ga(df, csv_filename)
 
 
-#BAGGING + RANDOM FOREST
+# BAGGING + RANDOM FOREST
 
 def run_chi_bagging_random_forest(df, csv_filename):
     base_clf = RandomForestClassifier(n_estimators=50, random_state=42)
@@ -49,7 +49,6 @@ def run_fisher_bagging_random_forest(df, csv_filename):
     runner = FSRunner(clf, 'bagging_random_forest')
     runner.run_fisher(df, csv_filename)
 
-
 def run_ga_bagging_random_forest(df, csv_filename):
     base_clf = RandomForestClassifier(n_estimators=50, random_state=42)
     clf = BaggingClassifier(estimator=base_clf, n_estimators=10, random_state=42)
@@ -57,40 +56,8 @@ def run_ga_bagging_random_forest(df, csv_filename):
     runner.run_ga(df, csv_filename)
 
 
-# Voting classifier (CART, KNN, LR, NB, RF e SVM)
-def create_voting_classifier():
-    """
-    Creates ensemble model with voting with classifiers:
-    CART, KNN, Logistic Regression, Naive Bayes, Random Forest e SVM.
-    """
-    estimators = [
-        ('cart', DecisionTreeClassifier(random_state=42)),
-        ('knn', KNeighborsClassifier()),
-        ('lr', LogisticRegression(max_iter=1000, random_state=42)),
-        ('nb', GaussianNB()),
-        ('rf', RandomForestClassifier(n_estimators=50, random_state=42)),
-        ('svm', SVC(probability=True, random_state=42))
-    ]
-    return VotingClassifier(estimators=estimators, voting='soft')
+# BAGGING + DECISION TREE (CART)
 
-
-def run_chi_voting(df, csv_filename):
-    clf = create_voting_classifier()
-    runner = FSRunner(clf, 'voting')
-    runner.run_chi(df, csv_filename)
-
-def run_fisher_voting(df, csv_filename):
-    clf = create_voting_classifier()
-    runner = FSRunner(clf, 'voting')
-    runner.run_fisher(df, csv_filename)
-
-def run_ga_voting(df, csv_filename):
-    clf = create_voting_classifier()
-    runner = FSRunner(clf, 'voting')
-    runner.run_ga(df, csv_filename)
-
-
-#BAGGING + DT
 def run_chi_bagging_cart(df, csv_filename):
     base_clf = DecisionTreeClassifier(random_state=42)
     clf = BaggingClassifier(estimator=base_clf, n_estimators=10, random_state=42)
@@ -110,11 +77,40 @@ def run_ga_bagging_cart(df, csv_filename):
     runner.run_ga(df, csv_filename)
 
 
+# VOTING ENSEMBLE
+
+def create_voting_classifier():
+    """Create a soft-voting ensemble with diverse base classifiers."""
+    estimators = [
+        ('cart', DecisionTreeClassifier(random_state=42)),
+        ('knn', KNeighborsClassifier()),
+        ('lr', LogisticRegression(max_iter=1000, random_state=42)),
+        ('nb', GaussianNB()),
+        ('rf', RandomForestClassifier(n_estimators=50, random_state=42)),
+        ('svm', SVC(probability=True, random_state=42))
+    ]
+    return VotingClassifier(estimators=estimators, voting='soft')
+
+def run_chi_voting(df, csv_filename):
+    clf = create_voting_classifier()
+    runner = FSRunner(clf, 'voting')
+    runner.run_chi(df, csv_filename)
+
+def run_fisher_voting(df, csv_filename):
+    clf = create_voting_classifier()
+    runner = FSRunner(clf, 'voting')
+    runner.run_fisher(df, csv_filename)
+
+def run_ga_voting(df, csv_filename):
+    clf = create_voting_classifier()
+    runner = FSRunner(clf, 'voting')
+    runner.run_ga(df, csv_filename)
+
+
+# TF-IDF TEXT TRANSFORMATION
 
 def apply_tfidf_to_messages(df, max_features=20):
-    """
-    Applies TF-IDF to text columns: 'message', 'bug_message', and 'code_smell_message'.
-    """
+    """Apply TF-IDF transformation to text columns and return enriched DataFrame."""
     df['bug_message'] = df['bug_message'].fillna('')
     df['message'] = df['message'].fillna('')
     df['code_smell_message'] = df['code_smell_message'].fillna('')
@@ -135,7 +131,6 @@ def apply_tfidf_to_messages(df, max_features=20):
     df_msg = pd.DataFrame(X_msg, columns=[f'message_{word}' for word in msg_vocab])
     df_smell = pd.DataFrame(X_smell, columns=[f'code_smell_message_{word}' for word in smell_vocab])
 
-    # Reset index to safely concatenate
     df = df.reset_index(drop=True)
     df_bug = df_bug.reset_index(drop=True)
     df_msg = df_msg.reset_index(drop=True)
@@ -143,16 +138,43 @@ def apply_tfidf_to_messages(df, max_features=20):
 
     return pd.concat([df, df_bug, df_msg, df_smell], axis=1)
 
+
+# MAIN EXECUTION FUNCTION
+
+def run_all_methods(df, csv_filename):
+    """Run all combinations of feature selection and ensemble methods."""
+    print("Running ALL methods sequentially...\n")
+
+    # Random Forest
+    run_fisher_random_forest(df, csv_filename)
+    run_chi_random_forest(df, csv_filename)
+    run_ga_random_forest(df, csv_filename)
+
+    # Bagging + Random Forest
+    run_fisher_bagging_random_forest(df, csv_filename)
+    run_chi_bagging_random_forest(df, csv_filename)
+    run_ga_bagging_random_forest(df, csv_filename)
+
+    # Bagging + Decision Tree (CART)
+    run_fisher_bagging_cart(df, csv_filename)
+    run_chi_bagging_cart(df, csv_filename)
+    run_ga_bagging_cart(df, csv_filename)
+
+    # Voting Ensemble
+    run_fisher_voting(df, csv_filename)
+    run_chi_voting(df, csv_filename)
+    run_ga_voting(df, csv_filename)
+
+
 def prepare_data_and_run_function(csv_filename, function_name):
     """
-    Prepares the data by handling numeric fields and TF-IDF processing, 
-    then runs the specified feature selection function.
+    Prepare dataset by transforming text fields with TF-IDF, removing low-variance columns,
+    and executing the selected function or all.
     """
     all_chunks = []
     text_columns = ["message", "bug_message", "code_smell_message"]
 
     for chunk in pd.read_csv(csv_filename, chunksize=10000):
-        # Convert categorical to numeric
         if 'bug_status' in chunk.columns and 'smell_status' in chunk.columns:
             chunk['bug_status'] = chunk['bug_status'].astype('category').cat.codes
             chunk['smell_status'] = chunk['smell_status'].astype('category').cat.codes
@@ -164,27 +186,31 @@ def prepare_data_and_run_function(csv_filename, function_name):
 
     df = pd.concat(all_chunks, ignore_index=True)
 
-    # Apply TF-IDF to text
+    # Apply TF-IDF
     df = apply_tfidf_to_messages(df)
     df = remove_columns_with_unique_values(df)
     df = df.drop(columns=text_columns)
 
     print(f"\nProcessed DataFrame: {len(df)} rows.")
 
-    # Call the selected function
-    if function_name in globals():
+    # Execute the selected function
+    if function_name == "run_all":
+        run_all_methods(df, csv_filename)
+    elif function_name in globals():
         print(f"Running function '{function_name}'")
         globals()[function_name](df, csv_filename)
     else:
         print(f"Function '{function_name}' not found.")
 
+
 def main():
     parser = argparse.ArgumentParser(description="Run feature selection method on a dataset.")
     parser.add_argument("csv_filename", help="Path to the CSV dataset")
-    parser.add_argument("function_name", help="Function name to run (e.g., run_ga_random_forest, run_chi_random_forest, run_bagging_random_forest)")
+    parser.add_argument("function_name", help="Function name to run (e.g., run_ga_random_forest, run_all)")
 
     args = parser.parse_args()
     prepare_data_and_run_function(args.csv_filename, args.function_name)
+
 
 if __name__ == "__main__":
     main()
