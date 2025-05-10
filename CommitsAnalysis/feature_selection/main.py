@@ -94,19 +94,19 @@ def run_ga_voting(df, csv_filename):
 def run_chi_bagging_cart(df, csv_filename):
     base_clf = DecisionTreeClassifier(random_state=42)
     clf = BaggingClassifier(estimator=base_clf, n_estimators=10, random_state=42)
-    runner = FSRunner(clf, 'bagging_cart')
+    runner = FSRunner(clf, 'bagging_dt')
     runner.run_chi(df, csv_filename)
 
 def run_fisher_bagging_cart(df, csv_filename):
     base_clf = DecisionTreeClassifier(random_state=42)
     clf = BaggingClassifier(estimator=base_clf, n_estimators=10, random_state=42)
-    runner = FSRunner(clf, 'bagging_cart')
+    runner = FSRunner(clf, 'bagging_dt')
     runner.run_fisher(df, csv_filename)
 
 def run_ga_bagging_cart(df, csv_filename):
     base_clf = DecisionTreeClassifier(random_state=42)
     clf = BaggingClassifier(estimator=base_clf, n_estimators=10, random_state=42)
-    runner = FSRunner(clf, 'bagging_cart')
+    runner = FSRunner(clf, 'bagging_dt')
     runner.run_ga(df, csv_filename)
 
 

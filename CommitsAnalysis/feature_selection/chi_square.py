@@ -12,7 +12,7 @@ class Chi2FeatureSelector:
     Feature selection using Chi-squared test with Bayesian Optimization to find the optimal number of features (k).
     Accepts any classifier provided at initialization.
     """
-    def __init__(self, classifier, n_trials=20, direction="maximize", sampler=None):
+    def __init__(self, classifier, n_trials=20, direction="maximize", sampler=None, min_features=3):
         self.classifier = classifier
         self.n_trials = n_trials
         self.direction = direction
@@ -22,6 +22,7 @@ class Chi2FeatureSelector:
         self.best_score = None
         self.selected_features = None
         self.current_features = []  # Initialize to an empty list to avoid AttributeError
+        self.min_features = min_features
 
     def _evaluate_k(self, df, k):
         """
@@ -56,7 +57,7 @@ class Chi2FeatureSelector:
         """
         X = self.df.drop(columns=['failure_prone'])
         max_k = X.shape[1]
-        k = trial.suggest_int("k", 3, max_k)
+        k = trial.suggest_int("k", self.min_features, max_k)
 
         try:
             score = self._evaluate_k(self.df, k)

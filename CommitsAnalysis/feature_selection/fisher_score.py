@@ -11,7 +11,7 @@ class FisherScoreFeatureSelector:
     Feature selection using Fisher Score with hyperparameter tuning via Bayesian Optimization (Optuna).
     A customizable classifier is used for evaluation.
     """
-    def __init__(self, classifier, n_trials=20, direction="maximize", sampler=None):
+    def __init__(self, classifier, n_trials=20, direction="maximize", sampler=None, min_features=3):
         self.classifier = classifier
         self.n_trials = n_trials
         self.direction = direction
@@ -20,6 +20,7 @@ class FisherScoreFeatureSelector:
         self.best_k = None
         self.best_score = None
         self.selected_features = None
+        self.min_features = min_features
 
     def _fisher_score(self, X, y):
         """
@@ -66,7 +67,7 @@ class FisherScoreFeatureSelector:
     def _objective(self, trial):
         X = self.df.drop(columns=['failure_prone'])
         max_k = X.shape[1]
-        k = trial.suggest_int("k", 3, max_k)
+        k = trial.suggest_int("k", self.min_features, max_k)
 
         try:
             score, selected_features = self._evaluate_k(self.df, k)
