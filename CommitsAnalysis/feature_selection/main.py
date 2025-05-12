@@ -10,7 +10,7 @@ import argparse
 from fs_runner import FSRunner
 
 
-MIN_FEATURES = 5
+MIN_FEATURES = 7
 
 def remove_columns_with_unique_values(df):
     """Remove columns that have only one unique value."""

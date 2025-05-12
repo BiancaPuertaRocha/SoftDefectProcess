@@ -5,6 +5,8 @@ from ga import GAFeatureSelector
 from fisher_score import FisherScoreFeatureSelector
 from chi_square import Chi2FeatureSelector
 
+import pandas as pd
+
 class FSRunner:
 
     def __init__(self, clf, model_name, min_features=3):
