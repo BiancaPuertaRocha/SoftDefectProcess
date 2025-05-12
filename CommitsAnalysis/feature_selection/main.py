@@ -51,15 +51,9 @@ def prepare_dataframe(csv_filename: str) -> pd.DataFrame:
             if label_col in chunk.columns:
                 chunk[label_col] = chunk[label_col].astype('category').cat.codes
 
-        # Isola target se existir
-        target = chunk[['failure_prone']] if 'failure_prone' in chunk.columns else pd.DataFrame()
-
         numeric_df = chunk.select_dtypes(include='number')
         text_df = chunk[[col for col in TEXT_COLUMNS if col in chunk.columns]]
         combined = pd.concat([numeric_df, text_df], axis=1)
-
-        if not target.empty:
-            combined = pd.concat([combined, target], axis=1)
 
         all_chunks.append(combined)
 
@@ -111,11 +105,12 @@ def create_voting():
 
 def run_with_selector(df, csv_filename, clf, model_name, selector: str):
     runner = FSRunner(clf=clf, model_name=model_name, min_features=MIN_FEATURES)
+    print(df.head())
     getattr(runner, f"run_{selector}")(df, csv_filename)
 
 
 def run_all_methods(df: pd.DataFrame, csv_filename: str):
-    selectors = [ 'fisher', 'chi', 'ga']
+    selectors = ['fisher', 'chi',  'ga']
     configs = [
         (create_voting, 'voting'),
         (create_rf, 'random_forest'),

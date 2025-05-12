@@ -44,9 +44,6 @@ class FisherScoreFeatureSelector:
         X = df.drop(columns=['failure_prone'])
         y = df['failure_prone']
 
-        # Convert y to a numpy array to safely check dtype
-        y = np.array(y)
-
         if y.dtype == 'object':
             y = LabelEncoder().fit_transform(y)
 
@@ -54,7 +51,8 @@ class FisherScoreFeatureSelector:
         X_scaled = scaler.fit_transform(X)
 
         # Compute Fisher Scores for all features
-        fisher_scores = self._fisher_score(pd.DataFrame(X_scaled, columns=X.columns), y)
+        X_scaled_df = pd.DataFrame(X_scaled, columns=X.columns, index=X.index)
+        fisher_scores = self._fisher_score(X_scaled_df, y)
 
         # Select the top k features based on Fisher score
         top_k_features = np.argsort(fisher_scores)[-k:]

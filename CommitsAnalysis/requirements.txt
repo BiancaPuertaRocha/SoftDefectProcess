@@ -3,5 +3,5 @@ requests
 gitpython
 lxml
 scikit-learn
-deep
+deap
 optuna
