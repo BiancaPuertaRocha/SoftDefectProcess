@@ -16,13 +16,12 @@ TEXT_COLUMNS = ["message", "bug_message", "code_smell_message"]
 # -------- Utils --------
 
 def remove_columns_with_unique_values(df: pd.DataFrame) -> pd.DataFrame:
-    return df.loc[:, df.nunique() > 1]
-
+    return df.loc[:, df.nunique(dropna=False) > 1] 
 
 def apply_tfidf_to_messages(df: pd.DataFrame, max_features: int = 20) -> pd.DataFrame:
     """Apply TF-IDF to text columns and return DataFrame with enriched features."""
     for col in TEXT_COLUMNS:
-        df[col] = df.get(col, "").fillna("")
+        df[col] = df.get(col, "").fillna("") 
 
     tfidf_frames = []
     for col in TEXT_COLUMNS:
@@ -37,7 +36,6 @@ def apply_tfidf_to_messages(df: pd.DataFrame, max_features: int = 20) -> pd.Data
 
     return pd.concat([df] + tfidf_frames, axis=1).drop(columns=TEXT_COLUMNS)
 
-
 def prepare_dataframe(csv_filename: str) -> pd.DataFrame:
     all_chunks = []
 
@@ -46,12 +44,30 @@ def prepare_dataframe(csv_filename: str) -> pd.DataFrame:
             if label_col in chunk.columns:
                 chunk[label_col] = chunk[label_col].astype('category').cat.codes
 
+        if 'failure_prone' in chunk.columns:
+            target = chunk[['failure_prone']]
+            chunk = chunk.drop(columns=['failure_prone'])  # isola a target sem alterá-la
+        else:
+            target = pd.DataFrame()
+
         numeric_df = chunk.select_dtypes(include='number')
         text_df = chunk[[col for col in TEXT_COLUMNS if col in chunk.columns]]
-        all_chunks.append(pd.concat([numeric_df, text_df], axis=1))
+        combined = pd.concat([numeric_df, text_df], axis=1)
+
+        if not target.empty:
+            combined = pd.concat([combined, target], axis=1)
+
+        all_chunks.append(combined)
 
     df = pd.concat(all_chunks, ignore_index=True)
     df = apply_tfidf_to_messages(df)
+
+    # Reanexa a variável target sem alteração, se existir
+    if 'failure_prone' in df.columns:
+        target_col = df['failure_prone']
+        df = df.drop(columns=['failure_prone'])
+        df = pd.concat([df, target_col], axis=1)
+
     df = remove_columns_with_unique_values(df)
 
     return df
