@@ -42,7 +42,7 @@ class FisherScoreFeatureSelector:
 
     def _evaluate_k(self, df, k):
         X = df.drop(columns=['failure_prone'])
-        y = df['failure_prone']
+        y = df['failure_prone'].squeeze()
 
         if y.dtype == 'object':
             y = LabelEncoder().fit_transform(y)
