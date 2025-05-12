@@ -105,7 +105,7 @@ def create_voting():
 
 def run_with_selector(df, csv_filename, clf, model_name, selector: str):
     runner = FSRunner(clf=clf, model_name=model_name, min_features=MIN_FEATURES)
-    print(df.head())
+    print(df.nunique())
     getattr(runner, f"run_{selector}")(df, csv_filename)
 
 

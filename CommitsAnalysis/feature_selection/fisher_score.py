@@ -51,6 +51,7 @@ class FisherScoreFeatureSelector:
         X_scaled = scaler.fit_transform(X)
 
         # Compute Fisher Scores for all features
+        # getting back the indexes to compare. After fit_transform the X loses the index
         X_scaled_df = pd.DataFrame(X_scaled, columns=X.columns, index=X.index)
         fisher_scores = self._fisher_score(X_scaled_df, y)
 
