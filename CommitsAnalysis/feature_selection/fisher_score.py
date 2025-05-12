@@ -3,7 +3,6 @@ import pandas as pd
 import optuna
 from sklearn.model_selection import cross_val_score
 from sklearn.preprocessing import StandardScaler, LabelEncoder
-from sklearn.ensemble import RandomForestClassifier
 
 
 class FisherScoreFeatureSelector:
@@ -94,4 +93,8 @@ class FisherScoreFeatureSelector:
         print("Selected features:")
         print(self.selected_features)
 
-        return self.selected_features
+        return {
+            'features': self.selected_features,
+            'best_k': self.best_k,
+            'best_cross_validation_score': self.best_score
+        }

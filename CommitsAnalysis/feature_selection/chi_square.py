@@ -4,7 +4,8 @@ import optuna
 
 from sklearn.feature_selection import SelectKBest, chi2
 from sklearn.model_selection import cross_val_score
-from sklearn.preprocessing import MinMaxScaler, LabelEncoder
+from sklearn.preprocessing import MinMaxScaler
+
 
 
 class Chi2FeatureSelector:
@@ -84,4 +85,8 @@ class Chi2FeatureSelector:
         print("Selected features:")
         print(self.selected_features)
 
-        return self.selected_features
+        return {
+            'features': self.selected_features,
+            'best_k': self.best_k,
+            'best_cross_validation_score': self.best_score
+        }

@@ -110,4 +110,8 @@ class GAFeatureSelector:
         print("\nBest features selected:")
         print(self.selected_features) 
 
-        return self.selected_features 
+        return {
+            'features': self.selected_features,
+            'best_params': self.best_params,
+            'best_f1_score': self.best_score
+        }
