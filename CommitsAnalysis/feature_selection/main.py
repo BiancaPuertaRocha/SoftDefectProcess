@@ -84,12 +84,12 @@ def run_with_selector(df, csv_filename, clf, model_name, selector: str):
 
 
 def run_all_methods(df: pd.DataFrame, csv_filename: str):
-    selectors = [ 'chi', 'fisher', 'ga']
+    selectors = [ 'fisher', 'chi', 'ga']
     configs = [
+        (create_voting, 'voting'),
         (create_rf, 'random_forest'),
         (lambda: create_bagging(create_rf()), 'bagging_random_forest'),
         (lambda: create_bagging(create_cart()), 'bagging_dt'),
-        (create_voting, 'voting'),
     ]
 
     for selector in selectors:
