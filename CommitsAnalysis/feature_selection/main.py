@@ -15,26 +15,33 @@ TEXT_COLUMNS = ["message", "bug_message", "code_smell_message"]
 
 # -------- Utils --------
 
+
 def remove_columns_with_unique_values(df: pd.DataFrame) -> pd.DataFrame:
-    return df.loc[:, df.nunique(dropna=False) > 1] 
+    return df.loc[:, df.nunique(dropna=False) > 1]
 
 def apply_tfidf_to_messages(df: pd.DataFrame, max_features: int = 20) -> pd.DataFrame:
     """Apply TF-IDF to text columns and return DataFrame with enriched features."""
     for col in TEXT_COLUMNS:
-        df[col] = df.get(col, "").fillna("") 
+        df[col] = df.get(col, "").fillna("")
 
     tfidf_frames = []
+    tfidf_column_names = []
+
     for col in TEXT_COLUMNS:
         vectorizer = TfidfVectorizer(stop_words="english", max_features=max_features)
         tfidf_matrix = vectorizer.fit_transform(df[col])
         feature_names = [f"{col}_{word}" for word in vectorizer.get_feature_names_out()]
         tfidf_df = pd.DataFrame(tfidf_matrix.toarray(), columns=feature_names)
         tfidf_frames.append(tfidf_df)
+        tfidf_column_names.extend(feature_names)
 
     df = df.reset_index(drop=True)
     tfidf_frames = [f.reset_index(drop=True) for f in tfidf_frames]
 
-    return pd.concat([df] + tfidf_frames, axis=1).drop(columns=TEXT_COLUMNS)
+    df = pd.concat([df] + tfidf_frames, axis=1)
+    df = df.drop(columns=TEXT_COLUMNS)
+
+    return df, tfidf_column_names
 
 def prepare_dataframe(csv_filename: str) -> pd.DataFrame:
     all_chunks = []
@@ -44,11 +51,8 @@ def prepare_dataframe(csv_filename: str) -> pd.DataFrame:
             if label_col in chunk.columns:
                 chunk[label_col] = chunk[label_col].astype('category').cat.codes
 
-        if 'failure_prone' in chunk.columns:
-            target = chunk[['failure_prone']]
-            chunk = chunk.drop(columns=['failure_prone'])  # isola a target sem alterá-la
-        else:
-            target = pd.DataFrame()
+        # Isola target se existir
+        target = chunk[['failure_prone']] if 'failure_prone' in chunk.columns else pd.DataFrame()
 
         numeric_df = chunk.select_dtypes(include='number')
         text_df = chunk[[col for col in TEXT_COLUMNS if col in chunk.columns]]
@@ -60,18 +64,29 @@ def prepare_dataframe(csv_filename: str) -> pd.DataFrame:
         all_chunks.append(combined)
 
     df = pd.concat(all_chunks, ignore_index=True)
-    df = apply_tfidf_to_messages(df)
 
-    # Reanexa a variável target sem alteração, se existir
+    # Aplica TF-IDF
+    df, tfidf_columns = apply_tfidf_to_messages(df)
+
+    # Salva a target e remove antes de tratar os NaNs
     if 'failure_prone' in df.columns:
         target_col = df['failure_prone']
         df = df.drop(columns=['failure_prone'])
-        df = pd.concat([df, target_col], axis=1)
+    else:
+        target_col = pd.Series(index=df.index, data=None, name='failure_prone')
 
+    # Remove linhas com NaN que não estejam nas colunas de TF-IDF
+    non_tfidf_columns = [col for col in df.columns if col not in tfidf_columns]
+    df = df.dropna(subset=non_tfidf_columns)
+
+    # Reanexa a target (sem alterar seu conteúdo original)
+    target_col = target_col.loc[df.index]
+    df = pd.concat([df, target_col], axis=1)
+
+    # Remove colunas com valores únicos (incluindo NaN)
     df = remove_columns_with_unique_values(df)
 
     return df
-
 
 # -------- Classifier Factories --------
 
