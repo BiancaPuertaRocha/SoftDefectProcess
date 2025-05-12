@@ -84,7 +84,7 @@ def run_with_selector(df, csv_filename, clf, model_name, selector: str):
 
 
 def run_all_methods(df: pd.DataFrame, csv_filename: str):
-    selectors = ['fisher', 'chi', 'ga']
+    selectors = [ 'chi', 'fisher', 'ga']
     configs = [
         (create_rf, 'random_forest'),
         (lambda: create_bagging(create_rf()), 'bagging_random_forest'),
