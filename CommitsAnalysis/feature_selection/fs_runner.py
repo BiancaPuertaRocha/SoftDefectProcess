@@ -24,11 +24,19 @@ class FSRunner:
         return logs_dir, fs_dir
 
     def _save_data_log(self, data, method_name, base_filename, logs_dir):
+        def convert(obj):
+            if isinstance(obj, (set, tuple)):
+                return list(obj)
+            if isinstance(obj, pd.Index):
+                return obj.tolist()
+            raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
+
         now = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
         log_filename = os.path.join(logs_dir, f"{base_filename}_{method_name}_{self.model_name}_log_{now}.json")
         with open(log_filename, 'w') as f:
-            json.dump(data, f, indent=4)
+            json.dump(data, f, indent=4, default=convert)
         print(f"Log saved to: {log_filename}")
+
 
     def _save_selected_features(self, df, selected_features, method_name, base_filename, fs_dir):
         selected_df = df[selected_features]
