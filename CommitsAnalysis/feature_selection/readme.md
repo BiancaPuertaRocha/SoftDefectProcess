@@ -65,5 +65,5 @@ python main.py caminho/para/seu_arquivo.csv run_chi_voting
 
 ## Executar todos os métodos (RF, Bagging+RF, Bagging+DT, Voting)
 ```
-python main.py caminho/para/seu_arquivo.csv run_all
+python main.py caminho/para/seu_arquivo.csv run_all --skip_prepare (use if the dataset already passed by the message feature generation with TF-IDF - data_collection/9_new_features.py) 
 ```

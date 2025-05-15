@@ -93,6 +93,13 @@ Clean csv to remove columns that are unecessary or that are always equal. Irrele
 python 8_szz_preprocess.py szz/final_project_name.csv
 ```
 
+## Step 9:
+Performs feature engeneering, generating coluns to the messages ("message", "bug_message", "code_smell_message") with the 20 most important words to the dataset to each message. Also generates new features analyxing the patch feature.
+```
+python 9_new_features.py szz/final_project_name.csv
+```
+
+
 # About the data 
 
 ## repos

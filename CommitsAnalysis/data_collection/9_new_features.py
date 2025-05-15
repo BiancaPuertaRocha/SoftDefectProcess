@@ -1,6 +1,9 @@
 import pandas as pd
 import os
 import sys
+from sklearn.feature_extraction.text import TfidfVectorizer
+
+TEXT_COLUMNS = ["message", "bug_message", "code_smell_message"]
 
 def extract_patch_features(df):
     def process_patch(patch):
@@ -50,14 +53,36 @@ def extract_patch_features(df):
 
     return df
 
+def apply_tfidf_to_messages(df: pd.DataFrame, max_features: int = 20) -> pd.DataFrame:
+    """Apply TF-IDF to text columns and return DataFrame with enriched features."""
+    for col in TEXT_COLUMNS:
+        df[col] = df.get(col, "").fillna("")
+
+    tfidf_frames = []
+    for col in TEXT_COLUMNS:
+        vectorizer = TfidfVectorizer(stop_words="english", max_features=max_features)
+        tfidf_matrix = vectorizer.fit_transform(df[col])
+        feature_names = [f"{col}_{word}" for word in vectorizer.get_feature_names_out()]
+        tfidf_df = pd.DataFrame(tfidf_matrix.toarray(), columns=feature_names)
+        tfidf_frames.append(tfidf_df.reset_index(drop=True))
+
+    df = df.reset_index(drop=True)
+    df = pd.concat([df] + tfidf_frames, axis=1)
+    df = df.drop(columns=TEXT_COLUMNS)
+
+    return df
+
 def main():
     input_path = sys.argv[1]
 
     # Carrega o CSV
     df = pd.read_csv(input_path)
 
-    # Aplica extração de features
+    # Aplica extração de features do patch
     df = extract_patch_features(df)
+
+    # Aplica TF-IDF nas colunas de texto
+    df = apply_tfidf_to_messages(df)
 
     # Gera o novo caminho para salvar
     dir_name = os.path.dirname(input_path)

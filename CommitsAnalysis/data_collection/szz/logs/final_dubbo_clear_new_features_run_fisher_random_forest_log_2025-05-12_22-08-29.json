@@ -1,0 +1,13 @@
+{
+    "features": [
+        "code_smell_message_remove",
+        "sqale_debt_ratio",
+        "patch_max_added_line_length",
+        "message_com",
+        "smell_line",
+        "bug_status",
+        "smell_status"
+    ],
+    "best_k": 7,
+    "best_cross_validation_score": 0.8819336825984875
+}

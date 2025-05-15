@@ -130,10 +130,15 @@ def main():
     parser = argparse.ArgumentParser(description="Run feature selection + ensemble.")
     parser.add_argument("csv_filename", help="Path to the CSV dataset")
     parser.add_argument("function_name", help="Function name to run (e.g., run_ga_random_forest, run_all)")
+    parser.add_argument("--skip_prepare", action="store_true", help="Skip the preprocessing step and use the raw DataFrame as-is")
     args = parser.parse_args()
 
-    df = prepare_dataframe(args.csv_filename)
-    print(f"Processed DataFrame: {len(df)} rows.")
+    if args.skip_prepare:
+        print("Skipping dataset preparation. Reading CSV as-is.")
+        df = pd.read_csv(args.csv_filename)
+    else:
+        df = prepare_dataframe(args.csv_filename)
+        print(f"Processed DataFrame: {len(df)} rows.")
 
     if args.function_name == "run_all":
         run_all_methods(df, args.csv_filename)

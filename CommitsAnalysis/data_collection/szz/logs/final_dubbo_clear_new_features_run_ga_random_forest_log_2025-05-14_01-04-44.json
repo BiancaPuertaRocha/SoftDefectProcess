@@ -1,0 +1,42 @@
+{
+    "features": [
+        "smell_line",
+        "patch_deletions_ratio",
+        "patch_num_control_flow_changes",
+        "patch_max_added_line_length",
+        "message_apache",
+        "message_config",
+        "message_fix",
+        "bug_message_caught",
+        "bug_message_field",
+        "bug_message_initialize",
+        "bug_message_instance",
+        "bug_message_interrupt",
+        "bug_message_make",
+        "bug_message_nullpointerexception",
+        "bug_message_safe",
+        "bug_message_thread",
+        "bug_message_thrown",
+        "bug_message_use",
+        "bug_message_volatile",
+        "bug_message_way",
+        "code_smell_message_block",
+        "code_smell_message_constructor",
+        "code_smell_message_diamond",
+        "code_smell_message_instead",
+        "code_smell_message_java",
+        "code_smell_message_method",
+        "code_smell_message_operator",
+        "code_smell_message_reduce",
+        "code_smell_message_rename",
+        "code_smell_message_sonar",
+        "code_smell_message_source"
+    ],
+    "best_params": {
+        "pop_size": 18,
+        "n_gen": 22,
+        "cxpb": 0.8132604811695712,
+        "mutpb": 0.27191310150736286
+    },
+    "best_f1_score": 0.47376748566509674
+}
