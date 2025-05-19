@@ -2,11 +2,7 @@ import os
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from sklearn.ensemble import VotingClassifier, RandomForestClassifier
-from sklearn.linear_model import LogisticRegression
-from sklearn.naive_bayes import GaussianNB
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.svm import SVC
+from sklearn.ensemble import BaggingClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import (
     accuracy_score, precision_score, recall_score,
@@ -14,14 +10,14 @@ from sklearn.metrics import (
 )
 
 
-class EnsembleVotingClassifierModel:
+class BaggingDecisionTreeModel:
     def __init__(self, csv_filename, test_size=0.2, random_state=42):
         self.filename = csv_filename
         self.data = pd.read_csv(csv_filename)
         self.test_size = test_size
         self.random_state = random_state
         self.model = None
-        self.model_name = "voting"
+        self.model_name = "bagging_cart"
 
     def preprocess_data(self):
         X = self.data.iloc[:, :-1]
@@ -38,16 +34,13 @@ class EnsembleVotingClassifierModel:
         self.y_test = y_test
 
     def build_model(self):
-        classifiers = [
-            ('cart', DecisionTreeClassifier(random_state=self.random_state)),
-            ('knn', KNeighborsClassifier()),
-            ('lr', LogisticRegression(max_iter=1000)),
-            ('nb', GaussianNB()),
-            ('rf', RandomForestClassifier(random_state=self.random_state)),
-            ('svm', SVC(probability=True))
-        ]
-
-        self.model = VotingClassifier(estimators=classifiers, voting='soft')
+        base_tree = DecisionTreeClassifier(random_state=self.random_state)
+        self.model = BaggingClassifier(
+            base_estimator=base_tree,
+            n_estimators=10,
+            random_state=self.random_state,
+            n_jobs=-1
+        )
 
     def train(self):
         self.preprocess_data()
@@ -80,7 +73,7 @@ class EnsembleVotingClassifierModel:
 
         if os.path.exists(output_file):
             existing = pd.read_csv(output_file)
-            if not ((existing['dataset'] == metrics['dataset']) & 
+            if not ((existing['dataset'] == metrics['dataset']) &
                     (existing['modelo'] == metrics['modelo'])).any():
                 metrics_df.to_csv(output_file, mode='a', index=False, header=False)
         else:

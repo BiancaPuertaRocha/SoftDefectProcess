@@ -2,26 +2,21 @@ import os
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from sklearn.ensemble import VotingClassifier, RandomForestClassifier
-from sklearn.linear_model import LogisticRegression
-from sklearn.naive_bayes import GaussianNB
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.svm import SVC
-from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import (
     accuracy_score, precision_score, recall_score,
     f1_score, roc_auc_score
 )
 
 
-class EnsembleVotingClassifierModel:
+class RandomForestModel:
     def __init__(self, csv_filename, test_size=0.2, random_state=42):
         self.filename = csv_filename
         self.data = pd.read_csv(csv_filename)
         self.test_size = test_size
         self.random_state = random_state
         self.model = None
-        self.model_name = "voting"
+        self.model_name = "random_forest"
 
     def preprocess_data(self):
         X = self.data.iloc[:, :-1]
@@ -38,16 +33,7 @@ class EnsembleVotingClassifierModel:
         self.y_test = y_test
 
     def build_model(self):
-        classifiers = [
-            ('cart', DecisionTreeClassifier(random_state=self.random_state)),
-            ('knn', KNeighborsClassifier()),
-            ('lr', LogisticRegression(max_iter=1000)),
-            ('nb', GaussianNB()),
-            ('rf', RandomForestClassifier(random_state=self.random_state)),
-            ('svm', SVC(probability=True))
-        ]
-
-        self.model = VotingClassifier(estimators=classifiers, voting='soft')
+        self.model = RandomForestClassifier(random_state=self.random_state)
 
     def train(self):
         self.preprocess_data()
