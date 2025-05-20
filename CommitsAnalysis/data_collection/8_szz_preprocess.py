@@ -2,7 +2,7 @@ import pandas as pd
 import argparse
 
 # Colunas a remover
-COLUMNS_TO_DROP = ['author', 'files', 'url', 'email', 'commit_sha', 'file', 'branch_commits', 'branch_x', 'branch_y', 'branch_sonar', 'commit_sha']
+COLUMNS_TO_DROP = ['author', 'files', 'url', 'email', 'commit_sha', 'file', 'branch_commits', 'branch_x', 'branch_y', 'branch_sonar']
 # Métricas a serem propagadas
 METRIC_COLUMNS = [
     'code_smells', 'bugs', 'vulnerabilities', 'coverage',

@@ -47,10 +47,27 @@ class FSRunner:
         print(f"Selected features saved to: {filename}")
         return selected_df
 
+    def _remove_unwanted_columns(self, df):
+        cols_to_remove = ['sha', 'filename', 'commit_sha', 'commit_date', 'branch_sonar']
+        return df.drop(columns=[col for col in cols_to_remove if col in df.columns], errors='ignore')
+
+    def _add_unwanted_columns_back(self, original_df, df):
+        cols_to_add = ['sha', 'filename', 'commit_sha', 'commit_date', 'branch_sonar']
+        for col in cols_to_add:
+            if col in original_df.columns:
+                df[col] = original_df[col]
+        return df
+
     def run_fisher(self, df, csv_filename):
         method_name = "run_fisher"
         base_filename = self._remove_csv_extension(csv_filename)
         logs_dir, fs_dir = self._get_directories(csv_filename)
+
+        # Salva as colunas originais para adicionar depois
+        original_df = df.copy()
+
+        # Remove as colunas que não interessam para seleção
+        df = self._remove_unwanted_columns(df)
 
         selector = FisherScoreFeatureSelector(self.clf, min_features=self.min_features)
         data = selector.run(df)
@@ -59,13 +76,23 @@ class FSRunner:
         selected_features = data['features']
         print(f"Selected Features: {selected_features}")
 
-        selected_df = self._save_selected_features(df, selected_features, method_name, base_filename, fs_dir)
+        selected_df = df[selected_features]
+
+        # Adiciona as colunas removidas de volta antes de salvar
+        selected_df = self._add_unwanted_columns_back(original_df, selected_df)
+
+        filename = os.path.join(fs_dir, f"{base_filename}_{method_name}_{self.model_name}_selected_features.csv")
+        selected_df.to_csv(filename, index=False)
+        print(f"Selected features saved to: {filename}")
         return selected_features, selected_df
 
     def run_chi(self, df, csv_filename):
         method_name = "run_chi"
         base_filename = self._remove_csv_extension(csv_filename)
         logs_dir, fs_dir = self._get_directories(csv_filename)
+
+        original_df = df.copy()
+        df = self._remove_unwanted_columns(df)
 
         selector = Chi2FeatureSelector(self.clf, min_features=self.min_features)
         data = selector.run(df)
@@ -74,13 +101,21 @@ class FSRunner:
         selected_features = data['features']
         print(f"Selected Features: {selected_features}")
 
-        selected_df = self._save_selected_features(df, selected_features, method_name, base_filename, fs_dir)
+        selected_df = df[selected_features]
+        selected_df = self._add_unwanted_columns_back(original_df, selected_df)
+
+        filename = os.path.join(fs_dir, f"{base_filename}_{method_name}_{self.model_name}_selected_features.csv")
+        selected_df.to_csv(filename, index=False)
+        print(f"Selected features saved to: {filename}")
         return selected_features, selected_df
 
     def run_ga(self, df, csv_filename):
         method_name = "run_ga"
         base_filename = self._remove_csv_extension(csv_filename)
         logs_dir, fs_dir = self._get_directories(csv_filename)
+
+        original_df = df.copy()
+        df = self._remove_unwanted_columns(df)
 
         selector = GAFeatureSelector(self.clf, min_features=self.min_features)
         data = selector.run(df)
@@ -89,5 +124,10 @@ class FSRunner:
         selected_features = data['features']
         print(f"Selected Features: {selected_features}")
 
-        selected_df = self._save_selected_features(df, selected_features, method_name, base_filename, fs_dir)
+        selected_df = df[selected_features]
+        selected_df = self._add_unwanted_columns_back(original_df, selected_df)
+
+        filename = os.path.join(fs_dir, f"{base_filename}_{method_name}_{self.model_name}_selected_features.csv")
+        selected_df.to_csv(filename, index=False)
+        print(f"Selected features saved to: {filename}")
         return selected_features, selected_df
