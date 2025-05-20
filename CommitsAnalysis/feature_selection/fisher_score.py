@@ -96,7 +96,7 @@ class FisherScoreFeatureSelector:
 
         # Evaluate classifier performance with selected features via cross-validation
         X_selected = X[selected_features]
-        score = cross_val_score(self.classifier, X_selected, y, cv=5, scoring='balanced_accuracy').mean()
+        score = cross_val_score(self.classifier, X_selected, y, cv=5, scoring='f1_weighted').mean()
 
         return score, selected_features
 
