@@ -9,10 +9,11 @@ import pandas as pd
 
 class FSRunner:
 
-    def __init__(self, clf, model_name, min_features=3):
+    def __init__(self, clf, model_name, min_features=3, eval_method='roc_auc'):
         self.clf = clf
         self.min_features = min_features
         self.model_name = model_name
+        self.eval_method = eval_method
 
     def _remove_csv_extension(self, filename):
         return os.path.splitext(os.path.basename(filename))[0]
@@ -69,7 +70,7 @@ class FSRunner:
         # Remove as colunas que não interessam para seleção
         df = self._remove_unwanted_columns(df)
 
-        selector = FisherScoreFeatureSelector(self.clf, min_features=self.min_features)
+        selector = FisherScoreFeatureSelector(self.clf, min_features=self.min_features, eval_method=self.eval_method)
         data = selector.run(df)
 
         self._save_data_log(data, method_name, base_filename, logs_dir)
@@ -94,7 +95,7 @@ class FSRunner:
         original_df = df.copy()
         df = self._remove_unwanted_columns(df)
 
-        selector = Chi2FeatureSelector(self.clf, min_features=self.min_features)
+        selector = Chi2FeatureSelector(self.clf, min_features=self.min_features, eval_method=self.eval_method)
         data = selector.run(df)
 
         self._save_data_log(data, method_name, base_filename, logs_dir)
@@ -117,7 +118,7 @@ class FSRunner:
         original_df = df.copy()
         df = self._remove_unwanted_columns(df)
 
-        selector = GAFeatureSelector(self.clf, min_features=self.min_features)
+        selector = GAFeatureSelector(self.clf, min_features=self.min_features, eval_method=self.eval_method)
         data = selector.run(df)
 
         self._save_data_log(data, method_name, base_filename, logs_dir)

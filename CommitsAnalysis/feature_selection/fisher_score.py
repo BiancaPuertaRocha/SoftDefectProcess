@@ -11,7 +11,7 @@ class FisherScoreFeatureSelector:
     to tune the optimal number of features (k) that maximize classifier performance.
     """
 
-    def __init__(self, classifier, n_trials=20, direction="maximize", sampler=None, min_features=3):
+    def __init__(self, classifier, n_trials=20, direction="maximize", sampler=None, min_features=3, eval_method='roc_auc'):
         """
         Initialize the feature selector.
 
@@ -31,6 +31,7 @@ class FisherScoreFeatureSelector:
         self.best_score = None
         self.selected_features = None
         self.min_features = min_features
+        self.eval_method = eval_method
 
     def _fisher_score(self, X, y):
         """
@@ -96,7 +97,7 @@ class FisherScoreFeatureSelector:
 
         # Evaluate classifier performance with selected features via cross-validation
         X_selected = X[selected_features]
-        score = cross_val_score(self.classifier, X_selected, y, cv=5, scoring='roc_auc').mean()
+        score = cross_val_score(self.classifier, X_selected, y, cv=5, scoring=self.eval_method).mean()
 
         return score, selected_features
 
@@ -153,6 +154,6 @@ class FisherScoreFeatureSelector:
 
         return {
             'features': self.selected_features,
-            'best_k': self.best_k,
-            'best_cross_validation_score': self.best_score
+            'best_params': self.best_k,
+            'best_score': self.best_score
         }

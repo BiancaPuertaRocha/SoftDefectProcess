@@ -13,7 +13,7 @@ class Chi2FeatureSelector:
     to find the optimal number of features (k) that maximize model performance.
     """
 
-    def __init__(self, classifier, n_trials=20, direction="maximize", sampler=None, min_features=3):
+    def __init__(self, classifier, n_trials=20, direction="maximize", sampler=None, min_features=3, eval_method='roc_auc'):
         """
         Initializes the feature selector.
 
@@ -34,6 +34,7 @@ class Chi2FeatureSelector:
         self.selected_features = None
         self.current_features = []  # Stores features selected in the last evaluated trial
         self.min_features = min_features
+        self.eval_method = eval_method
 
     def _evaluate_k(self, df, k):
         """
@@ -62,7 +63,7 @@ class Chi2FeatureSelector:
         X_selected = selector.fit_transform(X_scaled, y_clean)
 
         # Evaluate performance using 5-fold cross-validation
-        score = cross_val_score(self.classifier, X_selected, y_clean, cv=5, scoring='roc_auc').mean()
+        score = cross_val_score(self.classifier, X_selected, y_clean, cv=5, scoring=self.eval_method).mean()
 
         # Save the feature names selected in this trial
         self.current_features = X_clean.columns[selector.get_support()].tolist()
@@ -121,6 +122,6 @@ class Chi2FeatureSelector:
 
         return {
             'features': self.selected_features,
-            'best_k': self.best_k,
-            'best_cross_validation_score': self.best_score
+            'best_params': self.best_k,
+            'best_score': self.best_score
         }

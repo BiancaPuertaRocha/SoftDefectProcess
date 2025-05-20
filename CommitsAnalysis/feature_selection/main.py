@@ -11,7 +11,7 @@ from fs_runner import FSRunner
 
 MIN_FEATURES = 7
 TEXT_COLUMNS = ["message", "bug_message", "code_smell_message"]
-
+EVAL_METHOD = 'balanced_accuracy'
 
 # -------- Utils --------
 
@@ -104,7 +104,7 @@ def create_voting():
 # -------- Execution Logic --------
 
 def run_with_selector(df, csv_filename, clf, model_name, selector: str):
-    runner = FSRunner(clf=clf, model_name=model_name, min_features=MIN_FEATURES)
+    runner = FSRunner(clf=clf, model_name=model_name, min_features=MIN_FEATURES, eval_method=EVAL_METHOD)
     print(df.nunique())
     getattr(runner, f"run_{selector}")(df, csv_filename)
 
