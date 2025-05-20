@@ -62,7 +62,7 @@ class Chi2FeatureSelector:
         X_selected = selector.fit_transform(X_scaled, y_clean)
 
         # Evaluate performance using 5-fold cross-validation
-        score = cross_val_score(self.classifier, X_selected, y_clean, cv=5, scoring='roc_auc').mean()
+        score = cross_val_score(self.classifier, X_selected, y_clean, cv=5, scoring='balanced_accuracy').mean()
 
         # Save the feature names selected in this trial
         self.current_features = X_clean.columns[selector.get_support()].tolist()
