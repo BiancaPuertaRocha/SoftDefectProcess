@@ -11,7 +11,7 @@ from fs_runner import FSRunner
 
 MIN_FEATURES = 7
 TEXT_COLUMNS = ["message", "bug_message", "code_smell_message"]
-EVAL_METHOD = 'balanced_accuracy'
+EVAL_METHOD = 'roc_auc'
 
 # -------- Utils --------
 
