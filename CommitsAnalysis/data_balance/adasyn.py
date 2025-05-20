@@ -61,7 +61,7 @@ class ADASYNBalancer:
         X_resampled, y_resampled = ada.fit_resample(X_scaled, y)
 
         # Evaluate model
-        score = cross_val_score(self.classifier, X_resampled, y_resampled, cv=5, scoring='balanced_accuracy').mean()
+        score = cross_val_score(self.classifier, X_resampled, y_resampled, cv=5, scoring='roc_auc').mean()
         return score
 
     def _objective(self, trial):
