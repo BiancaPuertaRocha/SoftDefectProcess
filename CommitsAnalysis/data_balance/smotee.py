@@ -62,7 +62,7 @@ class SmoteeFeatureBalancer:
         X_resampled, y_resampled = smote_enn.fit_resample(X_scaled, y)
 
         # Evaluate classifier using cross-validation
-        score = cross_val_score(self.classifier, X_resampled, y_resampled, cv=5, scoring='f1_weighted').mean()
+        score = cross_val_score(self.classifier, X_resampled, y_resampled, cv=5, scoring='balanced_accuracy').mean()
         return score
 
     def _objective(self, trial):

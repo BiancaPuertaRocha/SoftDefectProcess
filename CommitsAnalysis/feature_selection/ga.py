@@ -40,7 +40,7 @@ class GAFeatureSelector:
             selected_features = [i for i, bit in enumerate(individual) if bit == 1]
             X_selected = X.iloc[:, selected_features]
             clf = self.classifier
-            scores = cross_val_score(clf, X_selected, y, cv=5, scoring='f1_weighted')
+            scores = cross_val_score(clf, X_selected, y, cv=5, scoring='balanced_accuracy')
             return scores.mean(),
 
         if not hasattr(creator, "FitnessMax"):
