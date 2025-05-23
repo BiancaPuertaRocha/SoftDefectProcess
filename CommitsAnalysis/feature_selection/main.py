@@ -1,4 +1,5 @@
 import pandas as pd
+import os
 from sklearn.ensemble import RandomForestClassifier, BaggingClassifier, VotingClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.neighbors import KNeighborsClassifier
@@ -6,6 +7,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import SVC
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.model_selection import cross_val_score
 import argparse
 from fs_runner import FSRunner
 
@@ -15,12 +17,10 @@ EVAL_METHOD = 'roc_auc'
 
 # -------- Utils --------
 
-
 def remove_columns_with_unique_values(df: pd.DataFrame) -> pd.DataFrame:
     return df.loc[:, df.nunique(dropna=False) > 1]
 
 def apply_tfidf_to_messages(df: pd.DataFrame, max_features: int = 20) -> pd.DataFrame:
-    """Apply TF-IDF to text columns and return DataFrame with enriched features."""
     for col in TEXT_COLUMNS:
         df[col] = df.get(col, "").fillna("")
 
@@ -59,28 +59,36 @@ def prepare_dataframe(csv_filename: str) -> pd.DataFrame:
 
     df = pd.concat([chunk.reset_index(drop=True) for chunk in all_chunks], ignore_index=True)
 
-    # Aplica TF-IDF
     df, tfidf_columns = apply_tfidf_to_messages(df)
 
-    # Salva a target e remove antes de tratar os NaNs
     if 'failure_prone' in df.columns:
         target_col = df['failure_prone']
         df = df.drop(columns=['failure_prone'])
     else:
         target_col = pd.Series(index=df.index, data=None, name='failure_prone')
 
-    # Remove linhas com NaN que não estejam nas colunas de TF-IDF
     non_tfidf_columns = [col for col in df.columns if col not in tfidf_columns]
     df = df.dropna(subset=non_tfidf_columns)
 
-    # Reanexa a target (sem alterar seu conteúdo original)
     target_col = target_col.loc[df.index]
     df = pd.concat([df, target_col], axis=1)
 
-    # Remove colunas com valores únicos (incluindo NaN)
     df = remove_columns_with_unique_values(df)
 
     return df
+
+def save_eval_result(filename, score, algorithm, output_dir="data"):
+    result_df = pd.DataFrame([{
+        "filename": filename,
+        "eval_method_score": score,
+        "algorithm": algorithm
+    }])
+    output_path = os.path.join(output_dir, "model_eval_results.csv")
+
+    if os.path.exists(output_path):
+        result_df.to_csv(output_path, mode="a", header=False, index=False)
+    else:
+        result_df.to_csv(output_path, index=False)
 
 # -------- Classifier Factories --------
 
@@ -100,14 +108,12 @@ def create_voting():
         ('svm', SVC(probability=True, random_state=42))
     ], voting='soft')
 
-
 # -------- Execution Logic --------
 
 def run_with_selector(df, csv_filename, clf, model_name, selector: str):
     runner = FSRunner(clf=clf, model_name=model_name, min_features=MIN_FEATURES, eval_method=EVAL_METHOD)
     print(df.nunique())
     getattr(runner, f"run_{selector}")(df, csv_filename)
-
 
 def run_all_methods(df: pd.DataFrame, csv_filename: str):
     selectors = ['fisher', 'chi',  'ga']
@@ -123,15 +129,34 @@ def run_all_methods(df: pd.DataFrame, csv_filename: str):
             print(f"Running {selector.upper()} + {model_name}")
             run_with_selector(df, csv_filename, clf_func(), model_name, selector)
 
+def run_no_feature_selection(df: pd.DataFrame, csv_filename: str):
+    X = df.drop(columns=['failure_prone'])
+    y = df['failure_prone']
+
+    os.makedirs("data", exist_ok=True)
+
+    models = [
+        (create_rf(), 'random_forest'),
+        (create_bagging(create_rf()), 'bagging_random_forest'),
+        (create_bagging(create_cart()), 'bagging_dt'),
+        (create_voting(), 'voting')
+    ]
+
+    for model, name in models:
+        print(f"Running without FS: {name}")
+        score = cross_val_score(model, X, y, cv=5, scoring=EVAL_METHOD).mean()
+        save_eval_result(csv_filename, score, name)
 
 # -------- Main --------
 
 def main():
     parser = argparse.ArgumentParser(description="Run feature selection + ensemble.")
     parser.add_argument("csv_filename", help="Path to the CSV dataset")
-    parser.add_argument("function_name", help="Function name to run (e.g., run_ga_random_forest, run_all)")
+    parser.add_argument("function_name", help="Function name to run (e.g., run_ga_random_forest, run_all, run_no_feature_selection)")
     parser.add_argument("--skip_prepare", action="store_true", help="Skip the preprocessing step and use the raw DataFrame as-is")
     args = parser.parse_args()
+
+    os.makedirs("data", exist_ok=True)
 
     if args.skip_prepare:
         print("Skipping dataset preparation. Reading CSV as-is.")
@@ -142,12 +167,13 @@ def main():
 
     if args.function_name == "run_all":
         run_all_methods(df, args.csv_filename)
+    elif args.function_name == "run_no_feature_selection":
+        run_no_feature_selection(df, args.csv_filename)
     elif args.function_name in globals():
         print(f"Running function '{args.function_name}'")
         globals()[args.function_name](df, args.csv_filename)
     else:
         print(f"Function '{args.function_name}' not found.")
-
 
 if __name__ == "__main__":
     main()
