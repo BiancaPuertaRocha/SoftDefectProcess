@@ -70,7 +70,18 @@ def prepare_dataframe(csv_filename: str) -> pd.DataFrame:
         target_col = pd.Series(index=df.index, data=None, name='failure_prone')
 
     non_tfidf_columns = [col for col in df.columns if col not in tfidf_columns]
-    #df = df.dropna(subset=non_tfidf_columns)
+    
+    # 1. Identify columns where more than half of the values are NaN
+    cols_to_drop = [col for col in non_tfidf_columns if df[col].isna().mean() > 0.5]
+
+    # 2. Drop these columns from the DataFrame
+    df = df.drop(columns=cols_to_drop)
+
+    # 3. Get the remaining non-TFIDF columns after dropping
+    cols_to_check = [col for col in non_tfidf_columns if col not in cols_to_drop]
+
+    # 4. Drop rows that have NaN values in any of the remaining columns
+    df = df.dropna(subset=cols_to_check)
 
     target_col = target_col.loc[df.index]
     df = pd.concat([df, target_col], axis=1)
