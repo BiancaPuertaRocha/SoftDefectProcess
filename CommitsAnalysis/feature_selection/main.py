@@ -54,7 +54,10 @@ def prepare_dataframe(csv_filename: str) -> pd.DataFrame:
 
         numeric_df = chunk.select_dtypes(include='number')
         text_df = chunk[[col for col in TEXT_COLUMNS if col in chunk.columns]]
+        numeric_df = numeric_df.reset_index(drop=True)
+        text_df = text_df.reset_index(drop=True)
         combined = pd.concat([numeric_df, text_df], axis=1)
+
 
         all_chunks.append(combined)
 
@@ -130,7 +133,7 @@ def run_all_methods(df: pd.DataFrame, csv_filename: str):
             print(f"Running {selector.upper()} + {model_name}")
             run_with_selector(df, csv_filename, clf_func(), model_name, selector)
 
-def run_no_feature_selection(df: pd.DataFrame, csv_filename: str):
+def run_no_preprocess(df: pd.DataFrame, csv_filename: str):
     X = df.drop(columns=['failure_prone'])
     y = df['failure_prone']
 
@@ -153,7 +156,7 @@ def run_no_feature_selection(df: pd.DataFrame, csv_filename: str):
 def main():
     parser = argparse.ArgumentParser(description="Run feature selection + ensemble.")
     parser.add_argument("csv_filename", help="Path to the CSV dataset")
-    parser.add_argument("function_name", help="Function name to run (e.g., run_ga_random_forest, run_all, run_no_feature_selection)")
+    parser.add_argument("function_name", help="Function name to run (e.g., run_ga_random_forest, run_all, run_no_preprocess)")
     parser.add_argument("--skip_prepare", action="store_true", help="Skip the preprocessing step and use the raw DataFrame as-is")
     args = parser.parse_args()
 
@@ -168,8 +171,8 @@ def main():
 
     if args.function_name == "run_all":
         run_all_methods(df, args.csv_filename)
-    elif args.function_name == "run_no_feature_selection":
-        run_no_feature_selection(df, args.csv_filename)
+    elif args.function_name == "run_no_preprocess":
+        run_no_preprocess(df, args.csv_filename)
     elif args.function_name in globals():
         print(f"Running function '{args.function_name}'")
         globals()[args.function_name](df, args.csv_filename)
