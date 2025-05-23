@@ -57,7 +57,7 @@ def prepare_dataframe(csv_filename: str) -> pd.DataFrame:
 
         all_chunks.append(combined)
 
-    df = pd.concat(all_chunks, ignore_index=True)
+    df = pd.concat([chunk.reset_index(drop=True) for chunk in all_chunks], ignore_index=True)
 
     # Aplica TF-IDF
     df, tfidf_columns = apply_tfidf_to_messages(df)
