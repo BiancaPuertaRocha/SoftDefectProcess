@@ -54,9 +54,8 @@ def prepare_dataframe(csv_filename: str) -> pd.DataFrame:
 
         numeric_df = chunk.select_dtypes(include='number')
         text_df = chunk[[col for col in TEXT_COLUMNS if col in chunk.columns]]
-        combined = pd.concat([numeric_df.reset_index(drop=True), text_df.reset_index(drop=True)], axis=1)
-        combined = combined.loc[:, ~combined.columns.duplicated()]
-
+        cols_to_add = [col for col in text_df.columns if col not in numeric_df.columns]
+        combined = pd.concat([numeric_df, text_df[cols_to_add]], axis=1)
 
         all_chunks.append(combined)
 
