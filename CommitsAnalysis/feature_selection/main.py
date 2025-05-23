@@ -70,7 +70,7 @@ def prepare_dataframe(csv_filename: str) -> pd.DataFrame:
         target_col = pd.Series(index=df.index, data=None, name='failure_prone')
 
     non_tfidf_columns = [col for col in df.columns if col not in tfidf_columns]
-    df = df.dropna(subset=non_tfidf_columns)
+    #df = df.dropna(subset=non_tfidf_columns)
 
     target_col = target_col.loc[df.index]
     df = pd.concat([df, target_col], axis=1)
