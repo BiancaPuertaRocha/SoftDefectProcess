@@ -20,6 +20,7 @@ EVAL_METHOD = 'roc_auc'
 def remove_columns_with_unique_values(df: pd.DataFrame) -> pd.DataFrame:
     return df.loc[:, df.nunique(dropna=False) > 1]
 
+# ignore if you used the 9_new_features.py
 def apply_tfidf_to_messages(df: pd.DataFrame, max_features: int = 20) -> pd.DataFrame:
     for col in TEXT_COLUMNS:
         df[col] = df.get(col, "").fillna("")

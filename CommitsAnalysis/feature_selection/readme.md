@@ -67,3 +67,6 @@ python main.py caminho/para/seu_arquivo.csv run_chi_voting
 ```
 python main.py caminho/para/seu_arquivo.csv run_all --skip_prepare (use if the dataset already passed by the message feature generation with TF-IDF - data_collection/9_new_features.py) 
 ```
+
+## Build model without any preprocessing 
+python main.py caminho/para/seu_arquivo.csv run_no_feature_selection
