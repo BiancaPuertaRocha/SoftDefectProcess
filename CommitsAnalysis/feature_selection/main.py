@@ -53,12 +53,10 @@ def prepare_dataframe(csv_filename: str) -> pd.DataFrame:
                 chunk[label_col] = chunk[label_col].astype('category').cat.codes
 
         numeric_df = chunk.select_dtypes(include='number')
-
-        # Apenas adiciona colunas textuais que não estão no numeric_df
-        text_cols_to_add = [col for col in TEXT_COLUMNS if col in chunk.columns and col not in numeric_df.columns]
-        text_df = chunk[text_cols_to_add]
-
+        text_df = chunk[[col for col in TEXT_COLUMNS if col in chunk.columns]]
         combined = pd.concat([numeric_df.reset_index(drop=True), text_df.reset_index(drop=True)], axis=1)
+        combined = combined.loc[:, ~combined.columns.duplicated()]
+
 
         all_chunks.append(combined)
 
