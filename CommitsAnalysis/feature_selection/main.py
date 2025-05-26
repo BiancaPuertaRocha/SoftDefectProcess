@@ -8,7 +8,7 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import SVC
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import cross_val_score
-from sklearn.metrics import classification_report, cross_val_score, cross_val_predict, roc_auc_score
+from sklearn.metrics import classification_report, cross_val_score, roc_auc_score
 import argparse
 from fs_runner import FSRunner
 
