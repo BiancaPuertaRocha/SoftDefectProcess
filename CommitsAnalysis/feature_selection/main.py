@@ -7,7 +7,8 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import SVC
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import cross_val_score, classification_report
+from sklearn.metrics import classification_report, cross_val_score, cross_val_predict, roc_auc_score
 import argparse
 from fs_runner import FSRunner
 
@@ -142,6 +143,7 @@ def run_all_methods(df: pd.DataFrame, csv_filename: str):
             print(f"Running {selector.upper()} + {model_name}")
             run_with_selector(df, csv_filename, clf_func(), model_name, selector)
 
+
 def run_no_preprocess(df: pd.DataFrame, csv_filename: str):
     X = df.drop(columns=['failure_prone'])
     y = df['failure_prone']
@@ -155,10 +157,56 @@ def run_no_preprocess(df: pd.DataFrame, csv_filename: str):
         (create_voting(), 'voting')
     ]
 
+    results = []
+
     for model, name in models:
         print(f"Running without FS: {name}")
+
+        # Score global com a métrica principal
         score = cross_val_score(model, X, y, cv=5, scoring=EVAL_METHOD).mean()
-        save_eval_result(csv_filename, score, name)
+
+        # Predições e probabilidades para avaliação detalhada
+        y_pred = cross_val_predict(model, X, y, cv=5)
+        y_proba = cross_val_predict(model, X, y, cv=5, method='predict_proba')[:, 1]
+
+        # Relatório detalhado com output_dict para fácil extração
+        report = classification_report(y, y_pred, output_dict=True, zero_division=0)
+
+        # Calcula AUC para ambas as classes
+        auc_1 = roc_auc_score(y, y_proba)
+        auc_0 = roc_auc_score(1 - y, 1 - y_proba)
+
+        metrics = {
+            'filename': csv_filename,
+            'eval_method_score': score,
+            'algorithm': name,
+
+            # Classe 0
+            'precision_0': report['0']['precision'],
+            'recall_0': report['0']['recall'],
+            'f1_0': report['0']['f1-score'],
+            'auc_0': auc_0,
+
+            # Classe 1
+            'precision_1': report['1']['precision'],
+            'recall_1': report['1']['recall'],
+            'f1_1': report['1']['f1-score'],
+            'auc_1': auc_1,
+
+            # Métricas gerais (macro average)
+            'precision_macro': report['macro avg']['precision'],
+            'recall_macro': report['macro avg']['recall'],
+            'f1_macro': report['macro avg']['f1-score'],
+        }
+
+        results.append(metrics)
+
+    results_df = pd.DataFrame(results)
+
+    if os.path.exists(csv_filename):
+        results_df.to_csv(csv_filename, mode='a', header=False, index=False)
+    else:
+        results_df.to_csv(csv_filename, index=False)
 
 # -------- Main --------
 
