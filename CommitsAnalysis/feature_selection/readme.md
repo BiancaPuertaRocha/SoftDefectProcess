@@ -69,4 +69,11 @@ python main.py caminho/para/seu_arquivo.csv run_all --skip_prepare (use if the d
 ```
 
 ## Build model without any preprocessing 
+```
 python main.py caminho/para/seu_arquivo.csv run_no_feature_selection
+```
+
+## Count the instances in each class
+```
+python seu_script.py data_collection/szz/final_iceberg_clear_new_features.csv run_no_preprocess --run_count
+```

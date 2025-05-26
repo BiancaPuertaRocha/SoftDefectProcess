@@ -215,6 +215,7 @@ def main():
     parser.add_argument("csv_filename", help="Path to the CSV dataset")
     parser.add_argument("function_name", help="Function name to run (e.g., run_ga_random_forest, run_all, run_no_preprocess)")
     parser.add_argument("--skip_prepare", action="store_true", help="Skip the preprocessing step and use the raw DataFrame as-is")
+    parser.add_argument("--run_count", action="store_true", help="Count and print the number of examples per class")
     args = parser.parse_args()
 
     os.makedirs("data", exist_ok=True)
@@ -225,6 +226,15 @@ def main():
     else:
         df = prepare_dataframe(args.csv_filename)
         print(f"Processed DataFrame: {len(df)} rows.")
+
+    if args.run_count:
+        if 'failure_prone' in df.columns:
+            counts = df['failure_prone'].value_counts().sort_index()
+            print("Class counts for 'failure_prone':")
+            for cls, count in counts.items():
+                print(f"  Class {cls}: {count}")
+        else:
+            print("Column 'failure_prone' not found in dataframe.")
 
     if args.function_name == "run_all":
         run_all_methods(df, args.csv_filename)
