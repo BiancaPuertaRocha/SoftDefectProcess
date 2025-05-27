@@ -204,7 +204,7 @@ def run_no_preprocess(df: pd.DataFrame, csv_filename: str):
     results_df = pd.DataFrame(results)
 
     filename_save = 'data/metrics_no_preprocess.csv'
-    if os.path.exists():
+    if os.path.exists(filename_save):
         results_df.to_csv(filename_save, mode='a', header=False, index=False)
     else:
         results_df.to_csv(filename_save, index=False)
