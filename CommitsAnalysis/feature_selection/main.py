@@ -203,10 +203,11 @@ def run_no_preprocess(df: pd.DataFrame, csv_filename: str):
 
     results_df = pd.DataFrame(results)
 
-    if os.path.exists(csv_filename):
-        results_df.to_csv(csv_filename, mode='a', header=False, index=False)
+    filename_save = 'data/metrics_no_preprocess.csv'
+    if os.path.exists():
+        results_df.to_csv(filename_save, mode='a', header=False, index=False)
     else:
-        results_df.to_csv(csv_filename, index=False)
+        results_df.to_csv(filename_save, index=False)
 
 # -------- Main --------
 
