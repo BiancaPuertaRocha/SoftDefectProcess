@@ -6,8 +6,10 @@ from fisher_score import FisherScoreFeatureSelector
 from chi_square import Chi2FeatureSelector
 
 from sklearn.model_selection import cross_val_predict, StratifiedKFold
-from sklearn.metrics import roc_auc_score, accuracy_score, f1_score, precision_score, recall_score
-
+from sklearn.metrics import (
+    roc_auc_score, accuracy_score, f1_score, precision_score, recall_score,
+    classification_report, precision_recall_fscore_support
+)
 
 import pandas as pd
 
@@ -32,18 +34,33 @@ class FSRunner:
     
     def _evaluate_selected_features(self, df, features):
         X = df[features]
-        y = df['failure_prone']  
+        y = df['failure_prone']
         skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+
+        # Previsões e probabilidades
         y_pred = cross_val_predict(self.clf, X, y, cv=skf)
         y_proba = cross_val_predict(self.clf, X, y, cv=skf, method='predict_proba')[:, 1]
 
+        auc = roc_auc_score(y, y_proba)
+        accuracy = accuracy_score(y, y_pred)
+        precision_macro, recall_macro, f1_macro, _ = precision_recall_fscore_support(y, y_pred, average='macro')
+
+        precision_per_class, recall_per_class, f1_per_class, _ = precision_recall_fscore_support(y, y_pred, average=None, labels=[0, 1])
+
         scores = {
-            'roc_auc': roc_auc_score(y, y_proba),
-            'accuracy': accuracy_score(y, y_pred),
-            'f1': f1_score(y, y_pred),
-            'precision': precision_score(y, y_pred),
-            'recall': recall_score(y, y_pred)
+            'roc_auc': auc,
+            'accuracy': accuracy,
+            'f1_macro': f1_macro,
+            'precision_macro': precision_macro,
+            'recall_macro': recall_macro,
+            'precision_0': precision_per_class[0],
+            'recall_0': recall_per_class[0],
+            'f1_0': f1_per_class[0],
+            'precision_1': precision_per_class[1],
+            'recall_1': recall_per_class[1],
+            'f1_1': f1_per_class[1],
         }
+
         return scores
 
 

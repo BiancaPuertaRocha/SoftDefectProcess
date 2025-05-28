@@ -8,13 +8,13 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import SVC
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import cross_val_score, cross_val_predict
-from sklearn.metrics import classification_report, roc_auc_score
+from sklearn.metrics import classification_report, roc_auc_score, accuracy_score
 import argparse
 from fs_runner import FSRunner
 
 MIN_FEATURES = 7
 TEXT_COLUMNS = ["message", "bug_message", "code_smell_message"]
-EVAL_METHOD = 'roc_auc'
+EVAL_METHOD = 'f1'
 
 # -------- Utils --------
 
@@ -144,6 +144,7 @@ def run_all_methods(df: pd.DataFrame, csv_filename: str):
             run_with_selector(df, csv_filename, clf_func(), model_name, selector)
 
 
+
 def run_no_preprocess(df: pd.DataFrame, csv_filename: str):
     X = df.drop(columns=['failure_prone'])
     y = df['failure_prone']
@@ -157,8 +158,6 @@ def run_no_preprocess(df: pd.DataFrame, csv_filename: str):
         (create_voting(), 'voting')
     ]
 
-    results = []
-
     for model, name in models:
         print(f"Running without FS: {name}")
 
@@ -169,7 +168,7 @@ def run_no_preprocess(df: pd.DataFrame, csv_filename: str):
         y_pred = cross_val_predict(model, X, y, cv=5)
         y_proba = cross_val_predict(model, X, y, cv=5, method='predict_proba')[:, 1]
 
-        # Relatório detalhado com output_dict para fácil extração
+        # Relatório detalhado
         report = classification_report(y, y_pred, output_dict=True, zero_division=0)
 
         # Calcula AUC para ambas as classes
@@ -193,21 +192,14 @@ def run_no_preprocess(df: pd.DataFrame, csv_filename: str):
             'f1_1': report['1']['f1-score'],
             'auc_1': auc_1,
 
-            # Métricas gerais (macro average)
+            # Métricas gerais 
             'precision_macro': report['macro avg']['precision'],
             'recall_macro': report['macro avg']['recall'],
             'f1_macro': report['macro avg']['f1-score'],
+
+            # Accuracy geral
+            'accuracy': report['accuracy']
         }
-
-        results.append(metrics)
-
-    results_df = pd.DataFrame(results)
-
-    filename_save = 'data/metrics_no_preprocess.csv'
-    if os.path.exists(filename_save):
-        results_df.to_csv(filename_save, mode='a', header=False, index=False)
-    else:
-        results_df.to_csv(filename_save, index=False)
 
 # -------- Main --------
 
