@@ -5,6 +5,10 @@ from ga import GAFeatureSelector
 from fisher_score import FisherScoreFeatureSelector
 from chi_square import Chi2FeatureSelector
 
+from sklearn.model_selection import cross_val_predict, StratifiedKFold
+from sklearn.metrics import roc_auc_score, accuracy_score, f1_score, precision_score, recall_score
+
+
 import pandas as pd
 
 class FSRunner:
@@ -18,13 +22,31 @@ class FSRunner:
     def _remove_csv_extension(self, filename):
         return os.path.splitext(os.path.basename(filename))[0]
 
-    def _get_directories(self, csv_filename):
-        base_dir = os.path.dirname(csv_filename)
-        logs_dir = os.path.join(base_dir, "logs")
-        fs_dir = os.path.join(base_dir, "feature_selection")
+    def _get_directories(self):
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        logs_dir = os.path.join(base_dir, "data", "logs")
+        fs_dir = os.path.join(base_dir, "data", "datasets")
         os.makedirs(logs_dir, exist_ok=True)
         os.makedirs(fs_dir, exist_ok=True)
         return logs_dir, fs_dir
+    
+    def _evaluate_selected_features(self, df, features):
+        X = df[features]
+        y = df['failure_prone']  
+        skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+        y_pred = cross_val_predict(self.clf, X, y, cv=skf)
+        y_proba = cross_val_predict(self.clf, X, y, cv=skf, method='predict_proba')[:, 1]
+
+        scores = {
+            'roc_auc': roc_auc_score(y, y_proba),
+            'accuracy': accuracy_score(y, y_pred),
+            'f1': f1_score(y, y_pred),
+            'precision': precision_score(y, y_pred),
+            'recall': recall_score(y, y_pred)
+        }
+        return scores
+
+
 
     def _save_data_log(self, data, method_name, base_filename, logs_dir):
         def convert(obj):
@@ -35,7 +57,7 @@ class FSRunner:
             raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
 
         now = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-        log_filename = os.path.join(logs_dir, f"{base_filename}_{method_name}_{self.model_name}_log_{now}.json")
+        log_filename = os.path.join(logs_dir, f"{base_filename}_{method_name}_{self.model_name}_log.json")
         with open(log_filename, 'w') as f:
             json.dump(data, f, indent=4, default=convert)
         print(f"Log saved to: {log_filename}")
@@ -62,7 +84,7 @@ class FSRunner:
     def run_fisher(self, df, csv_filename):
         method_name = "run_fisher"
         base_filename = self._remove_csv_extension(csv_filename)
-        logs_dir, fs_dir = self._get_directories(csv_filename)
+        logs_dir, fs_dir = self._get_directories()
 
         # Salva as colunas originais para adicionar depois
         original_df = df.copy()
@@ -75,6 +97,9 @@ class FSRunner:
 
         self._save_data_log(data, method_name, base_filename, logs_dir)
         selected_features = data['features']
+        evaluation_scores = self._evaluate_selected_features(df, selected_features)
+        data['evaluation'] = evaluation_scores
+
         print(f"Selected Features: {selected_features}")
 
         selected_df = df[selected_features]
@@ -90,7 +115,7 @@ class FSRunner:
     def run_chi(self, df, csv_filename):
         method_name = "run_chi"
         base_filename = self._remove_csv_extension(csv_filename)
-        logs_dir, fs_dir = self._get_directories(csv_filename)
+        logs_dir, fs_dir = self._get_directories()
 
         original_df = df.copy()
         df = self._remove_unwanted_columns(df)
@@ -100,6 +125,9 @@ class FSRunner:
 
         self._save_data_log(data, method_name, base_filename, logs_dir)
         selected_features = data['features']
+        evaluation_scores = self._evaluate_selected_features(df, selected_features)
+        data['evaluation'] = evaluation_scores
+
         print(f"Selected Features: {selected_features}")
 
         selected_df = df[selected_features]
@@ -113,7 +141,7 @@ class FSRunner:
     def run_ga(self, df, csv_filename):
         method_name = "run_ga"
         base_filename = self._remove_csv_extension(csv_filename)
-        logs_dir, fs_dir = self._get_directories(csv_filename)
+        logs_dir, fs_dir = self._get_directories()
 
         original_df = df.copy()
         df = self._remove_unwanted_columns(df)
@@ -123,6 +151,9 @@ class FSRunner:
 
         self._save_data_log(data, method_name, base_filename, logs_dir)
         selected_features = data['features']
+        evaluation_scores = self._evaluate_selected_features(df, selected_features)
+        data['evaluation'] = evaluation_scores
+
         print(f"Selected Features: {selected_features}")
 
         selected_df = df[selected_features]
