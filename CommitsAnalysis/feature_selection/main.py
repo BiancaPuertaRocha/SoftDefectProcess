@@ -158,20 +158,16 @@ def run_no_preprocess(df: pd.DataFrame, csv_filename: str):
         (create_voting(), 'voting')
     ]
 
+    all_metrics = []
+
     for model, name in models:
         print(f"Running without FS: {name}")
 
-        # Score global com a métrica principal
         score = cross_val_score(model, X, y, cv=5, scoring=EVAL_METHOD).mean()
-
-        # Predições e probabilidades para avaliação detalhada
         y_pred = cross_val_predict(model, X, y, cv=5)
         y_proba = cross_val_predict(model, X, y, cv=5, method='predict_proba')[:, 1]
-
-        # Relatório detalhado
         report = classification_report(y, y_pred, output_dict=True, zero_division=0)
 
-        # Calcula AUC para ambas as classes
         auc_1 = roc_auc_score(y, y_proba)
         auc_0 = roc_auc_score(1 - y, 1 - y_proba)
 
@@ -200,6 +196,15 @@ def run_no_preprocess(df: pd.DataFrame, csv_filename: str):
             # Accuracy geral
             'accuracy': report['accuracy']
         }
+
+        all_metrics.append(metrics)
+
+    # Salva as métricas em um CSV
+    df_metrics = pd.DataFrame(all_metrics)
+    output_path = os.path.join("data", f"no_preprocessing_{csv_filename}")
+    df_metrics.to_csv(output_path, index=False)
+    print(f"\nResultados salvos em: {output_path}")
+    
 
 # -------- Main --------
 
