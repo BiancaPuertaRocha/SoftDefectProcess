@@ -15,7 +15,7 @@ from feature_selection.chi_square import Chi2FeatureSelector
 from feature_selection.fisher_score import FisherScoreFeatureSelector
 from feature_selection.ga import GAFeatureSelector
 
-from preprocessor import Preprocessor
+from preprocess.preprocessor import Preprocessor
 
 class MainPreprocessorRunner:
     def __init__(self, df, model=None, test_size=0.2, random_state=42):
