@@ -15,10 +15,10 @@ def get_model(model_name):
         return VotingClassifier(estimators=[('rf1', clf1), ('dt', clf2), ('rf2', clf3)], voting='soft')
     elif model_name == 'bag_rf':
         base_estimator = RandomForestClassifier(n_estimators=10, random_state=42)
-        return BaggingClassifier(base_estimator=base_estimator, n_estimators=10, random_state=42)
+        return BaggingClassifier(estimator=base_estimator, n_estimators=10, random_state=42)
     elif model_name == 'bag_dt':
         base_estimator = DecisionTreeClassifier(random_state=42)
-        return BaggingClassifier(base_estimator=base_estimator, n_estimators=10, random_state=42)
+        return BaggingClassifier(estimator=base_estimator, n_estimators=10, random_state=42)
     else:
         raise ValueError(f"Modelo '{model_name}' não é reconhecido. Use: rf, voting, bag_rf, bag_dt")
 
