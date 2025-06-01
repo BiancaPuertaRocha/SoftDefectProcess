@@ -5,3 +5,4 @@ lxml
 scikit-learn
 deap
 optuna
+imbalanced-learn

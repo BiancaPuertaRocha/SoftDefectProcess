@@ -6,6 +6,7 @@ from sklearn.metrics import (
     recall_score, f1_score, classification_report
 )
 from sklearn.model_selection import train_test_split
+from sklearn.base import clone
 
 from data_balance.adasyn import ADASYNBalancer
 from data_balance.random_undersampling import RandomUnderSamplerBalancer
@@ -60,7 +61,9 @@ class MainPreprocessorRunner:
                     )
 
                     # Treinar modelo
-                    self.model.fit(X_train, y_train)
+                    model = clone(self.model)  # cria uma cópia "limpa" do modelo
+                    model.fit(X_train, y_train)
+
 
                     # Prever
                     y_pred = self.model.predict(X_test)
