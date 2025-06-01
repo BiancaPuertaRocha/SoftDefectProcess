@@ -40,7 +40,7 @@ class MainPreprocessorRunner:
 
     def run_all(self):
         resultados = []
-        results_dir = os.path.join(os.path.dirname(__file__), "data")
+        results_dir = os.path.join(os.path.dirname(__file__), "data", "logs")
         os.makedirs(results_dir, exist_ok=True)
         results_path = os.path.join(results_dir, "results.csv")
 
