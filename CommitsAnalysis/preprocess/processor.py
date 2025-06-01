@@ -7,13 +7,13 @@ from sklearn.metrics import (
 )
 from sklearn.model_selection import train_test_split
 
-from ..data_balance.adasyn import ADASYNBalancer
-from ..data_balance.random_undersampling import RandomUnderSamplerBalancer
-from ..data_balance.smotee import SmoteeFeatureBalancer
+from data_balance.adasyn import ADASYNBalancer
+from data_balance.random_undersampling import RandomUnderSamplerBalancer
+from data_balance.smotee import SmoteeFeatureBalancer
 
-from ..feature_selection.chi_square import Chi2FeatureSelector
-from ..feature_selection.fisher_score import FisherScoreFeatureSelector
-from ..feature_selection.ga import GAFeatureSelector
+from feature_selection.chi_square import Chi2FeatureSelector
+from feature_selection.fisher_score import FisherScoreFeatureSelector
+from feature_selection.ga import GAFeatureSelector
 
 from preprocessor import Preprocessor
 
