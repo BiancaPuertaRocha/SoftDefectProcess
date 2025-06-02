@@ -18,10 +18,11 @@ from feature_selection.ga import GAFeatureSelector
 
 from preprocess.preprocessor import Preprocessor
 
+
 class MainPreprocessorRunner:
     def __init__(self, df, model=None, test_size=0.2, random_state=42):
         self.df = df
-        self.model = model or RandomForestClassifier(random_state=random_state)
+        self.model = clone(model)
         self.test_size = test_size
         self.random_state = random_state
 

@@ -1,4 +1,5 @@
 import pandas as pd
+from sklearn.base import clone
 
 class Preprocessor:
     def __init__(self, fs_strategy, balancer_strategy):
