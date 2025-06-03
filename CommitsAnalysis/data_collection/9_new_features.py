@@ -53,22 +53,66 @@ def extract_patch_features(df):
 
     return df
 
+def remove_columns_with_unique_values(df: pd.DataFrame) -> pd.DataFrame:
+    return df.loc[:, df.nunique(dropna=False) > 1]
+
+# ignore if you used the 9_new_features.py
 def apply_tfidf_to_messages(df: pd.DataFrame, max_features: int = 20) -> pd.DataFrame:
-    """Apply TF-IDF to text columns and return DataFrame with enriched features."""
     for col in TEXT_COLUMNS:
         df[col] = df.get(col, "").fillna("")
 
     tfidf_frames = []
+    tfidf_column_names = []
+
     for col in TEXT_COLUMNS:
         vectorizer = TfidfVectorizer(stop_words="english", max_features=max_features)
         tfidf_matrix = vectorizer.fit_transform(df[col])
         feature_names = [f"{col}_{word}" for word in vectorizer.get_feature_names_out()]
         tfidf_df = pd.DataFrame(tfidf_matrix.toarray(), columns=feature_names)
-        tfidf_frames.append(tfidf_df.reset_index(drop=True))
+        tfidf_frames.append(tfidf_df)
+        tfidf_column_names.extend(feature_names)
 
     df = df.reset_index(drop=True)
+    tfidf_frames = [f.reset_index(drop=True) for f in tfidf_frames]
+
     df = pd.concat([df] + tfidf_frames, axis=1)
     df = df.drop(columns=TEXT_COLUMNS)
+
+    return df, tfidf_column_names
+
+def prepare_dataframe(df: pd.DataFrame) -> pd.DataFrame:
+    # Codifica colunas categóricas específicas, se existirem
+    for label_col in ['bug_status', 'smell_status']:
+        if label_col in df.columns:
+            df[label_col] = df[label_col].astype('category').cat.codes
+
+    # Aplica TF-IDF nas colunas de texto
+    df, tfidf_columns = apply_tfidf_to_messages(df)
+
+    # Separa a coluna alvo, se existir
+    if 'failure_prone' in df.columns:
+        target_col = df['failure_prone']
+        df = df.drop(columns=['failure_prone'])
+    else:
+        target_col = pd.Series(index=df.index, data=None, name='failure_prone')
+
+    # Identifica colunas numéricas e não-TFIDF
+    non_tfidf_columns = [col for col in df.columns if col not in tfidf_columns]
+
+    # Remove colunas com mais de 50% de valores nulos
+    cols_to_drop = [col for col in non_tfidf_columns if df[col].isna().mean() > 0.5]
+    df = df.drop(columns=cols_to_drop)
+
+    # Remove linhas com NaNs nas colunas restantes
+    cols_to_check = [col for col in non_tfidf_columns if col not in cols_to_drop]
+    df = df.dropna(subset=cols_to_check)
+
+    # Junta novamente a variável alvo
+    target_col = target_col.loc[df.index]
+    df = pd.concat([df, target_col], axis=1)
+
+    # Remove colunas com apenas um valor único
+    df = remove_columns_with_unique_values(df)
 
     return df
 
@@ -81,8 +125,8 @@ def main():
     # Aplica extração de features do patch
     df = extract_patch_features(df)
 
-    # Aplica TF-IDF nas colunas de texto
-    df = apply_tfidf_to_messages(df)
+    # Aplica TF-IDF nas colunas de texto, transforma em numerico
+    df = prepare_dataframe(df)
 
     # Gera o novo caminho para salvar
     dir_name = os.path.dirname(input_path)
