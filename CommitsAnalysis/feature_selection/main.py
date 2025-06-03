@@ -16,80 +16,6 @@ MIN_FEATURES = 7
 TEXT_COLUMNS = ["message", "bug_message", "code_smell_message"]
 EVAL_METHOD = 'f1'
 
-# -------- Utils --------
-
-def remove_columns_with_unique_values(df: pd.DataFrame) -> pd.DataFrame:
-    return df.loc[:, df.nunique(dropna=False) > 1]
-
-# ignore if you used the 9_new_features.py
-def apply_tfidf_to_messages(df: pd.DataFrame, max_features: int = 20) -> pd.DataFrame:
-    for col in TEXT_COLUMNS:
-        df[col] = df.get(col, "").fillna("")
-
-    tfidf_frames = []
-    tfidf_column_names = []
-
-    for col in TEXT_COLUMNS:
-        vectorizer = TfidfVectorizer(stop_words="english", max_features=max_features)
-        tfidf_matrix = vectorizer.fit_transform(df[col])
-        feature_names = [f"{col}_{word}" for word in vectorizer.get_feature_names_out()]
-        tfidf_df = pd.DataFrame(tfidf_matrix.toarray(), columns=feature_names)
-        tfidf_frames.append(tfidf_df)
-        tfidf_column_names.extend(feature_names)
-
-    df = df.reset_index(drop=True)
-    tfidf_frames = [f.reset_index(drop=True) for f in tfidf_frames]
-
-    df = pd.concat([df] + tfidf_frames, axis=1)
-    df = df.drop(columns=TEXT_COLUMNS)
-
-    return df, tfidf_column_names
-
-def prepare_dataframe(csv_filename: str) -> pd.DataFrame:
-    all_chunks = []
-
-    for chunk in pd.read_csv(csv_filename, chunksize=10000):
-        for label_col in ['bug_status', 'smell_status']:
-            if label_col in chunk.columns:
-                chunk[label_col] = chunk[label_col].astype('category').cat.codes
-
-        numeric_df = chunk.select_dtypes(include='number')
-        text_df = chunk[[col for col in TEXT_COLUMNS if col in chunk.columns]]
-        cols_to_add = [col for col in text_df.columns if col not in numeric_df.columns]
-        combined = pd.concat([numeric_df, text_df[cols_to_add]], axis=1)
-
-        all_chunks.append(combined)
-
-    df = pd.concat([chunk.reset_index(drop=True) for chunk in all_chunks], ignore_index=True)
-
-    df, tfidf_columns = apply_tfidf_to_messages(df)
-
-    if 'failure_prone' in df.columns:
-        target_col = df['failure_prone']
-        df = df.drop(columns=['failure_prone'])
-    else:
-        target_col = pd.Series(index=df.index, data=None, name='failure_prone')
-
-    non_tfidf_columns = [col for col in df.columns if col not in tfidf_columns]
-    
-    # 1. Identify columns where more than half of the values are NaN
-    cols_to_drop = [col for col in non_tfidf_columns if df[col].isna().mean() > 0.5]
-
-    # 2. Drop these columns from the DataFrame
-    df = df.drop(columns=cols_to_drop)
-
-    # 3. Get the remaining non-TFIDF columns after dropping
-    cols_to_check = [col for col in non_tfidf_columns if col not in cols_to_drop]
-
-    # 4. Drop rows that have NaN values in any of the remaining columns
-    df = df.dropna(subset=cols_to_check)
-
-    target_col = target_col.loc[df.index]
-    df = pd.concat([df, target_col], axis=1)
-
-    df = remove_columns_with_unique_values(df)
-
-    return df
 
 def save_eval_result(filename, score, algorithm, output_dir="data"):
     result_df = pd.DataFrame([{
@@ -212,19 +138,14 @@ def main():
     parser = argparse.ArgumentParser(description="Run feature selection + ensemble.")
     parser.add_argument("csv_filename", help="Path to the CSV dataset")
     parser.add_argument("function_name", help="Function name to run (e.g., run_ga_random_forest, run_all, run_no_preprocess)")
-    parser.add_argument("--skip_prepare", action="store_true", help="Skip the preprocessing step and use the raw DataFrame as-is")
+
     parser.add_argument("--run_count", action="store_true", help="Count and print the number of examples per class")
     args = parser.parse_args()
 
     os.makedirs("data", exist_ok=True)
 
-    if args.skip_prepare:
-        print("Skipping dataset preparation. Reading CSV as-is.")
-        df = pd.read_csv(args.csv_filename)
-    else:
-        df = prepare_dataframe(args.csv_filename)
-        print(f"Processed DataFrame: {len(df)} rows.")
-
+    print("Skipping dataset preparation. Reading CSV as-is.")
+    df = pd.read_csv(args.csv_filename)
     if args.run_count:
         if 'failure_prone' in df.columns:
             counts = df['failure_prone'].value_counts().sort_index()
