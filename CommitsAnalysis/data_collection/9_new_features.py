@@ -3,6 +3,8 @@ import os
 import sys
 from sklearn.feature_extraction.text import TfidfVectorizer
 
+from sklearn.preprocessing import LabelEncoder
+
 TEXT_COLUMNS = ["message", "bug_message", "code_smell_message"]
 
 def extract_patch_features(df):
@@ -81,6 +83,14 @@ def apply_tfidf_to_messages(df: pd.DataFrame, max_features: int = 20) -> pd.Data
     return df, tfidf_column_names
 
 def prepare_dataframe(df: pd.DataFrame) -> pd.DataFrame:
+    # Remove coluna patch se existir
+    if 'patch' in df.columns:
+        df = df.drop(columns=['patch'])
+
+    # Remove colunas desnecessárias
+    cols_to_remove = ['sha', 'commit_date', 'filename']
+    df = df.drop(columns=[col for col in cols_to_remove if col in df.columns])
+
     # Codifica colunas categóricas específicas, se existirem
     for label_col in ['bug_status', 'smell_status']:
         if label_col in df.columns:
@@ -107,6 +117,12 @@ def prepare_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     cols_to_check = [col for col in non_tfidf_columns if col not in cols_to_drop]
     df = df.dropna(subset=cols_to_check)
 
+    # Codifica qualquer coluna não numérica restante (exceto TF-IDF)
+    le = LabelEncoder()
+    for col in df.columns:
+        if col not in tfidf_columns and not pd.api.types.is_numeric_dtype(df[col]):
+            df[col] = le.fit_transform(df[col].astype(str))
+
     # Junta novamente a variável alvo
     target_col = target_col.loc[df.index]
     df = pd.concat([df, target_col], axis=1)
@@ -115,6 +131,7 @@ def prepare_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     df = remove_columns_with_unique_values(df)
 
     return df
+
 
 def main():
     input_path = sys.argv[1]
