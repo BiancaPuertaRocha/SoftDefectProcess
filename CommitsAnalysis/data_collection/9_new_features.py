@@ -253,7 +253,7 @@ def prepare_dataframe(df: pd.DataFrame, input_path: str) -> pd.DataFrame:
     non_embedding_columns = [col for col in df.columns if col not in tfidf_columns]
 
     # Remove linhas com NaN em colunas não de embedding
-    df = df.dropna(subset=non_embedding_columns)
+    # df = df.dropna(subset=non_embedding_columns)
 
     df = remove_columns_with_unique_values(df)
 
