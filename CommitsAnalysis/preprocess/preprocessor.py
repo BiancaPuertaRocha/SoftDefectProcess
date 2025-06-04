@@ -47,6 +47,6 @@ class Preprocessor:
         X_resampled, y_resampled = self.balancer_strategy._evaluate_params(df_selected, **self.best_params, return_data=True)
 
         return X_resampled, y_resampled, {
-            'selected_features': self.selected_features,
+            'features': self.selected_features,
             'best_params': self.best_params
         }
