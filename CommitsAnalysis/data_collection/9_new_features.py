@@ -1,8 +1,9 @@
 import pandas as pd
 import os
 import sys
+import json
+from typing import List
 from sklearn.feature_extraction.text import TfidfVectorizer
-
 from sklearn.preprocessing import LabelEncoder
 
 TEXT_COLUMNS = ["message", "bug_message", "code_smell_message"]
@@ -58,7 +59,6 @@ def extract_patch_features(df):
 def remove_columns_with_unique_values(df: pd.DataFrame) -> pd.DataFrame:
     return df.loc[:, df.nunique(dropna=False) > 1]
 
-# ignore if you used the 9_new_features.py
 def apply_tfidf_to_messages(df: pd.DataFrame, max_features: int = 20) -> pd.DataFrame:
     for col in TEXT_COLUMNS:
         df[col] = df.get(col, "").fillna("")
@@ -82,16 +82,51 @@ def apply_tfidf_to_messages(df: pd.DataFrame, max_features: int = 20) -> pd.Data
 
     return df, tfidf_column_names
 
-def prepare_dataframe(df: pd.DataFrame) -> pd.DataFrame:
-    # Remove coluna patch se existir
-    if 'patch' in df.columns:
-        df = df.drop(columns=['patch'])
+def load_or_create_extension_mapping(input_path: str, extensions: List[str]) -> dict:
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    config_dir = os.path.join(script_dir, "json_config")
+    os.makedirs(config_dir, exist_ok=True)
+
+    base_name = os.path.basename(input_path)
+    json_filename = base_name + ".json"
+    json_path = os.path.join(config_dir, json_filename)
+    print(json_path)
+
+    if os.path.exists(json_path):
+        with open(json_path, 'r') as f:
+            mapping = json.load(f)
+    else:
+        mapping = {}
+
+    next_code = max(mapping.values(), default=-1) + 1
+    for ext in extensions:
+        if ext not in mapping:
+            mapping[ext] = next_code
+            next_code += 1
+
+    with open(json_path, 'w') as f:
+        json.dump(mapping, f, indent=4)
+
+    return mapping
+
+def prepare_dataframe(df: pd.DataFrame, input_path: str) -> pd.DataFrame:
+    # Extrai extensão do arquivo
+    if 'filename' in df.columns:
+        df['file_extension'] = df['filename'].astype(str).apply(lambda x: os.path.splitext(x)[1].lower())
+        df = df.drop(columns=['filename'])
+
+        # Carrega ou cria o mapeamento persistente de extensões
+        extensions = df['file_extension'].unique().tolist()
+        ext_mapping = load_or_create_extension_mapping(input_path, extensions)
+
+        # Codifica a extensão
+        df['file_extension'] = df['file_extension'].map(ext_mapping).fillna(-1).astype(int)
 
     # Remove colunas desnecessárias
-    cols_to_remove = ['sha', 'commit_date', 'filename']
+    cols_to_remove = ['sha', 'commit_date']
     df = df.drop(columns=[col for col in cols_to_remove if col in df.columns])
 
-    # Codifica colunas categóricas específicas, se existirem
+    # Codifica colunas categóricas específicas
     for label_col in ['bug_status', 'smell_status']:
         if label_col in df.columns:
             df[label_col] = df[label_col].astype('category').cat.codes
@@ -106,10 +141,8 @@ def prepare_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     else:
         target_col = pd.Series(index=df.index, data=None, name='failure_prone')
 
-    # Identifica colunas numéricas e não-TFIDF
-    non_tfidf_columns = [col for col in df.columns if col not in tfidf_columns]
-
     # Remove colunas com mais de 50% de valores nulos
+    non_tfidf_columns = [col for col in df.columns if col not in tfidf_columns]
     cols_to_drop = [col for col in non_tfidf_columns if df[col].isna().mean() > 0.5]
     df = df.drop(columns=cols_to_drop)
 
@@ -117,13 +150,13 @@ def prepare_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     cols_to_check = [col for col in non_tfidf_columns if col not in cols_to_drop]
     df = df.dropna(subset=cols_to_check)
 
-    # Codifica qualquer coluna não numérica restante (exceto TF-IDF)
+    # Codifica colunas não numéricas restantes
     le = LabelEncoder()
     for col in df.columns:
         if col not in tfidf_columns and not pd.api.types.is_numeric_dtype(df[col]):
             df[col] = le.fit_transform(df[col].astype(str))
 
-    # Junta novamente a variável alvo
+    # Junta a variável alvo novamente
     target_col = target_col.loc[df.index]
     df = pd.concat([df, target_col], axis=1)
 
@@ -131,7 +164,6 @@ def prepare_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     df = remove_columns_with_unique_values(df)
 
     return df
-
 
 def main():
     input_path = sys.argv[1]
@@ -142,8 +174,8 @@ def main():
     # Aplica extração de features do patch
     df = extract_patch_features(df)
 
-    # Aplica TF-IDF nas colunas de texto, transforma em numerico
-    df = prepare_dataframe(df)
+    # Aplica TF-IDF e pré-processamento
+    df = prepare_dataframe(df, input_path)
 
     # Gera o novo caminho para salvar
     dir_name = os.path.dirname(input_path)
