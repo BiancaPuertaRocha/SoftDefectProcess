@@ -45,7 +45,7 @@ def apply_one_hot_encoding(df: pd.DataFrame, exclude_columns: List[str]) -> pd.D
     if not categorical_cols:
         return df
 
-    encoder = OneHotEncoder(sparse=False, handle_unknown='ignore')
+    encoder = OneHotEncoder(sparse_output=False, handle_unknown='ignore')
     encoded = encoder.fit_transform(df[categorical_cols])
     encoded_df = pd.DataFrame(
         encoded, 
