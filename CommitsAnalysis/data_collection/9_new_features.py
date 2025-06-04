@@ -19,6 +19,11 @@ import argparse
 from typing import List
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.decomposition import PCA
+import torch
+from transformers import BertTokenizer, BertModel
+
 
 TEXT_COLUMNS = ["message", "bug_message", "code_smell_message"]
 COLUMNS_TO_DROP = ['author', 'files', 'url', 'email', 'commit_sha', 'file', 'branch_commits', 'branch_x', 'branch_y', 'branch_sonar', 'commit_date']
@@ -27,6 +32,30 @@ METRIC_COLUMNS = [
     'duplicated_lines_density', 'ncloc', 'functions',
     'complexity', 'comment_lines', 'sqale_index', 'sqale_debt_ratio'
 ]
+
+from sklearn.compose import ColumnTransformer
+
+def apply_one_hot_encoding(df: pd.DataFrame, exclude_columns: List[str]) -> pd.DataFrame:
+    categorical_cols = [
+        col for col in df.columns 
+        if df[col].dtype == object and col not in exclude_columns
+    ]
+    
+    if not categorical_cols:
+        return df
+
+    encoder = OneHotEncoder(sparse=False, handle_unknown='ignore')
+    encoded = encoder.fit_transform(df[categorical_cols])
+    encoded_df = pd.DataFrame(
+        encoded, 
+        columns=encoder.get_feature_names_out(categorical_cols), 
+        index=df.index
+    )
+
+    df = df.drop(columns=categorical_cols)
+    df = pd.concat([df, encoded_df], axis=1)
+    return df
+
 
 def extract_final_identifier(filename: str) -> str:
     match = re.search(r"final_([^_]+)_", filename)
@@ -125,17 +154,63 @@ def load_or_create_column_mapping(input_path: str, column_name: str, values: Lis
 def load_or_create_extension_mapping(input_path: str, extensions: List[str]) -> dict:
     return load_or_create_column_mapping(input_path, 'file_extension', extensions)
 
+def get_bert_embeddings(texts: List[str], tokenizer, model, device, batch_size=32):
+    all_embeddings = []
+    model.eval()
+    with torch.no_grad():
+        for i in range(0, len(texts), batch_size):
+            batch_texts = texts[i:i+batch_size]
+            encoded_input = tokenizer(batch_texts, padding=True, truncation=True, return_tensors='pt').to(device)
+            outputs = model(**encoded_input)
+            # Usar o embedding [CLS] da última camada (batch_size, 768)
+            embeddings = outputs.last_hidden_state[:, 0, :].cpu().numpy()
+            all_embeddings.append(embeddings)
+    return np.vstack(all_embeddings)
+
+
+def apply_bert_embeddings(df: pd.DataFrame, max_components: int = 50) -> (pd.DataFrame, List[str]):
+    import numpy as np
+
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+    model = BertModel.from_pretrained('bert-base-uncased').to(device)
+
+    bert_features = []
+    feature_names = []
+
+    for col in TEXT_COLUMNS:
+        df[col] = df.get(col, "").fillna("")
+        texts = df[col].tolist()
+
+        embeddings = get_bert_embeddings(texts, tokenizer, model, device)
+
+        # Redução dimensional com PCA
+        pca = PCA(n_components=min(max_components, embeddings.shape[1]))
+        reduced_embeddings = pca.fit_transform(embeddings)
+
+        # Cria colunas nomeadas
+        col_names = [f"{col}_bert_{i}" for i in range(reduced_embeddings.shape[1])]
+        bert_features.append(pd.DataFrame(reduced_embeddings, columns=col_names, index=df.index))
+        feature_names.extend(col_names)
+
+    df = df.reset_index(drop=True)
+    bert_features = [bf.reset_index(drop=True) for bf in bert_features]
+    df = pd.concat([df] + bert_features, axis=1)
+    # Mantemos a coluna de texto para referência futura, se quiser apagar, pode descomentar a linha abaixo:
+    # df = df.drop(columns=TEXT_COLUMNS)
+
+    return df, feature_names
+
+
 def prepare_dataframe(df: pd.DataFrame, input_path: str) -> pd.DataFrame:
-    # Propaga métricas por sha
+    # Seu código original para propagação, remoção, mapeamentos etc...
     if 'sha' in df.columns:
         metrics_by_sha = df.dropna(subset=METRIC_COLUMNS).groupby('sha')[METRIC_COLUMNS].first()
         df = df.drop(columns=[col for col in METRIC_COLUMNS if col in df.columns], errors='ignore')
         df = df.merge(metrics_by_sha, on='sha', how='left')
 
-    # Remove colunas irrelevantes
     df = df.drop(columns=[col for col in COLUMNS_TO_DROP if col in df.columns], errors='ignore')
 
-    # Mapeia extensões
     if 'filename' in df.columns:
         df['file_extension'] = df['filename'].astype(str).apply(lambda x: os.path.splitext(x)[1].lower())
         df = df.drop(columns=['filename'])
@@ -143,7 +218,6 @@ def prepare_dataframe(df: pd.DataFrame, input_path: str) -> pd.DataFrame:
         ext_mapping = load_or_create_extension_mapping(input_path, extensions)
         df['file_extension'] = df['file_extension'].map(ext_mapping).fillna(-1).astype(int)
 
-    # Mapeia colunas categóricas
     categorical_columns = ['smell_severity', 'smell_status', 'bug_severity', 'bug_status']
     for col in categorical_columns:
         if col in df.columns:
@@ -151,8 +225,9 @@ def prepare_dataframe(df: pd.DataFrame, input_path: str) -> pd.DataFrame:
             mapping = load_or_create_column_mapping(input_path, col, values)
             df[col] = df[col].astype(str).map(mapping).fillna(-1).astype(int)
 
-    # Aplica TF-IDF
-    df, tfidf_columns = apply_tfidf_to_messages(df)
+    # --- Aqui substituímos TF-IDF por BERT embeddings ---
+    # df, tfidf_columns = apply_tfidf_to_messages(df)  # <-- Comentado para manter para posterioridade
+    df, bert_columns = apply_bert_embeddings(df, max_components=50)
 
     # Alvo
     if 'failure_prone' in df.columns:
@@ -161,32 +236,22 @@ def prepare_dataframe(df: pd.DataFrame, input_path: str) -> pd.DataFrame:
     else:
         target_col = pd.Series(index=df.index, data=None, name='failure_prone')
 
-    # # Remove colunas com muitos nulos
-    non_tfidf_columns = [col for col in df.columns if col not in tfidf_columns]
-    # cols_to_drop = [col for col in non_tfidf_columns if df[col].isna().mean() > 0.5]
-    # df = df.drop(columns=cols_to_drop)
+    non_embedding_columns = [col for col in df.columns if col not in bert_columns]
 
-    # Remove linhas com NaN
-    # cols_to_check = [col for col in non_tfidf_columns if col not in cols_to_drop]
-    cols_to_check = [col for col in non_tfidf_columns]
-    df = df.dropna(subset=cols_to_check)
+    # Remove linhas com NaN em colunas não de embedding
+    df = df.dropna(subset=non_embedding_columns)
 
-    # Codifica categorias restantes
-    le = LabelEncoder()
-    for col in df.columns:
-        if col not in tfidf_columns and not pd.api.types.is_numeric_dtype(df[col]):
-            df[col] = le.fit_transform(df[col].astype(str))
+    df = remove_columns_with_unique_values(df)
 
-    # Junta coluna alvo
+    df = df.drop(columns=['sha', 'patch'], errors='ignore')
+
+    df = apply_one_hot_encoding(df, exclude_columns=bert_columns)
+
     target_col = target_col.loc[df.index]
     df = pd.concat([df, target_col], axis=1)
 
-    # Remove colunas constantes
-    df = remove_columns_with_unique_values(df)
-
-    df = df.drop(columns=['sha', 'patch'])
-
     return df
+
 
 def main():
     parser = argparse.ArgumentParser(description='Feature extraction and cleaning of commit CSV.')
@@ -201,6 +266,7 @@ def main():
     output_path = input_path.replace('.csv', '_new_features.csv')
     df.to_csv(output_path, index=False)
     print(f'Processed file saved to: {output_path}')
+
 
 if __name__ == "__main__":
     main()
