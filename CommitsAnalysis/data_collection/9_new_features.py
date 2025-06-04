@@ -36,6 +36,20 @@ METRIC_COLUMNS = [
 
 from sklearn.compose import ColumnTransformer
 
+from sklearn.preprocessing import LabelEncoder
+
+def apply_label_encoding(df: pd.DataFrame, exclude_columns: List[str]) -> pd.DataFrame:
+    categorical_cols = [
+        col for col in df.columns 
+        if df[col].dtype == object and col not in exclude_columns
+    ]
+
+    for col in categorical_cols:
+        le = LabelEncoder()
+        df[col] = le.fit_transform(df[col].astype(str))
+
+    return df
+
 def apply_one_hot_encoding(df: pd.DataFrame, exclude_columns: List[str]) -> pd.DataFrame:
     categorical_cols = [
         col for col in df.columns 
@@ -226,9 +240,8 @@ def prepare_dataframe(df: pd.DataFrame, input_path: str) -> pd.DataFrame:
             mapping = load_or_create_column_mapping(input_path, col, values)
             df[col] = df[col].astype(str).map(mapping).fillna(-1).astype(int)
 
-    # --- Aqui substituímos TF-IDF por BERT embeddings ---
-    # df, tfidf_columns = apply_tfidf_to_messages(df)  # <-- Comentado para manter para posterioridade
-    df, bert_columns = apply_bert_embeddings(df, max_components=50)
+    df, tfidf_columns = apply_tfidf_to_messages(df)  
+    # df, bert_columns = apply_bert_embeddings(df, max_components=50)
 
     # Alvo
     if 'failure_prone' in df.columns:
@@ -237,7 +250,7 @@ def prepare_dataframe(df: pd.DataFrame, input_path: str) -> pd.DataFrame:
     else:
         target_col = pd.Series(index=df.index, data=None, name='failure_prone')
 
-    non_embedding_columns = [col for col in df.columns if col not in bert_columns]
+    non_embedding_columns = [col for col in df.columns if col not in tfidf_columns]
 
     # Remove linhas com NaN em colunas não de embedding
     df = df.dropna(subset=non_embedding_columns)
@@ -246,7 +259,7 @@ def prepare_dataframe(df: pd.DataFrame, input_path: str) -> pd.DataFrame:
 
     df = df.drop(columns=['sha', 'patch'], errors='ignore')
 
-    df = apply_one_hot_encoding(df, exclude_columns=bert_columns)
+    df = apply_label_encoding(df, exclude_columns=[tfidf_columns])
 
     target_col = target_col.loc[df.index]
     df = pd.concat([df, target_col], axis=1)
