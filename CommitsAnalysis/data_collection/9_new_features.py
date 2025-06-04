@@ -161,13 +161,14 @@ def prepare_dataframe(df: pd.DataFrame, input_path: str) -> pd.DataFrame:
     else:
         target_col = pd.Series(index=df.index, data=None, name='failure_prone')
 
-    # Remove colunas com muitos nulos
+    # # Remove colunas com muitos nulos
     non_tfidf_columns = [col for col in df.columns if col not in tfidf_columns]
-    cols_to_drop = [col for col in non_tfidf_columns if df[col].isna().mean() > 0.5]
-    df = df.drop(columns=cols_to_drop)
+    # cols_to_drop = [col for col in non_tfidf_columns if df[col].isna().mean() > 0.5]
+    # df = df.drop(columns=cols_to_drop)
 
     # Remove linhas com NaN
-    cols_to_check = [col for col in non_tfidf_columns if col not in cols_to_drop]
+    # cols_to_check = [col for col in non_tfidf_columns if col not in cols_to_drop]
+    cols_to_check = [col for col in non_tfidf_columns]
     df = df.dropna(subset=cols_to_check)
 
     # Codifica categorias restantes
