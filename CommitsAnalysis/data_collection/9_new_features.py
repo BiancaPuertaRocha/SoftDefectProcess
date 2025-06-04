@@ -204,6 +204,9 @@ def prepare_dataframe(df: pd.DataFrame, input_path: str) -> pd.DataFrame:
     # Remover colunas com valores únicos
     df = remove_columns_with_unique_values(df)
 
+    df = df.loc[:, df.isnull().mean() < 0.7]
+    df = df.dropna()
+
     # Remover sha e patch após uso
     df = df.drop(columns=['sha', 'patch'], errors='ignore')
 
