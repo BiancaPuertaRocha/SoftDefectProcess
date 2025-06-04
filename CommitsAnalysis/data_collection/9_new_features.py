@@ -22,6 +22,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.decomposition import PCA
 import torch
+import numpy as np
 from transformers import BertTokenizer, BertModel
 
 
