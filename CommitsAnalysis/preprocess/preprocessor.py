@@ -37,11 +37,9 @@ class Preprocessor:
         print(f"Atributos selecionados: {self.selected_features}")
 
         features = self.selected_features.copy()
-        if 'failure_prone' not in features:
-            features.append('failure_prone')
+        features = list(set(self.selected_features).union({'failure_prone'}))
 
-        df_selected = df.loc[:, features]
-
+        df_selected = df[features]
 
         # 3. Balanceamento
         print("Aplicando balanceamento...")
