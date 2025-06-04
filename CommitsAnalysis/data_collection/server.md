@@ -43,12 +43,6 @@ sudo ln -s /opt/sonar-scanner/bin/sonar-scanner /usr/local/bin/sonar-scanner
 ## Step 0:
 Use SDPTool to extract issue and pull request data. 
 
-## Step 1:
-Extract all commits from the repo
-```
-  python 1_commits_extract.py --repo_owner apache --repo_name pinot --output_csv commits/commits_pinot.csv
-```
-
 ## Step 2:
 Extract all modifications to each commit (commitx x file)
 ```
@@ -87,13 +81,9 @@ python 7_analysis_szz.py --fixes issues_by_sdptool/project_name/compiled_results
 
 ```
 
-## Step 8:
-Clean csv to remove columns that are unecessary or that are always equal. Irrelevant.
-```
-python 8_szz_preprocess.py szz/final_project_name.csv
-```
-
 ## Step 9:
+Clean csv to remove columns that are unecessary or that are always equal. Irrelevant.
+
 Performs feature engeneering, generating coluns to the messages ("message", "bug_message", "code_smell_message") with the 20 most important words to the dataset to each message. Also generates new features analyxing the patch feature.
 ```
 python 9_new_features.py szz/final_project_name.csv
@@ -105,10 +95,20 @@ python 9_new_features.py szz/final_project_name.csv
 ## repos
 The repositories that we will study.
 
-## commits_from_api
+## commits
 Commits extracte with API requests.
 
 ## issues_by_sdp_tool
 These are the databases extracted using SDPTool. They include data about the issues and pull request of issues so we can know which commits are the bug fixing (ans after we will be able to compare to find the bug introducing)
 
 The compile_files_issue.py is the code that compiles this info.
+
+## modifications
+All modifications collected and joined with the sdptool data and sonar data.
+
+## szz
+Modifications labeled after the szz preprocessing
+
+## json_config
+All configurations to map the categoric features in step 9.
+

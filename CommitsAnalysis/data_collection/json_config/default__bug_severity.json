@@ -1,0 +1,7 @@
+{
+    "nan": 0,
+    "MAJOR": 1,
+    "MINOR": 2,
+    "BLOCKER": 3,
+    "CRITICAL": 4
+}
