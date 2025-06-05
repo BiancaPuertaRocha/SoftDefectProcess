@@ -32,7 +32,7 @@ class SmoteeFeatureBalancer:
         self.best_params = None
         self.best_score = None
 
-    def _evaluate_params(self, df, sampling_strategy, k_neighbors):
+    def _evaluate_params(self, df, sampling_strategy, k_neighbors, return_data=False):
         """
         Applies SMOTEE with given parameters and evaluates classifier performance.
 
@@ -48,20 +48,19 @@ class SmoteeFeatureBalancer:
         X = df_clean.drop(columns=['failure_prone'])
         y = df_clean['failure_prone']
 
-        # Standardize features to have zero mean and unit variance
         scaler = StandardScaler()
         X_scaled = scaler.fit_transform(X)
 
-        # Apply SMOTE + ENN
         smote_enn = SMOTEENN(
             sampling_strategy=sampling_strategy,
             random_state=self.random_state,
             k_neighbors=k_neighbors
         )
-
         X_resampled, y_resampled = smote_enn.fit_resample(X_scaled, y)
 
-        # Evaluate classifier using cross-validation
+        if return_data:
+            return X_resampled, y_resampled
+
         score = cross_val_score(self.classifier, X_resampled, y_resampled, cv=5, scoring='roc_auc').mean()
         return score
 

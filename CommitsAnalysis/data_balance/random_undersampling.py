@@ -32,7 +32,7 @@ class RandomUnderSamplerBalancer:
         self.best_params = None
         self.best_score = None
 
-    def _evaluate_params(self, df, sampling_strategy):
+    def _evaluate_params(self, df, sampling_strategy,  return_data=False):
         """
         Applies Random Undersampling and evaluates classifier performance.
 
@@ -57,6 +57,9 @@ class RandomUnderSamplerBalancer:
             random_state=self.random_state
         )
         X_resampled, y_resampled = rus.fit_resample(X_scaled, y)
+
+        if return_data:
+            return X_resampled, y_resampled
 
         # Evaluate model
         score = cross_val_score(self.classifier, X_resampled, y_resampled, cv=5, scoring='roc_auc').mean()
