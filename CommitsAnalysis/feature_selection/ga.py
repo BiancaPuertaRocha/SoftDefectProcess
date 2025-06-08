@@ -30,8 +30,8 @@ class GAFeatureSelector:
         X = df.drop(columns=['failure_prone'])
         y = df['failure_prone']
 
-        if y.dtype == 'object':
-            y = LabelEncoder().fit_transform(y)
+        # if y.dtype == 'object':
+        #     y = LabelEncoder().fit_transform(y)
 
         N_FEATURES = X.shape[1]
 

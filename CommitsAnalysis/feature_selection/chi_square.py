@@ -47,12 +47,12 @@ class Chi2FeatureSelector:
         Returns:
             Mean ROC-AUC score from cross-validation using the selected features.
         """
-        # Remove rows with missing values to ensure alignment between X and y
-        df_clean = df.dropna()
+        # # Remove rows with missing values to ensure alignment between X and y
+        # df_clean = df.dropna()
 
         # Split into features and target
-        X_clean = df_clean.drop(columns=['failure_prone'])
-        y_clean = df_clean['failure_prone']
+        X_clean = df.drop(columns=['failure_prone'])
+        y_clean = df['failure_prone']
 
         # Scale features to the [0, 1] range as required by the chi-squared test
         scaler = MinMaxScaler()
