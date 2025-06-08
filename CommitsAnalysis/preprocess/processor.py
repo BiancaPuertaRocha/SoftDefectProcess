@@ -67,8 +67,8 @@ class MainPreprocessorRunner:
 
 
                 # Prever
-                y_pred = self.model.predict(X_test)
-                y_proba = self.model.predict_proba(X_test)[:, 1]  # Para AUC
+                y_pred = model.predict(X_test)
+                y_proba = model.predict_proba(X_test)[:, 1]  # Para AUC
 
                 # Avaliar
                 auc = roc_auc_score(y_test, y_proba)
