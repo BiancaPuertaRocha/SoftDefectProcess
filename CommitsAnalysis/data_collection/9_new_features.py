@@ -147,33 +147,8 @@ def load_or_create_extension_mapping(input_path: str, extensions: List[str]) -> 
 
 def prepare_dataframe(df: pd.DataFrame, input_path: str) -> pd.DataFrame:
     # Garantir que commit_date seja datetime para ordenar corretamente
-    if 'commit_date' in df.columns:
-        df['commit_date'] = pd.to_datetime(df['commit_date'], utc=True)
-
-    # Propagar métricas por sha
-    if 'sha' in df.columns:
-        metrics_by_sha = df.dropna(subset=METRIC_COLUMNS).groupby('sha')[METRIC_COLUMNS].first()
-        df = df.drop(columns=[col for col in METRIC_COLUMNS if col in df.columns], errors='ignore')
-        df = df.merge(metrics_by_sha, on='sha', how='left')
-
-    # Calcular diferença apenas entre SHAs diferentes, ordenando por commit_date
-    DIFF_COLUMNS = ['bugs', 'code_smells', 'comment_lines', 'functions']
-    if 'sha' in df.columns and all(col in df.columns for col in DIFF_COLUMNS) and 'commit_date' in df.columns:
-        # Obter métricas por sha, ordenadas pela data
-        sha_ordered = df[['sha', 'commit_date']].drop_duplicates().sort_values('commit_date')
-        metrics_ordered = sha_ordered.merge(df.groupby('sha')[DIFF_COLUMNS].first().reset_index(), on='sha')
-
-        # Calcular diferenças entre SHAs consecutivos
-        diffs = metrics_ordered[DIFF_COLUMNS].diff().fillna(0).clip(lower=0)  # Zera valores negativos
-        diffs['sha'] = metrics_ordered['sha'].values
-
-        # Mapear essas diferenças de volta ao DataFrame original
-        for col in DIFF_COLUMNS:
-            diff_map = dict(zip(diffs['sha'], diffs[col]))
-            df[col] = df['sha'].map(diff_map)
-
-    # Remover colunas desnecessárias
-    df = df.drop(columns=[col for col in COLUMNS_TO_DROP if col in df.columns], errors='ignore')
+    # if 'commit_date' in df.columns:
+    #     df['commit_date'] = pd.to_datetime(df['commit_date'], utc=True)
 
     # Tratar a extensão do arquivo
     if 'filename' in df.columns:
@@ -183,8 +158,33 @@ def prepare_dataframe(df: pd.DataFrame, input_path: str) -> pd.DataFrame:
         ext_mapping = load_or_create_extension_mapping(input_path, extensions)
         df['file_extension'] = df['file_extension'].map(ext_mapping).fillna(-1).astype(int)
 
+    # Remover colunas desnecessárias
+    df = df.drop(columns=[col for col in COLUMNS_TO_DROP if col in df.columns], errors='ignore')
+
+    # Propagar métricas por sha
+    if 'sha' in df.columns:
+        metrics_by_sha = df.dropna(subset=METRIC_COLUMNS).groupby('sha')[METRIC_COLUMNS].first()
+        df = df.drop(columns=[col for col in METRIC_COLUMNS if col in df.columns], errors='ignore')
+        df = df.merge(metrics_by_sha, on='sha', how='left')
+
+    # # Calcular diferença apenas entre SHAs diferentes, ordenando por commit_date
+    # DIFF_COLUMNS = ['bugs', 'code_smells', 'comment_lines', 'functions']
+    # if 'sha' in df.columns and all(col in df.columns for col in DIFF_COLUMNS) and 'commit_date' in df.columns:
+    #     # Obter métricas por sha, ordenadas pela data
+    #     sha_ordered = df[['sha', 'commit_date']].drop_duplicates().sort_values('commit_date')
+    #     metrics_ordered = sha_ordered.merge(df.groupby('sha')[DIFF_COLUMNS].first().reset_index(), on='sha')
+
+    #     # Calcular diferenças entre SHAs consecutivos
+    #     diffs = metrics_ordered[DIFF_COLUMNS].diff().fillna(0).clip(lower=0)  # Zera valores negativos
+    #     diffs['sha'] = metrics_ordered['sha'].values
+
+    #     # Mapear essas diferenças de volta ao DataFrame original
+    #     for col in DIFF_COLUMNS:
+    #         diff_map = dict(zip(diffs['sha'], diffs[col]))
+    #         df[col] = df['sha'].map(diff_map)
+
     # Codificar colunas categóricas
-    categorical_columns = ['smell_severity', 'smell_status', 'bug_severity', 'bug_status']
+    categorical_columns = ['smell_severity', 'smell_status', 'bug_severity', 'bug_status', 'status']
     for col in categorical_columns:
         if col in df.columns:
             values = df[col].astype(str).unique().tolist()
@@ -201,21 +201,27 @@ def prepare_dataframe(df: pd.DataFrame, input_path: str) -> pd.DataFrame:
     else:
         target_col = pd.Series(index=df.index, data=None, name='failure_prone')
 
-    # Remover colunas com valores únicos
-    df = remove_columns_with_unique_values(df)
-
-    df = df.loc[:, df.isnull().mean() < 0.7]
-    df = df.dropna()
-
-    # Remover sha e patch após uso
-    df = df.drop(columns=['sha', 'patch'], errors='ignore')
-
-    # Label encoding
-    df = apply_label_encoding(df, exclude_columns=tfidf_columns)
+    # Remove linhas com NaN que não estejam nas colunas de TF-IDF
+    non_tfidf_columns = [col for col in df.columns if col not in tfidf_columns]
+    df = df.dropna(subset=non_tfidf_columns)
 
     # Reconectar coluna alvo
     target_col = target_col.loc[df.index]
     df = pd.concat([df, target_col], axis=1)
+
+    # Remover colunas com valores únicos
+    df = remove_columns_with_unique_values(df)
+
+    # df = df.loc[:, df.isnull().mean() < 0.7]
+    # df = df.dropna()
+
+    # Remover sha e patch após uso
+    df = df.drop(columns=['sha', 'patch'], errors='ignore')
+
+    # # Label encoding
+    # df = apply_label_encoding(df, exclude_columns=tfidf_columns)
+
+   
 
     return df
 
