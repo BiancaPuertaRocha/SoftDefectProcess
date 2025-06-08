@@ -78,8 +78,8 @@ class FisherScoreFeatureSelector:
         y = df['failure_prone']
 
         # Encode target if categorical
-        if y.dtype == 'object':
-            y = LabelEncoder().fit_transform(y)
+        # if y.dtype == 'object':
+        #     y = LabelEncoder().fit_transform(y)
 
         # Scale features with StandardScaler
         scaler = StandardScaler()
