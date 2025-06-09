@@ -3,6 +3,7 @@ import pandas as pd
 import optuna
 
 from imblearn.combine import SMOTEENN
+from imblearn.over_sampling import SMOTE
 from sklearn.model_selection import cross_val_score
 from sklearn.preprocessing import StandardScaler
 
@@ -31,6 +32,7 @@ class SmoteeFeatureBalancer:
         self.study = None
         self.best_params = None
         self.best_score = None
+        self.k_neighbors = k_neighbors
 
     def _evaluate_params(self, df, sampling_strategy, k_neighbors, return_data=False):
         """
@@ -51,10 +53,11 @@ class SmoteeFeatureBalancer:
         scaler = StandardScaler()
         X_scaled = scaler.fit_transform(X)
 
+        smote = SMOTE(k_neighbors=5, random_state=self.random_state)
         smote_enn = SMOTEENN(
+            smote=smote,
             sampling_strategy=sampling_strategy,
             random_state=self.random_state,
-            k_neighbors=k_neighbors
         )
         X_resampled, y_resampled = smote_enn.fit_resample(X_scaled, y)
 
