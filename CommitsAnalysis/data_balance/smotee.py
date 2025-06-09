@@ -32,7 +32,6 @@ class SmoteeFeatureBalancer:
         self.study = None
         self.best_params = None
         self.best_score = None
-        self.k_neighbors = k_neighbors
 
     def _evaluate_params(self, df, sampling_strategy, k_neighbors, return_data=False):
         """
