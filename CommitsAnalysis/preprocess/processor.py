@@ -89,21 +89,20 @@ class MainPreprocessorRunner:
                     "balancer": balancer.__class__.__name__,
                     "selected_features": info["features"],
                     "best_params": info["best_params"],
+
                     "auc": auc,
                     "accuracy": acc,
                     "precision": prec,
                     "recall": recall,
                     "f1": f1,
-                    "class_0": {
-                        "precision": class_report["0"]["precision"],
-                        "recall": class_report["0"]["recall"],
-                        "f1": class_report["0"]["f1-score"]
-                    },
-                    "class_1": {
-                        "precision": class_report["1"]["precision"],
-                        "recall": class_report["1"]["recall"],
-                        "f1": class_report["1"]["f1-score"]
-                    }
+
+                    "precision_0": class_report["0"]["precision"],
+                    "recall_0": class_report["0"]["recall"],
+                    "f1_0": class_report["0"]["f1-score"],
+                    
+                    "precision_1": class_report["1"]["precision"],
+                    "recall_1": class_report["1"]["recall"],
+                    "f1_1": class_report["1"]["f1-score"]
                 }
                 resultados.append(row)
                 df_row = pd.DataFrame([row])
