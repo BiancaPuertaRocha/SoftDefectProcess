@@ -22,6 +22,9 @@ def get_model(model_name):
     else:
         raise ValueError(f"Modelo '{model_name}' não é reconhecido. Use: rf, voting, bag_rf, bag_dt")
 
+def get_project_filename(file_path):
+    project_name = file_path.split("/")[-1].split("_")[1]
+    return project_name
 def main():
     parser = argparse.ArgumentParser(description="Rodar pré-processamento e avaliação de modelos.")
     parser.add_argument('--input', type=str, required=True, help="Caminho do arquivo CSV com os dados.")
@@ -31,13 +34,15 @@ def main():
     args = parser.parse_args()
 
     # Carrega os dados
-    df = pd.read_csv(args.input)
+    file_path = args.input
+    project_name = get_project_filename(file_path=file_path)
+    df = pd.read_csv(file_path)
 
     # Define o modelo
     model = get_model(args.model)
 
     # Roda o pipeline
-    runner = MainPreprocessorRunner(df, model=model)
+    runner = MainPreprocessorRunner(df, model=model, filename=project_name)
     resultados = runner.run_all()
 
     # Exibe resultados
