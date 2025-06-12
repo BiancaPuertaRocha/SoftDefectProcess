@@ -45,7 +45,7 @@ class MainPreprocessorRunner:
         resultados = []
         results_dir = os.path.join(os.path.dirname(__file__), "data", "logs")
         os.makedirs(results_dir, exist_ok=True)
-        results_path = os.path.join(results_dir, "results.csv")
+        results_path = os.path.join(results_dir, f"{self.filename}_results.csv")
 
         for fs in self.fs_strategies:
             for balancer in self.balancer_strategies:
@@ -107,8 +107,8 @@ class MainPreprocessorRunner:
                 }
                 resultados.append(row)
                 df_row = pd.DataFrame([row])
-                df_row.to_csv(results_path, mode='a', index=False, header=False)
-
+                write_header = not os.path.exists(results_path)
+                df_row.to_csv(results_path, mode='a', index=False, header=write_header)
                 # except Exception as e:
                 # print(f"Erro com combinação {fs.__class__.__name__} + {balancer.__class__.__name__}: {e}")
 
