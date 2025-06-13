@@ -5,7 +5,7 @@ from sklearn.preprocessing import StandardScaler
 
 from data_balance.whale_optimizer import WhaleOptimizer
 
-class RandomUnderSampler:
+class RandomUnderSamplerBalancer:
     """
     Applies Random Undersampling (RUS) with hyperparameter optimization using Whale Optimization Algorithm (WOA).
     Optimizes the sampling_strategy parameter to balance the dataset.
