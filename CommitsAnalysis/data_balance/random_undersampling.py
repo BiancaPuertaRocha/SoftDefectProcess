@@ -5,7 +5,7 @@ from sklearn.preprocessing import StandardScaler
 
 from data_balance.whale_optimizer import WhaleOptimizer
 
-class RandomUnderSamplerWOA:
+class RandomUnderSampler:
     """
     Applies Random Undersampling (RUS) with hyperparameter optimization using Whale Optimization Algorithm (WOA).
     Optimizes the sampling_strategy parameter to balance the dataset.
@@ -50,9 +50,9 @@ class RandomUnderSamplerWOA:
         self.best_params = {"sampling_strategy": float(best_pos[0])}
         self.best_score = best_score
 
-        print("\nBest parameters found with WOA (Random Undersampling):")
+        print("\nBest parameters (WOA):")
         print(self.best_params)
-        print(f"Mean AUC after resampling: {self.best_score:.4f}")
+        print(f"Mean AUC: {self.best_score:.4f}")
 
         return {
             'best_params': self.best_params,
