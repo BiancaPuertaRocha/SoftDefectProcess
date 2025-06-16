@@ -19,7 +19,7 @@ class ADASYNBalancer:
         self.best_score = -np.inf
         self.best_params = {}
 
-    def _evaluate(self, df, sampling_strategy, k_neighbors):
+    def _evaluate_params(self, df, sampling_strategy, k_neighbors, return_data=False):
         """
         Evaluates classifier performance using ADASYN oversampling with given parameters.
 
@@ -50,6 +50,9 @@ class ADASYNBalancer:
         except Exception:
             score = 0.0
 
+        if return_data:
+            return X_resampled, y_resampled
+
         return score
 
     def run(self, df):
@@ -69,7 +72,7 @@ class ADASYNBalancer:
             # Ensure k_neighbors stays within bounds
             k_neighbors = np.clip(k_neighbors, 2, 10)
             try:
-                return self._evaluate(df, sampling_strategy, k_neighbors)
+                return self._evaluatePparams(df, sampling_strategy, k_neighbors)
             except Exception as e:
                 print(f"Error during evaluation: {e}")
                 return 0.0

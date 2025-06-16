@@ -18,7 +18,7 @@ class RandomUnderSamplerBalancer:
         self.best_score = -1.0
         self.best_params = {}
 
-    def _evaluate_params(self, df, sampling_strategy):
+    def _evaluate_params(self, df, sampling_strategy, return_data=False):
         df_clean = df.dropna()
         X = df_clean.drop(columns=['failure_prone'])
         y = df_clean['failure_prone']
@@ -28,6 +28,9 @@ class RandomUnderSamplerBalancer:
 
         rus = RandomUnderSampler(sampling_strategy=sampling_strategy, random_state=self.random_state)
         X_resampled, y_resampled = rus.fit_resample(X_scaled, y)
+        
+        if return_data:
+            return X_resampled, y_resampled
 
         score = cross_val_score(self.classifier, X_resampled, y_resampled, cv=5, scoring='roc_auc').mean()
         return score
