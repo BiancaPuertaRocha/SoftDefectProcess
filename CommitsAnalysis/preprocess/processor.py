@@ -45,7 +45,7 @@ class MainPreprocessorRunner:
         resultados = []
         results_dir = os.path.join(os.path.dirname(__file__), "data", "logs")
         os.makedirs(results_dir, exist_ok=True)
-        results_path = os.path.join(results_dir, f"{self.filename}_results.csv")
+        results_path = os.path.join(results_dir, f"{self.filename}__{self.model.__class__.__name__}_results.csv")
 
         for fs in self.fs_strategies:
             for balancer in self.balancer_strategies:
