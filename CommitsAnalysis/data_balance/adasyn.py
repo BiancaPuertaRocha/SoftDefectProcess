@@ -44,14 +44,15 @@ class ADASYNBalancer:
             random_state=self.random_state
         )
 
+        X_resampled, y_resampled = ada.fit_resample(X_scaled, y)
+        if return_data:
+            return X_resampled, y_resampled
+
         try:
-            X_resampled, y_resampled = ada.fit_resample(X_scaled, y)
             score = cross_val_score(self.classifier, X_resampled, y_resampled, cv=5, scoring='roc_auc').mean()
         except Exception:
             score = 0.0
-
-        if return_data:
-            return X_resampled, y_resampled
+        
 
         return score
 
