@@ -20,17 +20,6 @@ class ADASYNBalancer:
         self.best_params = {}
 
     def _evaluate_params(self, df, sampling_strategy, k_neighbors, return_data=False):
-        """
-        Evaluates classifier performance using ADASYN oversampling with given parameters.
-
-        Args:
-            df: Input DataFrame containing features and target column 'failure_prone'.
-            sampling_strategy: Float between 0.1 and 1.0, proportion of minority class after resampling.
-            k_neighbors: Number of neighbors to use in ADASYN.
-
-        Returns:
-            Mean ROC-AUC score from 5-fold cross-validation.
-        """
         df_clean = df.dropna()
         X = df_clean.drop(columns=['failure_prone'])
         y = df_clean['failure_prone']
@@ -44,7 +33,14 @@ class ADASYNBalancer:
             random_state=self.random_state
         )
 
-        X_resampled, y_resampled = ada.fit_resample(X_scaled, y)
+        try:
+            X_resampled, y_resampled = ada.fit_resample(X_scaled, y)
+        except ValueError as e:
+            if "No samples will be generated" in str(e):
+                X_resampled, y_resampled = X_scaled, y
+            else:
+                raise e
+
         if return_data:
             return X_resampled, y_resampled
 
@@ -52,25 +48,13 @@ class ADASYNBalancer:
             score = cross_val_score(self.classifier, X_resampled, y_resampled, cv=5, scoring='roc_auc').mean()
         except Exception:
             score = 0.0
-        
 
         return score
 
     def run(self, df):
-        """
-        Runs the Whale Optimization Algorithm to find the best ADASYN hyperparameters.
-
-        Args:
-            df: Input DataFrame with features and target.
-
-        Returns:
-            Dictionary with best parameters and best cross-validation ROC-AUC score.
-        """
-        # Objective function for WOA optimization
         def objective(position):
             sampling_strategy = float(position[0])
             k_neighbors = int(np.round(position[1]))
-            # Ensure k_neighbors stays within bounds
             k_neighbors = np.clip(k_neighbors, 2, 10)
             try:
                 return self._evaluate_params(df, sampling_strategy, k_neighbors)
@@ -78,10 +62,8 @@ class ADASYNBalancer:
                 print(f"Error during evaluation: {e}")
                 return 0.0
 
-        # Parameter bounds: sampling_strategy and k_neighbors
         bounds = [(0.1, 1.0), (2, 10)]
 
-        # Assuming WhaleOptimizer is already implemented and imported
         optimizer = WhaleOptimizer(
             objective_func=objective,
             bounds=bounds,
@@ -101,7 +83,6 @@ class ADASYNBalancer:
         print("\nBest parameters (WOA):")
         print(self.best_params)
         print(f"Mean AUC: {self.best_score:.4f}")
-
 
         return {
             'best_params': self.best_params,
