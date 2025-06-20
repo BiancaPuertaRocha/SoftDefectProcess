@@ -73,7 +73,7 @@ class ADASYNBalancer:
             # Ensure k_neighbors stays within bounds
             k_neighbors = np.clip(k_neighbors, 2, 10)
             try:
-                return self._evaluatePparams(df, sampling_strategy, k_neighbors)
+                return self._evaluate_params(df, sampling_strategy, k_neighbors)
             except Exception as e:
                 print(f"Error during evaluation: {e}")
                 return 0.0
