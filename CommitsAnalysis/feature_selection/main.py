@@ -69,13 +69,19 @@ def run_all_methods(df: pd.DataFrame, csv_filename: str):
             print(f"Running {selector.upper()} + {model_name}")
             run_with_selector(df, csv_filename, clf_func(), model_name, selector)
 
-
+def _get_directories():
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    logs_dir = os.path.join(base_dir, "data", "logs")
+    fs_dir = os.path.join(base_dir, "data", "datasets")
+    os.makedirs(logs_dir, exist_ok=True)
+    os.makedirs(fs_dir, exist_ok=True)
+    return logs_dir, fs_dir
 
 def run_no_preprocess(df: pd.DataFrame, csv_filename: str):
     X = df.drop(columns=['failure_prone'])
     y = df['failure_prone']
 
-    os.makedirs("data", exist_ok=True)
+    logs_dir, _ = _get_directories()
 
     models = [
         (create_rf(), 'random_forest'),
@@ -127,7 +133,7 @@ def run_no_preprocess(df: pd.DataFrame, csv_filename: str):
 
     # Salva as métricas em um CSV
     df_metrics = pd.DataFrame(all_metrics)
-    output_path = os.path.join("data", f"no_preprocessing_{csv_filename}")
+    output_path = os.path.join(logs_dir, f"no_preprocessing_{csv_filename}")
     df_metrics.to_csv(output_path, index=False)
     print(f"\nResultados salvos em: {output_path}")
     
