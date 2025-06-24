@@ -98,6 +98,17 @@ class FSRunner:
                 df[col] = original_df[col]
         return df
 
+    def _save_fs_log(self, data, evaluation_scores, base_filename, logs_dir):
+        for key, value in evaluation_scores.items():
+            data[key] = value
+        data['fs_method'] = self.model_name
+
+        filename_logs = os.path.join(logs_dir, f"{base_filename}_log.csv")
+        file_exists = os.path.isfile(filename_logs)
+
+        data.to_csv(filename_logs, mode='a', header=not file_exists, index=False)
+        print(f"Log saved to: {filename_logs}")
+
     def run_fisher(self, df, csv_filename):
         method_name = "run_fisher"
         base_filename = self._remove_csv_extension(csv_filename)
@@ -115,7 +126,6 @@ class FSRunner:
         self._save_data_log(data, method_name, base_filename, logs_dir)
         selected_features = data['features']
         evaluation_scores = self._evaluate_selected_features(df, selected_features)
-        data['evaluation'] = evaluation_scores
 
         print(f"Selected Features: {selected_features}")
 
@@ -127,6 +137,10 @@ class FSRunner:
         filename = os.path.join(fs_dir, f"{base_filename}_{method_name}_{self.model_name}_selected_features.csv")
         selected_df.to_csv(filename, index=False)
         print(f"Selected features saved to: {filename}")
+
+        # Salva o log com método separado
+        self._save_fs_log(data, evaluation_scores, base_filename, logs_dir)
+
         return selected_features, selected_df
 
     def run_chi(self, df, csv_filename):
@@ -143,7 +157,6 @@ class FSRunner:
         self._save_data_log(data, method_name, base_filename, logs_dir)
         selected_features = data['features']
         evaluation_scores = self._evaluate_selected_features(df, selected_features)
-        data['evaluation'] = evaluation_scores
 
         print(f"Selected Features: {selected_features}")
 
@@ -153,6 +166,10 @@ class FSRunner:
         filename = os.path.join(fs_dir, f"{base_filename}_{method_name}_{self.model_name}_selected_features.csv")
         selected_df.to_csv(filename, index=False)
         print(f"Selected features saved to: {filename}")
+
+        # Salva o log com método separado
+        self._save_fs_log(data, evaluation_scores, base_filename, logs_dir)
+
         return selected_features, selected_df
 
     def run_ga(self, df, csv_filename):
@@ -169,7 +186,6 @@ class FSRunner:
         self._save_data_log(data, method_name, base_filename, logs_dir)
         selected_features = data['features']
         evaluation_scores = self._evaluate_selected_features(df, selected_features)
-        data['evaluation'] = evaluation_scores
 
         print(f"Selected Features: {selected_features}")
 
@@ -179,4 +195,8 @@ class FSRunner:
         filename = os.path.join(fs_dir, f"{base_filename}_{method_name}_{self.model_name}_selected_features.csv")
         selected_df.to_csv(filename, index=False)
         print(f"Selected features saved to: {filename}")
+
+        # Salva o log com método separado
+        self._save_fs_log(data, evaluation_scores, base_filename, logs_dir)
+
         return selected_features, selected_df
