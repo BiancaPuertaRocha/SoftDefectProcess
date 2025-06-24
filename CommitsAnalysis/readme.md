@@ -5,7 +5,9 @@
 Collect the data from GitHub (API), SonarScanner and SDPTools. Use the orientation present in data_collection/readme.md.
 
 ## 2nd step 
-Test all the Feature Selection mathods. Use the feature_selection/readme.md orientation. This will save the datasets with the selected features in feature_selection/data/datasets and the logs from the processing in feature_selection/data/logs with some metrics extracted.
+Test all the Feature Selection methods. Use the feature_selection/readme.md orientation. This will save the datasets with the selected features in feature_selection/data/datasets and the logs from the processing in feature_selection/data/logs with some metrics extracted.
+ 
+Also in feature_selection/readme.md you will find guidance to build and test models without any preprocessing. The results will be saved at feature_selection/data/logs
 
 ## 3th step 
 Thest all the feature selection and data balance methods with each other using preprocess/readme.md orientation. The resulted datasets will be saved at preprocess/data/datasets with the datasets from each test arrangement and the evaluation will be saved at preprocess/data/logs.

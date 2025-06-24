@@ -41,7 +41,7 @@ sudo ln -s /opt/sonar-scanner/bin/sonar-scanner /usr/local/bin/sonar-scanner
 # Run
 
 ## Step 0:
-Use SDPTool to extract issue and pull request data. 
+Use SDPTool to extract issue and pull request data. There are no scripts for that. Use the SDPTool documentation. 
 
 ## Step 2:
 Extract all modifications to each commit (commitx x file)
