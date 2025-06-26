@@ -15,7 +15,7 @@ import pandas as pd
 
 class FSRunner:
 
-    def __init__(self, clf, model_name, min_features=3, eval_method='roc_auc'):
+    def __init__(self, clf, model_name, min_features=3, eval_method='f1'):
         self.clf = clf
         self.min_features = min_features
         self.model_name = model_name

@@ -14,7 +14,7 @@ class GAFeatureSelector:
     Feature selection using Genetic Algorithm with hyperparameter tuning via Bayesian Optimization (Optuna).
     A customizable classifier is used for evaluation.
     """
-    def __init__(self, classifier, n_trials=20, direction="maximize", sampler=None, min_features=3, eval_method='roc_auc'):
+    def __init__(self, classifier, n_trials=20, direction="maximize", sampler=None, min_features=3, eval_method='f1'):
         self.classifier = classifier
         self.n_trials = n_trials
         self.direction = direction

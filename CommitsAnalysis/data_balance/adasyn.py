@@ -45,7 +45,7 @@ class ADASYNBalancer:
             return X_resampled, y_resampled
 
         try:
-            score = cross_val_score(self.classifier, X_resampled, y_resampled, cv=5, scoring='roc_auc').mean()
+            score = cross_val_score(self.classifier, X_resampled, y_resampled, cv=5, scoring='f1').mean()
         except Exception:
             score = 0.0
 

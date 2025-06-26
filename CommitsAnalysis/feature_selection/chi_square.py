@@ -13,7 +13,7 @@ class Chi2FeatureSelector:
     to find the optimal number of features (k) that maximize model performance.
     """
 
-    def __init__(self, classifier, n_trials=20, direction="maximize", sampler=None, min_features=3, eval_method='roc_auc'):
+    def __init__(self, classifier, n_trials=20, direction="maximize", sampler=None, min_features=3, eval_method='f1'):
         """
         Initializes the feature selector.
 
