@@ -1,5 +1,7 @@
 import os
 import pandas as pd
+import time
+
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import (
     roc_auc_score, accuracy_score, precision_score,
@@ -45,46 +47,44 @@ class MainPreprocessorRunner:
         resultados = []
         results_dir = os.path.join(os.path.dirname(__file__), "data", "logs")
         os.makedirs(results_dir, exist_ok=True)
-        results_path = os.path.join(results_dir, f"{self.filename}__{self.model.__class__.__name__}_results.csv")
+        results_path = os.path.join(
+            results_dir, f"{self.filename}__{self.model.__class__.__name__}_results.csv"
+        )
 
         for fs in self.fs_strategies:
             for balancer in self.balancer_strategies:
                 print("=" * 60)
                 print(f">>> FS: {fs.__class__.__name__} + Balancer: {balancer.__class__.__name__}")
 
-                preprocessor = Preprocessor(fs_strategy=fs, balancer_strategy=balancer)
+                start_time = time.perf_counter()        # <‑‑ START TIMER
 
-                # try:
+                preprocessor = Preprocessor(fs_strategy=fs, balancer_strategy=balancer)
                 X_resampled, y_resampled, info = preprocessor.run(self.df)
 
-                # Dividir em treino e teste
                 X_train, X_test, y_train, y_test = train_test_split(
-                    X_resampled, y_resampled, test_size=self.test_size, random_state=self.random_state
+                    X_resampled, y_resampled,
+                    test_size=self.test_size,
+                    random_state=self.random_state
                 )
 
-                # Treinar modelo
-                model = clone(self.model)  # cria uma cópia "limpa" do modelo
+                model = clone(self.model)
                 model.fit(X_train, y_train)
 
+                y_pred  = model.predict(X_test)
+                y_proba = model.predict_proba(X_test)[:, 1]
 
-                # Prever
-                y_pred = model.predict(X_test)
-                y_proba = model.predict_proba(X_test)[:, 1]  # Para AUC
+                auc   = roc_auc_score(y_test, y_proba)
+                acc   = accuracy_score(y_test, y_pred)
+                prec  = precision_score(y_test, y_pred, zero_division=0)
+                recall = recall_score(y_test, y_pred, zero_division=0)
+                f1    = f1_score(y_test, y_pred, zero_division=0)
 
-                # Avaliar
-                auc = roc_auc_score(y_test, y_proba)
-                acc = accuracy_score(y_test, y_pred)
-                prec = precision_score(y_test, y_pred, average='binary', zero_division=0)
-                recall = recall_score(y_test, y_pred, average='binary', zero_division=0)
-                f1 = f1_score(y_test, y_pred, average='binary', zero_division=0)
-
-                # Obter métricas por classe
                 class_report = classification_report(
                     y_test, y_pred, output_dict=True, zero_division=0
                 )
 
-                # Exemplo: class_report['0'] contém métricas da classe 0
-                #          class_report['1'] contém métricas da classe 1
+                elapsed = time.perf_counter() - start_time   # <‑‑ END TIMER
+
                 row = {
                     "fs": fs.__class__.__name__,
                     "balancer": balancer.__class__.__name__,
@@ -100,16 +100,17 @@ class MainPreprocessorRunner:
                     "precision_0": class_report["0"]["precision"],
                     "recall_0": class_report["0"]["recall"],
                     "f1_0": class_report["0"]["f1-score"],
-                    
+
                     "precision_1": class_report["1"]["precision"],
                     "recall_1": class_report["1"]["recall"],
-                    "f1_1": class_report["1"]["f1-score"]
+                    "f1_1": class_report["1"]["f1-score"],
+
+                    "exec_time_s": elapsed
                 }
+
                 resultados.append(row)
                 df_row = pd.DataFrame([row])
                 write_header = not os.path.exists(results_path)
                 df_row.to_csv(results_path, mode='a', index=False, header=write_header)
-                # except Exception as e:
-                # print(f"Erro com combinação {fs.__class__.__name__} + {balancer.__class__.__name__}: {e}")
 
         return resultados
