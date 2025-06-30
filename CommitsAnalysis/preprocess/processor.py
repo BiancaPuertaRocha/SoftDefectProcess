@@ -56,8 +56,6 @@ class MainPreprocessorRunner:
                 print("=" * 60)
                 print(f">>> FS: {fs.__class__.__name__} + Balancer: {balancer.__class__.__name__}")
 
-                start_time = time.perf_counter()        # <‑‑ START TIMER
-
                 preprocessor = Preprocessor(fs_strategy=fs, balancer_strategy=balancer)
                 X_resampled, y_resampled, info = preprocessor.run(self.df)
 
@@ -68,10 +66,15 @@ class MainPreprocessorRunner:
                 )
 
                 model = clone(self.model)
-                model.fit(X_train, y_train)
 
+                t0 = time.perf_counter()
+                model.fit(X_train, y_train)
+                train_time = time.perf_counter() - t0
+
+                t0 = time.perf_counter()
                 y_pred  = model.predict(X_test)
                 y_proba = model.predict_proba(X_test)[:, 1]
+                predict_time = time.perf_counter() - t0
 
                 auc   = roc_auc_score(y_test, y_proba)
                 acc   = accuracy_score(y_test, y_pred)
@@ -82,8 +85,6 @@ class MainPreprocessorRunner:
                 class_report = classification_report(
                     y_test, y_pred, output_dict=True, zero_division=0
                 )
-
-                elapsed = time.perf_counter() - start_time   # <‑‑ END TIMER
 
                 row = {
                     "fs": fs.__class__.__name__,
@@ -100,12 +101,12 @@ class MainPreprocessorRunner:
                     "precision_0": class_report["0"]["precision"],
                     "recall_0": class_report["0"]["recall"],
                     "f1_0": class_report["0"]["f1-score"],
-
                     "precision_1": class_report["1"]["precision"],
                     "recall_1": class_report["1"]["recall"],
                     "f1_1": class_report["1"]["f1-score"],
 
-                    "exec_time_s": elapsed
+                    "train_time_s":   train_time,
+                    "predict_time_s": predict_time
                 }
 
                 resultados.append(row)
