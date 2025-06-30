@@ -106,7 +106,8 @@ class FSRunner:
         filename_logs = os.path.join(logs_dir, f"{base_filename}_log.csv")
         file_exists = os.path.isfile(filename_logs)
 
-        data.to_csv(filename_logs, mode='a', header=not file_exists, index=False)
+        df_log = pd.DataFrame([data])
+        df_log.to_csv(filename_logs, mode='a', header=not file_exists, index=False)
         print(f"Log saved to: {filename_logs}")
 
     def run_fisher(self, df, csv_filename):
