@@ -1,32 +1,35 @@
 import os
-import pandas as pd
 import time
+import pandas as pd
 
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.base import clone
+from sklearn.model_selection import train_test_split
 from sklearn.metrics import (
     roc_auc_score, accuracy_score, precision_score,
     recall_score, f1_score, classification_report
 )
-from sklearn.model_selection import train_test_split
-from sklearn.base import clone
 
-from data_balance.adasyn import ADASYNBalancer
-from data_balance.random_undersampling import RandomUnderSamplerBalancer
-from data_balance.smotee import SmoteeFeatureBalancer
+from data_balance.adasyn               import ADASYNBalancer
+from data_balance.random_undersampling  import RandomUnderSamplerBalancer
+from data_balance.smotee               import SmoteeFeatureBalancer
 
-from feature_selection.chi_square import Chi2FeatureSelector
+from feature_selection.chi_square  import Chi2FeatureSelector
 from feature_selection.fisher_score import FisherScoreFeatureSelector
-from feature_selection.ga import GAFeatureSelector
+from feature_selection.ga          import GAFeatureSelector
 
 from preprocess.preprocessor import Preprocessor
 
 
 class MainPreprocessorRunner:
-    def __init__(self, df, model=None, test_size=0.2, random_state=42, filename=''):
-        self.df = df
-        self.filename = filename
-        self.model = clone(model)
-        self.test_size = test_size
+    """
+    Executa combinações de seleção de atributos + balanceamento,
+    treina o modelo e registra métricas e tempos (em ms com precisão de µs).
+    """
+    def __init__(self, df, model, test_size=0.2, random_state=42, filename=''):
+        self.df           = df
+        self.filename     = filename
+        self.model        = clone(model)
+        self.test_size    = test_size
         self.random_state = random_state
 
         # Estratégias de seleção de atributos
@@ -43,12 +46,19 @@ class MainPreprocessorRunner:
             SmoteeFeatureBalancer(self.model)
         ]
 
+    # ------------------------------------------------------------------ #
+    def _ns_to_ms(self, ns: int) -> float:
+        """Converte nanossegundos em milissegundos (mantém as casas decimais)."""
+        return ns / 1_000_000.0
+
+    # ------------------------------------------------------------------ #
     def run_all(self):
-        resultados = []
-        results_dir = os.path.join(os.path.dirname(__file__), "data", "logs")
+        resultados   = []
+        results_dir  = os.path.join(os.path.dirname(__file__), "data", "logs")
         os.makedirs(results_dir, exist_ok=True)
         results_path = os.path.join(
-            results_dir, f"{self.filename}__{self.model.__class__.__name__}_results.csv"
+            results_dir,
+            f"{self.filename}__{self.model.__class__.__name__}_results.csv"
         )
 
         for fs in self.fs_strategies:
@@ -56,6 +66,7 @@ class MainPreprocessorRunner:
                 print("=" * 60)
                 print(f">>> FS: {fs.__class__.__name__} + Balancer: {balancer.__class__.__name__}")
 
+                # Pré‑processamento (seleção de atributos + balanceamento)
                 preprocessor = Preprocessor(fs_strategy=fs, balancer_strategy=balancer)
                 X_resampled, y_resampled, info = preprocessor.run(self.df)
 
@@ -67,25 +78,29 @@ class MainPreprocessorRunner:
 
                 model = clone(self.model)
 
-                t0 = time.perf_counter()
+                # ----------------------------- treino -----------------------------
+                t0_ns = time.perf_counter_ns()
                 model.fit(X_train, y_train)
-                train_time = time.perf_counter() - t0
+                train_time_ms = self._ns_to_ms(time.perf_counter_ns() - t0_ns)
 
-                t0 = time.perf_counter()
+                # --------------------------- predição -----------------------------
+                t0_ns = time.perf_counter_ns()
                 y_pred  = model.predict(X_test)
                 y_proba = model.predict_proba(X_test)[:, 1]
-                predict_time = time.perf_counter() - t0
+                predict_time_ms = self._ns_to_ms(time.perf_counter_ns() - t0_ns)
 
-                auc   = roc_auc_score(y_test, y_proba)
-                acc   = accuracy_score(y_test, y_pred)
-                prec  = precision_score(y_test, y_pred, zero_division=0)
-                recall = recall_score(y_test, y_pred, zero_division=0)
-                f1    = f1_score(y_test, y_pred, zero_division=0)
+                # ---------------------------- métricas ----------------------------
+                auc     = roc_auc_score(y_test, y_proba)
+                acc     = accuracy_score(y_test, y_pred)
+                prec    = precision_score(y_test, y_pred, zero_division=0)
+                recall  = recall_score(y_test, y_pred, zero_division=0)
+                f1      = f1_score(y_test, y_pred, zero_division=0)
 
                 class_report = classification_report(
                     y_test, y_pred, output_dict=True, zero_division=0
                 )
 
+                # ---------------------------- registro ----------------------------
                 row = {
                     "fs": fs.__class__.__name__,
                     "balancer": balancer.__class__.__name__,
@@ -99,19 +114,28 @@ class MainPreprocessorRunner:
                     "f1": f1,
 
                     "precision_0": class_report["0"]["precision"],
-                    "recall_0": class_report["0"]["recall"],
-                    "f1_0": class_report["0"]["f1-score"],
+                    "recall_0":    class_report["0"]["recall"],
+                    "f1_0":        class_report["0"]["f1-score"],
                     "precision_1": class_report["1"]["precision"],
-                    "recall_1": class_report["1"]["recall"],
-                    "f1_1": class_report["1"]["f1-score"],
+                    "recall_1":    class_report["1"]["recall"],
+                    "f1_1":        class_report["1"]["f1-score"],
 
-                    "train_time_s":   train_time,
-                    "predict_time_s": predict_time
+                    # tempos em milissegundos com precisão de microssegundos
+                    "train_time_ms":   train_time_ms,
+                    "predict_time_ms": predict_time_ms
                 }
 
                 resultados.append(row)
-                df_row = pd.DataFrame([row])
+
+                # Grava incrementalmente garantindo 9 casas decimais
+                df_row      = pd.DataFrame([row])
                 write_header = not os.path.exists(results_path)
-                df_row.to_csv(results_path, mode='a', index=False, header=write_header)
+                df_row.to_csv(
+                    results_path,
+                    mode="a",
+                    index=False,
+                    header=write_header,
+                    float_format="%.9f"   # <-- mantém 9 casas decimais
+                )
 
         return resultados
