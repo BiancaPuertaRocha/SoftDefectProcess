@@ -1,1 +1,0 @@
-python manual_main.py dataset metrics_file_to_save --model random_forest

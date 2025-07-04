@@ -1,7 +1,0 @@
-WSL1 não é compatível com a configuração atual da máquina.
- Habilite o componente opcional "Windows Subsystem for Linux" para usar WSL1.
-
-Não há suporte para WSL2 com a configuração atual do computador.
-Habilite o componente opcional "Plataforma da Máquina Virtual" e verifique se a virtualização está habilitada no BIOS.
-Habilite a "Plataforma da Máquina Virtual" executando: wsl.exe --install --no-distribution
-Para obter informações, visite https://aka.ms/enablevirtualization
