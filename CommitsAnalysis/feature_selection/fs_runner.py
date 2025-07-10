@@ -98,10 +98,11 @@ class FSRunner:
                 df[col] = original_df[col]
         return df
 
-    def _save_fs_log(self, data, evaluation_scores, base_filename, logs_dir):
+    def _save_fs_log(self, data, evaluation_scores, base_filename, logs_dir, fs_method):
         for key, value in evaluation_scores.items():
             data[key] = value
-        data['fs_method'] = self.model_name
+        data['algorithm'] = self.model_name
+        data['fs_method'] = fs_method
 
         filename_logs = os.path.join(logs_dir, f"{base_filename}_log.csv")
         file_exists = os.path.isfile(filename_logs)
@@ -140,7 +141,7 @@ class FSRunner:
         print(f"Selected features saved to: {filename}")
 
         # Salva o log com método separado
-        self._save_fs_log(data, evaluation_scores, base_filename, logs_dir)
+        self._save_fs_log(data, evaluation_scores, base_filename, logs_dir, 'fisher_square')
 
         return selected_features, selected_df
 
@@ -169,7 +170,7 @@ class FSRunner:
         print(f"Selected features saved to: {filename}")
 
         # Salva o log com método separado
-        self._save_fs_log(data, evaluation_scores, base_filename, logs_dir)
+        self._save_fs_log(data, evaluation_scores, base_filename, logs_dir, 'chi_square')
 
         return selected_features, selected_df
 
@@ -198,6 +199,6 @@ class FSRunner:
         print(f"Selected features saved to: {filename}")
 
         # Salva o log com método separado
-        self._save_fs_log(data, evaluation_scores, base_filename, logs_dir)
+        self._save_fs_log(data, evaluation_scores, base_filename, logs_dir, 'genetic')
 
         return selected_features, selected_df
