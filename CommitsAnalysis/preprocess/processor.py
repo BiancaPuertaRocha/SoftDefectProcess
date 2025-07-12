@@ -67,9 +67,13 @@ class MainPreprocessorRunner:
                 print(f">>> FS: {fs.__class__.__name__} + Balancer: {balancer.__class__.__name__}")
 
                 # Pré‑processamento (seleção de atributos + balanceamento)
+                t0_ns = time.perf_counter_ns()
                 preprocessor = Preprocessor(fs_strategy=fs, balancer_strategy=balancer)
                 X_resampled, y_resampled, info = preprocessor.run(self.df)
+                tunning_and_preprocess_time_ms = self._ns_to_ms(time.perf_counter_ns() - t0_ns)
 
+                # ----------------------------- treino -----------------------------
+                t0_ns = time.perf_counter_ns()
                 X_train, X_test, y_train, y_test = train_test_split(
                     X_resampled, y_resampled,
                     test_size=self.test_size,
@@ -77,9 +81,6 @@ class MainPreprocessorRunner:
                 )
 
                 model = clone(self.model)
-
-                # ----------------------------- treino -----------------------------
-                t0_ns = time.perf_counter_ns()
                 model.fit(X_train, y_train)
                 train_time_ms = self._ns_to_ms(time.perf_counter_ns() - t0_ns)
 
@@ -122,7 +123,8 @@ class MainPreprocessorRunner:
 
                     # tempos em milissegundos com precisão de microssegundos
                     "train_time_ms":   train_time_ms,
-                    "predict_time_ms": predict_time_ms
+                    "predict_time_ms": predict_time_ms,
+                    "tunning_and_preprocess_time_ms": tunning_and_preprocess_time_ms
                 }
 
                 resultados.append(row)
@@ -135,7 +137,7 @@ class MainPreprocessorRunner:
                     mode="a",
                     index=False,
                     header=write_header,
-                    float_format="%.9f"   # <-- mantém 9 casas decimais
+                    float_format="%.9f"
                 )
 
         return resultados
