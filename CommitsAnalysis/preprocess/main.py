@@ -61,7 +61,8 @@ def main():
         print(f"AUC: {r['auc']:.4f}, Accuracy: {r['accuracy']:.4f}, Precision: {r['precision']:.4f}, Recall: {r['recall']:.4f}")
         # print(f"Features selecionadas: {r['selected_features']}")
         # print(f"Melhores parâmetros: {r['best_params']}")
-        print(f"Tempo em segundos para execução com otimizacao: {elapsed}")
+    
+    print(f"Tempo em segundos para execução com otimizacao: {elapsed}")
 
 if __name__ == "__main__":
     main()
