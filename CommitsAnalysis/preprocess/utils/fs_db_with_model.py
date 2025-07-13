@@ -9,15 +9,15 @@ from sklearn.metrics import (
     recall_score, f1_score, classification_report
 )
 
-from data_balance.adasyn import ADASYNBalancer
-from data_balance.random_undersampling import RandomUnderSamplerBalancer
-from data_balance.smotee import SmoteeFeatureBalancer
+from preprocess.models.adasyn import ADASYNBalancer
+from preprocess.models.random_undersampling import RandomUnderSamplerBalancer
+from preprocess.models.smotee import SmoteeFeatureBalancer
 
-from feature_selection.chi_square import Chi2FeatureSelector
-from feature_selection.fisher_score import FisherScoreFeatureSelector
-from feature_selection.ga import GAFeatureSelector
+from preprocess.models.chi_square import Chi2FeatureSelector
+from preprocess.models.fisher_score import FisherScoreFeatureSelector
+from preprocess.models.ga import GAFeatureSelector
 
-from preprocess.preprocessor import Preprocessor
+from preprocess.utils.fs_db_runner import Preprocessor
 
 
 class MainPreprocessorRunner:

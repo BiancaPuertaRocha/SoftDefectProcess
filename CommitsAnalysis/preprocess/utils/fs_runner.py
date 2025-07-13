@@ -1,17 +1,17 @@
 import os
 import json
+import pandas as pd
 from datetime import datetime
-from ga import GAFeatureSelector
-from fisher_score import FisherScoreFeatureSelector
-from chi_square import Chi2FeatureSelector
+
+from preprocess.models.ga import GAFeatureSelector
+from preprocess.models.fisher_score import FisherScoreFeatureSelector
+from preprocess.models.chi_square import Chi2FeatureSelector
 
 from sklearn.model_selection import cross_val_predict, StratifiedKFold
 from sklearn.metrics import (
     roc_auc_score, accuracy_score, f1_score, precision_score, recall_score,
     classification_report, precision_recall_fscore_support
 )
-
-import pandas as pd
 
 class FSRunner:
 
@@ -62,7 +62,6 @@ class FSRunner:
         }
 
         return scores
-
 
 
     def _save_data_log(self, data, method_name, base_filename, logs_dir):

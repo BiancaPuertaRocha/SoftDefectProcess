@@ -1,24 +1,23 @@
 import numpy as np
-from imblearn.combine import SMOTEENN
-from imblearn.over_sampling import SMOTE
+import pandas as pd
 from sklearn.model_selection import cross_val_score
 from sklearn.preprocessing import StandardScaler
+from imblearn.over_sampling import ADASYN
 
-from data_balance.whale_optimizer import WhaleOptimizer
+from models.whale_optimizer import WhaleOptimizer
 
-class SmoteeFeatureBalancer:
+class ADASYNBalancer:
     """
-    Applies SMOTEE with hyperparameter optimization using Whale Optimization Algorithm.
-    Optimizes sampling_strategy and k_neighbors for SMOTE.
+    Applies ADASYN using Whale Optimization Algorithm (WOA) for hyperparameter optimization.
+    Optimizes sampling_strategy and k_neighbors to improve classifier performance.
     """
-    def __init__(self, classifier, n_whales=10, n_iterations=20, direction="maximize", random_state=42):
+    def __init__(self, classifier, n_whales=10, n_iterations=20, random_state=42):
         self.classifier = classifier
         self.n_whales = n_whales
         self.n_iterations = n_iterations
-        self.direction = direction
         self.random_state = random_state
-        self.best_params = None
-        self.best_score = None
+        self.best_score = -np.inf
+        self.best_params = {}
 
     def _evaluate_params(self, df, sampling_strategy, k_neighbors, return_data=False):
         df_clean = df.dropna()
@@ -28,39 +27,51 @@ class SmoteeFeatureBalancer:
         scaler = StandardScaler()
         X_scaled = scaler.fit_transform(X)
 
-        smote = SMOTE(k_neighbors=k_neighbors, random_state=self.random_state)
-        smote_enn = SMOTEENN(
-            smote=smote,
+        ada = ADASYN(
             sampling_strategy=sampling_strategy,
-            random_state=self.random_state,
+            n_neighbors=int(k_neighbors),
+            random_state=self.random_state
         )
-        X_resampled, y_resampled = smote_enn.fit_resample(X_scaled, y)
+
+        try:
+            X_resampled, y_resampled = ada.fit_resample(X_scaled, y)
+        except ValueError as e:
+            if "No samples will be generated" in str(e):
+                X_resampled, y_resampled = X_scaled, y
+            else:
+                raise e
 
         if return_data:
             return X_resampled, y_resampled
 
-        score = cross_val_score(self.classifier, X_resampled, y_resampled, cv=5, scoring='f1').mean()
+        try:
+            score = cross_val_score(self.classifier, X_resampled, y_resampled, cv=5, scoring='f1').mean()
+        except Exception:
+            score = 0.0
+
         return score
 
     def run(self, df):
-        self.df = df
-
         def objective(position):
-            # position[0] = sampling_strategy (float)
-            # position[1] = k_neighbors (float, arredondar e limitar)
             sampling_strategy = float(position[0])
             k_neighbors = int(np.round(position[1]))
             k_neighbors = np.clip(k_neighbors, 2, 10)
             try:
-                score = self._evaluate_params(self.df, sampling_strategy, k_neighbors)
+                return self._evaluate_params(df, sampling_strategy, k_neighbors)
             except Exception as e:
-                print("Erro durante avaliação:", e)
-                score = 0.0
-            return score
+                print(f"Error during evaluation: {e}")
+                return 0.0
 
-        bounds = [(0.1, 1.0), (2, 10)] 
+        bounds = [(0.1, 1.0), (2, 10)]
 
-        optimizer = WhaleOptimizer(objective, bounds, n_whales=self.n_whales, n_iterations=self.n_iterations, seed=self.random_state)
+        optimizer = WhaleOptimizer(
+            objective_func=objective,
+            bounds=bounds,
+            n_whales=self.n_whales,
+            n_iterations=self.n_iterations,
+            seed=self.random_state
+        )
+
         best_position, best_score = optimizer.optimize()
 
         self.best_params = {

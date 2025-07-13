@@ -1,16 +1,17 @@
 import pandas as pd
 import os
+import argparse
+
 from sklearn.ensemble import RandomForestClassifier, BaggingClassifier, VotingClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import SVC
-from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import cross_val_score, cross_val_predict
 from sklearn.metrics import classification_report, roc_auc_score, accuracy_score
-import argparse
-from fs_runner import FSRunner
+
+from preprocess.utils.fs_runner import FSRunner
 
 MIN_FEATURES = 7
 TEXT_COLUMNS = ["message", "bug_message", "code_smell_message"]
