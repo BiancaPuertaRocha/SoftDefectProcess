@@ -3,7 +3,7 @@ import pandas as pd
 from sklearn.ensemble import RandomForestClassifier, VotingClassifier, BaggingClassifier
 from sklearn.tree import DecisionTreeClassifier
 
-from preprocess.processor import MainPreprocessorRunner  
+from preprocess.main_preprocessor_runner import MainPreprocessorRunner  
 
 def get_model(model_name):
     if model_name == 'rf':

@@ -1,4 +1,4 @@
-import os
+import os, csv, datetime, uuid
 import time
 import pandas as pd
 
@@ -9,13 +9,13 @@ from sklearn.metrics import (
     recall_score, f1_score, classification_report
 )
 
-from data_balance.adasyn               import ADASYNBalancer
-from data_balance.random_undersampling  import RandomUnderSamplerBalancer
-from data_balance.smotee               import SmoteeFeatureBalancer
+from data_balance.adasyn import ADASYNBalancer
+from data_balance.random_undersampling import RandomUnderSamplerBalancer
+from data_balance.smotee import SmoteeFeatureBalancer
 
-from feature_selection.chi_square  import Chi2FeatureSelector
+from feature_selection.chi_square import Chi2FeatureSelector
 from feature_selection.fisher_score import FisherScoreFeatureSelector
-from feature_selection.ga          import GAFeatureSelector
+from feature_selection.ga import GAFeatureSelector
 
 from preprocess.preprocessor import Preprocessor
 
@@ -51,15 +51,29 @@ class MainPreprocessorRunner:
         """Converte nanossegundos em milissegundos (mantém as casas decimais)."""
         return ns / 1_000_000.0
 
+    def _append_csv(self, row: dict):
+        """Cria o CSV se não existir e adiciona `row`."""
+        results_dir  = os.path.join(os.path.dirname(__file__), "data", "time.csv")
+        file_exists = results_dir.is_file()
+
+        # newline='' evita linhas em branco extras no Windows
+        with results_dir.open("a", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=["timestamp", "id", "time_to_execute"])
+            if not file_exists:
+                writer.writeheader()
+            writer.writerow(row)
+
+
     # ------------------------------------------------------------------ #
     def run_all(self):
+        start = time.time()
         resultados   = []
         results_dir  = os.path.join(os.path.dirname(__file__), "data", "logs")
         os.makedirs(results_dir, exist_ok=True)
-        results_path = os.path.join(
-            results_dir,
-            f"{self.filename}__{self.model.__class__.__name__}_results.csv"
-        )
+
+        id_execucao = str(uuid.uuid4())
+        result_filename = f"{self.filename}__{self.model.__class__.__name__}__{id_execucao}__results.csv"
+        results_path = os.path.join(results_dir, result_filename)
 
         for fs in self.fs_strategies:
             for balancer in self.balancer_strategies:
@@ -139,5 +153,10 @@ class MainPreprocessorRunner:
                     header=write_header,
                     float_format="%.9f"
                 )
-
+        elapsed = time.time() - start
+        self._append_csv({
+            "timestamp": datetime.datetime.now().isoformat(timespec="seconds"),
+            "id": result_filename,
+            "time_to_execute": elapsed
+        })
         return resultados
