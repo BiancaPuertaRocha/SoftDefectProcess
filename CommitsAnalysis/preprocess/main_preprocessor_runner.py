@@ -45,7 +45,7 @@ class MainPreprocessorRunner:
             RandomUnderSamplerBalancer(self.model),
             SmoteeFeatureBalancer(self.model)
         ]
-
+        
     # ------------------------------------------------------------------ #
     def _ns_to_ms(self, ns: int) -> float:
         """Converte nanossegundos em milissegundos (mantém as casas decimais)."""
