@@ -4,7 +4,7 @@ from imblearn.over_sampling import SMOTE
 from sklearn.model_selection import cross_val_score
 from sklearn.preprocessing import StandardScaler
 
-from models.whale_optimizer import WhaleOptimizer
+from preprocess.models.whale_optimizer import WhaleOptimizer
 
 class SmoteeFeatureBalancer:
     """
