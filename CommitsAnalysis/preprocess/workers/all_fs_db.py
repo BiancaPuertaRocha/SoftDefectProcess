@@ -3,7 +3,7 @@ import pandas as pd
 from sklearn.ensemble import RandomForestClassifier, VotingClassifier, BaggingClassifier
 from sklearn.tree import DecisionTreeClassifier
 
-from preprocess.utils.fs_db_with_model import MainPreprocessorRunner  
+from preprocess.utils.fs_db_with_model import MainPreprocessorRunner
 from preprocess.utils.utils import format_time
 
 def get_rand():

@@ -42,7 +42,7 @@ Options:
  - bag_dt
 
 ```
-python -m preprocess.all_fs_db --input data_collection/szz/final_project_new_features.csv --model [option]
+python -m preprocess.workers.all_fs_db --input data_collection/szz/final_project_new_features.csv --model [option]
 ``` 
 All the metrics are saved in data/logs/
 The final datasets are saved in data/datasets/
