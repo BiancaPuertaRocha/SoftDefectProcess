@@ -3,8 +3,8 @@ import pandas as pd
 from sklearn.ensemble import RandomForestClassifier, VotingClassifier, BaggingClassifier
 from sklearn.tree import DecisionTreeClassifier
 
-from preprocess.main_preprocessor_runner import MainPreprocessorRunner  
-
+from preprocess.utils.fs_db_with_model import MainPreprocessorRunner  
+from preprocess.utils.utils import format_time
 
 def get_rand():
     """Definição do componente aleatório da rodada"""
@@ -62,7 +62,7 @@ def main():
         # print(f"Features selecionadas: {r['selected_features']}")
         # print(f"Melhores parâmetros: {r['best_params']}")
     
-    print(f"Tempo em segundos para execução com otimizacao: {elapsed}")
+    print(f"Tempo em segundos para execução com otimizacao: {format_time(elapsed)}")
 
 if __name__ == "__main__":
     main()
