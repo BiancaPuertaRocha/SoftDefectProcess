@@ -54,7 +54,7 @@ class MainPreprocessorRunner:
     def _append_csv(self, row: dict):
         """Cria o CSV se não existir e adiciona `row`."""
         results_dir  = os.path.join(os.path.dirname(__file__), "data", "time.csv")
-        file_exists = results_dir.is_file()
+        file_exists = os.path.isfile(results_dir)
 
         # newline='' evita linhas em branco extras no Windows
         with results_dir.open("a", newline="", encoding="utf-8") as f:

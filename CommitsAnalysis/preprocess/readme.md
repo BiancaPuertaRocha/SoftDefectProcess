@@ -42,7 +42,11 @@ Options:
  - bag_dt
 
 ```
-python -m preprocess.workers.all_fs_db --input data_collection/szz/final_project_new_features.csv --model [option]
+python -m preprocess.workers.all_fs_db --input data_collection/szz/final_[project]_new_features.csv --model [option]
 ``` 
 All the metrics are saved in data/logs/
 The final datasets are saved in data/datasets/
+
+<!-- /home/bianca/SoftDefectProcess/CommitsAnalysis
+source venv/bin/activate
+python -m preprocess.workers.all_fs_db --input data_collection/szz/final_dubbo_new_features.csv --model rf -->
