@@ -75,6 +75,8 @@ class MainPreprocessorRunner:
         result_filename = f"{self.filename}__{self.model.__class__.__name__}__{id_execucao}__results.csv"
         results_path = os.path.join(results_dir, result_filename)
 
+        print("Salvando resultado em: " + result_filename)
+
         for fs in self.fs_strategies:
             for balancer in self.balancer_strategies:
                 print("=" * 60)
@@ -144,7 +146,7 @@ class MainPreprocessorRunner:
                 resultados.append(row)
 
                 # Grava incrementalmente garantindo 9 casas decimais
-                df_row      = pd.DataFrame([row])
+                df_row = pd.DataFrame([row])
                 write_header = not os.path.exists(results_path)
                 df_row.to_csv(
                     results_path,
