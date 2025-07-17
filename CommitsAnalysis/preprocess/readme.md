@@ -46,7 +46,3 @@ python -m preprocess.workers.all_fs_db --input data_collection/szz/final_[projec
 ``` 
 All the metrics are saved in data/logs/
 The final datasets are saved in data/datasets/
-
-<!-- /home/bianca/SoftDefectProcess/CommitsAnalysis
-source venv/bin/activate
-python -m preprocess.workers.all_fs_db --input data_collection/szz/final_dubbo_new_features.csv --model rf -->

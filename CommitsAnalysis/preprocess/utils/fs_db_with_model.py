@@ -53,7 +53,8 @@ class MainPreprocessorRunner:
 
     def _append_csv(self, row: dict):
         """Cria o CSV se não existir e adiciona `row`."""
-        results_dir  = os.path.join(os.path.dirname(__file__), "data", "time.csv")
+        results_dir = os.path.join("data", "time.csv")
+        os.makedirs(results_dir, exist_ok=True)
         file_exists = os.path.isfile(results_dir)
 
         # newline='' evita linhas em branco extras no Windows
@@ -67,15 +68,15 @@ class MainPreprocessorRunner:
     # ------------------------------------------------------------------ #
     def run_all(self):
         start = time.time()
-        resultados   = []
-        results_dir  = os.path.join(os.path.dirname(__file__), "data", "logs")
+        resultados = []
+        results_dir = os.path.join("data", "logs")
         os.makedirs(results_dir, exist_ok=True)
 
         id_execucao = str(uuid.uuid4())
         result_filename = f"{self.filename}__{self.model.__class__.__name__}__{id_execucao}__results.csv"
         results_path = os.path.join(results_dir, result_filename)
 
-        print("Salvando resultado em: " + result_filename)
+        print("Salvando resultado em: " + results_path)
 
         for fs in self.fs_strategies:
             for balancer in self.balancer_strategies:
