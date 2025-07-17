@@ -57,7 +57,7 @@ class MainPreprocessorRunner:
         file_exists = os.path.isfile(results_dir)
 
         # newline='' evita linhas em branco extras no Windows
-        with results_dir.open("a", newline="", encoding="utf-8") as f:
+        with open(results_dir, "a", newline="", encoding="utf-8") as f:
             writer = csv.DictWriter(f, fieldnames=["timestamp", "id", "time_to_execute"])
             if not file_exists:
                 writer.writeheader()
