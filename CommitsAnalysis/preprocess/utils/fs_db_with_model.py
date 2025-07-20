@@ -53,7 +53,7 @@ class MainPreprocessorRunner:
 
     def _append_csv(self, row: dict):
         """Cria o CSV se não existir e adiciona `row`."""
-        results_dir = os.path.join("data", "time.csv")
+        results_dir = '/home/bianca/SoftDefectProcess/CommitsAnalysis/data/logs/time.csv'
         os.makedirs(results_dir, exist_ok=True)
         file_exists = os.path.isfile(results_dir)
 
