@@ -69,7 +69,7 @@ class MainPreprocessorRunner:
     def run_all(self):
         start = time.time()
         resultados = []
-        results_dir = os.path.join("data", "logs")
+        results_dir = '/home/bianca/SoftDefectProcess/CommitsAnalysis/data/logs'
         os.makedirs(results_dir, exist_ok=True)
 
         id_execucao = str(uuid.uuid4())
