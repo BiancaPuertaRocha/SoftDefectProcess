@@ -53,12 +53,13 @@ class MainPreprocessorRunner:
 
     def _append_csv(self, row: dict):
         """Cria o CSV se não existir e adiciona `row`."""
-        results_dir = '/home/bianca/SoftDefectProcess/CommitsAnalysis/data/logs/time.csv'
+        results_dir = '/home/bianca/SoftDefectProcess/CommitsAnalysis/data/logs'
         os.makedirs(results_dir, exist_ok=True)
-        file_exists = os.path.isfile(results_dir)
+        result_file = os.path.join(results_dir, "time.csv")
+        file_exists = os.path.isfile(result_file)
 
         # newline='' evita linhas em branco extras no Windows
-        with open(results_dir, "a", newline="", encoding="utf-8") as f:
+        with open(result_file, "a", newline="", encoding="utf-8") as f:
             writer = csv.DictWriter(f, fieldnames=["timestamp", "id", "time_to_execute"])
             if not file_exists:
                 writer.writeheader()
