@@ -123,8 +123,9 @@ class MainPreprocessorRunner:
                 row = {
                     "fs": fs.__class__.__name__,
                     "balancer": balancer.__class__.__name__,
+                    "best_params_balancer": info["best_params_balancer"],
                     "selected_features": info["features"],
-                    "best_params": info["best_params"],
+                    "best_params_fs": info["best_params_fs"],
 
                     "auc": auc,
                     "accuracy": acc,

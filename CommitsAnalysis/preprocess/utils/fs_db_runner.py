@@ -49,5 +49,6 @@ class Preprocessor:
 
         return X_resampled, y_resampled, {
             'features': self.selected_features,
-            'best_params': self.best_params
+            'best_params_fs': fs_result['best_params'],
+            'best_params_balancer': self.best_params,
         }
