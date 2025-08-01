@@ -4,7 +4,7 @@
 This folder contains all code developed to this project. Since the collect phase to the model construction and evaluation. In the folder you will find the orientation to replicate the study.
 
 ## quali
-Here are all the bibliographi, images and annotations gathered during the first phase of the master's degree to write the document.
+Here are all the bibliography, images and annotations gathered during the first phase of the master's degree to write the document.
 
 ## Disssertation
-Here are all the bibliographi, images and annotations gathered during the second phase of the master's degree to write the final document.
+Here are all the bibliography, images and annotations gathered during the second phase of the master's degree to write the final document.
