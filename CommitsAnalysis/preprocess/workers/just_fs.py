@@ -2,16 +2,12 @@ import pandas as pd
 import os
 import argparse
 
-from sklearn.ensemble import RandomForestClassifier, BaggingClassifier, VotingClassifier
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.linear_model import LogisticRegression
-from sklearn.naive_bayes import GaussianNB
-from sklearn.svm import SVC
+
 from sklearn.model_selection import cross_val_score, cross_val_predict
 from sklearn.metrics import classification_report, roc_auc_score, accuracy_score
 
 from preprocess.utils.fs_runner import FSRunner
+from preprocess.utils.classifier_factories import create_rf, create_bagging, create_cart, create_voting
 
 MIN_FEATURES = 7
 TEXT_COLUMNS = ["message", "bug_message", "code_smell_message"]
@@ -31,23 +27,7 @@ def save_eval_result(filename, score, algorithm, output_dir="data"):
     else:
         result_df.to_csv(output_path, index=False)
 
-# -------- Classifier Factories --------
 
-def create_rf(): return RandomForestClassifier(n_estimators=50, random_state=42)
-
-def create_bagging(base): return BaggingClassifier(estimator=base, n_estimators=10, random_state=42)
-
-def create_cart(): return DecisionTreeClassifier(random_state=42)
-
-def create_voting():
-    return VotingClassifier(estimators=[
-        ('cart', create_cart()),
-        ('knn', KNeighborsClassifier()),
-        ('lr', LogisticRegression(max_iter=1000, random_state=42)),
-        ('nb', GaussianNB()),
-        ('rf', create_rf()),
-        ('svm', SVC(probability=True, random_state=42))
-    ], voting='soft')
 
 # -------- Execution Logic --------
 

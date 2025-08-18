@@ -5,6 +5,7 @@ from sklearn.tree import DecisionTreeClassifier
 
 from preprocess.utils.fs_db_with_model import MainPreprocessorRunner
 from preprocess.utils.utils import format_time
+from preprocess.utils.classifier_factories import create_rf, create_bagging, create_cart, create_voting
 
 def get_rand():
     """Definição do componente aleatório da rodada"""
@@ -12,18 +13,13 @@ def get_rand():
 
 def get_model(model_name, random_state):
     if model_name == 'rf':
-        return RandomForestClassifier(random_state=random_state)
+        return create_rf(random_state)
     elif model_name == 'voting':
-        clf1 = RandomForestClassifier(n_estimators=50, random_state=random_state)
-        clf2 = DecisionTreeClassifier(random_state=random_state)
-        clf3 = RandomForestClassifier(n_estimators=100, max_depth=5, random_state=random_state)
-        return VotingClassifier(estimators=[('rf1', clf1), ('dt', clf2), ('rf2', clf3)], voting='soft')
+        return create_voting(random_state)
     elif model_name == 'bag_rf':
-        base_estimator = RandomForestClassifier(n_estimators=10, random_state=random_state)
-        return BaggingClassifier(estimator=base_estimator, n_estimators=10, random_state=random_state)
+        return create_bagging(create_rf(random_state), random_state)
     elif model_name == 'bag_dt':
-        base_estimator = DecisionTreeClassifier(random_state=random_state)
-        return BaggingClassifier(estimator=base_estimator, n_estimators=10, random_state=random_state)
+        return create_bagging(create_cart(random_state), random_state)
     else:
         raise ValueError(f"Modelo '{model_name}' não é reconhecido. Use: rf, voting, bag_rf, bag_dt")
 
