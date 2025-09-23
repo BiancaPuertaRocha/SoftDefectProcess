@@ -35,6 +35,7 @@ class GAFeatureSelector:
 
         N_FEATURES = X.shape[1]
 
+        # avaliação dos individuos
         def eval_individual(individual):
             if sum(individual) < self.min_features:
                 return 0.0,
@@ -50,13 +51,18 @@ class GAFeatureSelector:
             creator.create("Individual", list, fitness=creator.FitnessMax)
 
         toolbox = base.Toolbox()
+        # inicialização
         toolbox.register("attr_bool", random.randint, 0, 1)
         toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.attr_bool, N_FEATURES)
         toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
+        # avaliação
         toolbox.register("evaluate", eval_individual)
+        # crossover
         toolbox.register("mate", tools.cxTwoPoint)
+        # mutação
         toolbox.register("mutate", tools.mutFlipBit, indpb=0.05)
+        # seleção
         toolbox.register("select", tools.selTournament, tournsize=3)
 
         pop = toolbox.population(n=pop_size)
@@ -66,6 +72,7 @@ class GAFeatureSelector:
         stats.register("avg", np.mean)
         stats.register("max", np.max)
 
+        # iteração
         pop, _ = algorithms.eaSimple(pop, toolbox, cxpb=cxpb, mutpb=mutpb, ngen=n_gen,
                                     stats=stats, halloffame=hof, verbose=False)
 
