@@ -1,7 +1,5 @@
 import argparse, random, time
 import pandas as pd
-from sklearn.ensemble import RandomForestClassifier, VotingClassifier, BaggingClassifier
-from sklearn.tree import DecisionTreeClassifier
 
 from preprocess.utils.fs_db_with_model import MainPreprocessorRunner
 from preprocess.utils.utils import format_time
@@ -34,30 +32,23 @@ def main():
 
     args = parser.parse_args()
 
-    # Carrega os dados
     file_path = args.input
     project_name = get_project_filename(file_path=file_path)
     df = pd.read_csv(file_path)
 
     random_state = get_rand()
 
-    # Define o modelo
     model = get_model(args.model, random_state=random_state)
 
-    # Roda o pipeline
     start = time.time()
     runner = MainPreprocessorRunner(df, model=model, filename=project_name, random_state=random_state)
     resultados = runner.run_all()
     elapsed = time.time() - start
 
-    # Exibe resultados
     for r in resultados:
         print("\n--- Resultado ---")
         print(f"FS: {r['fs']}, Balancer: {r['balancer']}")
         print(f"AUC: {r['auc']:.4f}, Accuracy: {r['accuracy']:.4f}, Precision: {r['precision']:.4f}, Recall: {r['recall']:.4f}")
-        # print(f"Features selecionadas: {r['selected_features']}")
-        # print(f"Melhores parâmetros: {r['best_params']}")
-    
     print(f"Tempo em segundos para execução com otimizacao: {format_time(elapsed)}")
 
 if __name__ == "__main__":

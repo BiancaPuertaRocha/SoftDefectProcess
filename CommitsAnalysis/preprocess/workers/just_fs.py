@@ -4,7 +4,7 @@ import argparse
 
 
 from sklearn.model_selection import cross_val_score, cross_val_predict
-from sklearn.metrics import classification_report, roc_auc_score, accuracy_score
+from sklearn.metrics import classification_report, roc_auc_score
 
 from preprocess.utils.fs_runner import FSRunner
 from preprocess.utils.classifier_factories import create_rf, create_bagging, create_cart, create_voting

@@ -3,7 +3,7 @@
 ## CommitAnalisys
 This folder contains all code developed to this project. Since the collect phase to the model construction and evaluation. In the folder you will find the orientation to replicate the study.
 
-## quali
+## Quali
 Here are all the bibliography, images and annotations gathered during the first phase of the master's degree to write the document.
 
 ## Disssertation
