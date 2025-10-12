@@ -1,3 +1,9 @@
+"""
+Finds the best K features using feature selection with FisherScore and baysian optimization. The stopping criterion is the number of trials (20 by default)
+and the best features are evaluated using f1-score (by default). The best number of K is evaluated using the classifier and in each trial the value of k is suggested between ne max number and the min number (3 by default)
+"""
+
+
 import numpy as np
 import pandas as pd
 import optuna

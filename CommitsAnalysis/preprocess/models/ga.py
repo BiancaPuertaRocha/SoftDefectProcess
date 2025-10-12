@@ -1,10 +1,18 @@
+"""
+Performs feature selection using a Genetic Algorithm (GA) combined with Bayesian Optimization (Optuna) 
+to tune the GA hyperparameters. The stopping criterion is defined by the number of trials (20 by default).
+
+Each trial searches for the optimal GA configuration (population size, number of generations, 
+crossover and mutation probabilities) to maximize the model's performance, measured by the F1-score 
+(by default). The GA selects a subset of features (at least 3, by default), which are evaluated using 
+cross-validation on the provided classifier.
+"""
+
 import random
 import numpy as np
-import pandas as pd
 import optuna
 
 from sklearn.model_selection import cross_val_score
-from sklearn.preprocessing import LabelEncoder
 
 from deap import base, creator, tools, algorithms
 

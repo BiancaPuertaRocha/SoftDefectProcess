@@ -1,7 +1,6 @@
 import os
 import json
 import pandas as pd
-from datetime import datetime
 
 from preprocess.models.ga import GAFeatureSelector
 from preprocess.models.fisher_score import FisherScoreFeatureSelector
@@ -9,8 +8,8 @@ from preprocess.models.chi_square import Chi2FeatureSelector
 
 from sklearn.model_selection import cross_val_predict, StratifiedKFold
 from sklearn.metrics import (
-    roc_auc_score, accuracy_score, f1_score, precision_score, recall_score,
-    classification_report, precision_recall_fscore_support
+    roc_auc_score, accuracy_score,
+     precision_recall_fscore_support
 )
 
 class FSRunner:
@@ -72,7 +71,6 @@ class FSRunner:
                 return obj.tolist()
             raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
 
-        now = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
         log_filename = os.path.join(logs_dir, f"{base_filename}_{method_name}_{self.model_name}_log.json")
         with open(log_filename, 'w') as f:
             json.dump(data, f, indent=4, default=convert)
