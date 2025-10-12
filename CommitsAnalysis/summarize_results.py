@@ -1,3 +1,6 @@
+"""
+When running the all_fs_db.py algorithm, this script is used to summarize the results.
+"""
 import os
 import pandas as pd
 
