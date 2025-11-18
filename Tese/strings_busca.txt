@@ -1,0 +1,27 @@
+ACM https://dl.acm.org/
+
+(Title:("software" OR "program" OR "system") OR Abstract:("software" OR "program" OR "system")) AND (Title:("code" OR "coding" OR "programming") OR Abstract:("code" OR "coding" OR "programming")) AND (Title:("bug" OR "fault" OR "error" OR "failure" OR "defect" OR "flaw" OR "anomaly") OR Abstract:("bug" OR "fault" OR "error" OR "failure" OR "defect" OR "flaw" OR "anomaly")) AND (Title:("identification" OR "localization" OR "detection" OR "prediction" OR "debugging" OR "debug") OR Abstract:("identification" OR "localization" OR "detection" OR "prediction" OR "debugging" OR "debug")) AND (Title:("repair" OR "correction" OR "healing" OR "fix" OR "patch" OR "bug-fix") OR Abstract:("repair" OR "correction" OR "healing" OR "fix" OR "patch" OR "bug-fix")) AND (Title:("technique" OR "method" OR "approach" OR "tool" OR "framework" OR "procedure") OR Abstract:("technique" OR "method" OR "approach" OR "tool" OR "framework" OR "procedure")) AND (Title:("quality" OR "reliability" OR "maintenance") OR Abstract:("quality" OR "reliability" OR "maintenance")) NOT (Abstract:("survey" OR "systematic literature review" OR "position paper" OR "literature review" OR "opinion" OR "student" OR "professor" OR "a bibliography" OR "teaching"))
+
+-------------------------------------------------------------
+IEEE Xplore https://ieeexplore.ieee.org/
+
+(Title:("software" OR "program" OR "system") OR Abstract:("software" OR "program" OR "system")) AND (Title:("code" OR "coding" OR "programming") OR Abstract:("code" OR "coding" OR "programming")) AND (Title:("bug" OR "fault" OR "error" OR "failure" OR "defect" OR "flaw" OR "anomaly") OR Abstract:("bug" OR "fault" OR "error" OR "failure" OR "defect" OR "flaw" OR "anomaly")) AND (Title:("identification" OR "localization" OR "detection" OR "prediction" OR "debugging" OR "debug") OR Abstract:("identification" OR "localization" OR "detection" OR "prediction" OR "debugging" OR "debug")) AND (Title:("repair" OR "correction" OR "healing" OR "fix" OR "patch" OR "bug-fix") OR Abstract:("repair" OR "correction" OR "healing" OR "fix" OR "patch" OR "bug-fix")) AND (Title:("technique" OR "method" OR "approach" OR "tool" OR "framework" OR "procedure") OR Abstract:("technique" OR "method" OR "approach" OR "tool" OR "framework" OR "procedure")) AND (Title:("quality" OR "reliability" OR "maintenance") OR Abstract:("quality" OR "reliability" OR "maintenance")) NOT (Abstract:("survey" OR "systematic literature review" OR "position paper" OR "literature review" OR "opinion" OR "student" OR "professor" OR "a bibliography" OR "teaching"))
+
+-------------------------------------------------------------
+Scopus https://www.scopus.com/
+
+TITLE-ABS-KEY(
+    ("software" OR "program" OR "system")
+    AND ("code" OR "coding" OR "programming")
+    AND ("bug" OR "fault" OR "error" OR "failure" OR "defect" OR "flaw" OR "anomaly")
+    AND ("identification" OR "localization" OR "detection" OR "prediction" OR "debugging" OR "debug")
+    AND ("repair" OR "correction" OR "healing" OR "fix" OR "patch" OR "bug fix")
+    AND ("technique" OR "method" OR "approach" OR "tool" OR "framework" OR "procedure")
+    AND ("software quality" OR "reliability" OR "maintenance")
+)
+AND NOT
+TITLE-ABS-KEY(
+    "survey" OR "systematic literature review" OR "position paper"
+    OR "literature review" OR "opinion" OR "student"
+    OR "professor" OR "a bibliography" OR "teaching"
+)
