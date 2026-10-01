@@ -1,6 +1,7 @@
 import os, csv, datetime, uuid
 import time
 import pandas as pd
+import numpy as np
 
 from sklearn.base import clone
 from sklearn.model_selection import train_test_split
@@ -84,29 +85,72 @@ class MainPreprocessorRunner:
                 print("=" * 60)
                 print(f">>> FS: {fs.__class__.__name__} + Balancer: {balancer.__class__.__name__}")
 
-                # Pré‑processamento (seleção de atributos + balanceamento)
+                # ----------------------------- split -----------------------------
                 t0_ns = time.perf_counter_ns()
-                preprocessor = Preprocessor(fs_strategy=fs, balancer_strategy=balancer)
-                X_resampled, y_resampled, info = preprocessor.run(self.df)
-                tunning_and_preprocess_time_ms = self._ns_to_ms(time.perf_counter_ns() - t0_ns)
+
+                X = self.df.drop(columns=["failure_prone"])
+                y = self.df["failure_prone"]
+
+                X_train, X_test, y_train, y_test = train_test_split(
+                    X,
+                    y,
+                    test_size=self.test_size,
+                    random_state=self.random_state,
+                    stratify=y
+                )
+
+                # ----------------------------- pré-processamento -----------------------------
+                preprocessor = Preprocessor(
+                    fs_strategy=fs,
+                    balancer_strategy=balancer
+                )
+
+                X_train_resampled, y_train_resampled, info = preprocessor.run(
+                    pd.concat([X_train, y_train], axis=1)
+                )
+
+                tunning_and_preprocess_time_ms = self._ns_to_ms(
+                    time.perf_counter_ns() - t0_ns
+                )
 
                 # ----------------------------- treino -----------------------------
                 t0_ns = time.perf_counter_ns()
-                X_train, X_test, y_train, y_test = train_test_split(
-                    X_resampled, y_resampled,
-                    test_size=self.test_size,
-                    random_state=self.random_state
-                )
 
                 model = clone(self.model)
-                model.fit(X_train, y_train)
-                train_time_ms = self._ns_to_ms(time.perf_counter_ns() - t0_ns)
+                model.fit(X_train_resampled, y_train_resampled)
+
+                train_time_ms = self._ns_to_ms(
+                    time.perf_counter_ns() - t0_ns
+                )
+
+                # --------------------------- aplica a FS no teste ---------------------------
+                feats_arr = np.asarray(info["features"])
+
+                if feats_arr.dtype == bool:                        # máscara booleana
+                    X_test_sel = X_test.loc[:, feats_arr]
+                elif np.issubdtype(feats_arr.dtype, np.integer):   # índices de coluna
+                    X_test_sel = X_test.iloc[:, feats_arr]
+                else:                                              # nomes de colunas
+                    X_test_sel = X_test[list(feats_arr)]
+
+                # mesmo formato do treino (array NumPy, sem nomes) -> some o warning
+                X_test_sel = X_test_sel.to_numpy()
+
+                assert X_test_sel.shape[1] == X_train_resampled.shape[1], (
+                    f"Teste com {X_test_sel.shape[1]} colunas, "
+                    f"treino com {X_train_resampled.shape[1]}"
+                )
+
 
                 # --------------------------- predição -----------------------------
                 t0_ns = time.perf_counter_ns()
-                y_pred  = model.predict(X_test)
-                y_proba = model.predict_proba(X_test)[:, 1]
-                predict_time_ms = self._ns_to_ms(time.perf_counter_ns() - t0_ns)
+
+                y_pred = model.predict(X_test_sel)
+                y_proba = model.predict_proba(X_test_sel)[:, 1]
+
+                predict_time_ms = self._ns_to_ms(
+                    time.perf_counter_ns() - t0_ns
+                )
 
                 # ---------------------------- métricas ----------------------------
                 auc     = roc_auc_score(y_test, y_proba)
